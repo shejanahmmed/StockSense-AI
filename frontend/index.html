@@ -58,7 +58,10 @@
                 </div>
                 <div class="header-actions">
                     <button class="icon-btn glass-panel"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></button>
-                    <button class="primary-btn"><i class="fa-solid fa-plus"></i> New Forecast</button>
+                    <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                    <button class="primary-btn" id="uploadCsvBtn" onclick="document.getElementById('csvFileInput').click()">
+                        <i class="fa-solid fa-file-csv"></i> Upload CSV Data
+                    </button>
                 </div>
             </header>
 

@@ -84,7 +84,7 @@ def call_llm(prompt: str) -> str:
                 messages=[
                     {"role": "system", "content": prompt}
                 ],
-                model="llama-3.1-70b-versatile",
+                model="llama3-70b-8192",
                 temperature=0.3,
                 max_tokens=150,
             )

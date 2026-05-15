@@ -3,47 +3,148 @@
  * Handles dynamic rendering of insights, SHAP drivers, and Chart.js initialization.
  */
 
+let forecastChartInstance = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Simulate fetching the LLM Insight Payload
-    setTimeout(() => {
-        renderInsight();
-        renderDrivers();
-    }, 800); // Artificial delay to simulate network request
+    // 1. Fetch real insight data from the FastAPI backend
+    fetchDataFromBackend();
 
     // 2. Initialize the Forecast Chart
     initChart();
+    
+    // 3. Setup CSV Upload Listener
+    setupCsvUpload();
 });
 
-function renderInsight() {
+function setupCsvUpload() {
+    const fileInput = document.getElementById('csvFileInput');
+    const uploadBtn = document.getElementById('uploadCsvBtn');
+    
+    if (!fileInput || !uploadBtn) return;
+    
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const originalText = uploadBtn.innerHTML;
+        uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        uploadBtn.disabled = true;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) throw new Error('Prediction failed');
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                updateChartWithData(data.historical, data.forecast);
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Failed to process CSV file. Ensure it has date, sales, promo, and holiday columns.");
+        } finally {
+            uploadBtn.innerHTML = originalText;
+            uploadBtn.disabled = false;
+            fileInput.value = ''; // Reset input
+        }
+    });
+}
+
+function updateChartWithData(historical, forecast) {
+    if (!forecastChartInstance) return;
+    
+    // Process Data
+    const histDates = historical.map(d => d.date);
+    const histSales = historical.map(d => Math.round(d.sales));
+    
+    const foreDates = forecast.map(d => d.date);
+    const predictedSales = forecast.map(d => Math.round(d.predicted_sales));
+    const upper = forecast.map(d => Math.round(d.upper_bound));
+    const lower = forecast.map(d => Math.round(d.lower_bound));
+    
+    // Combine labels
+    const labels = [...histDates, ...foreDates];
+    
+    // Construct arrays to match the labels length
+    const historicalData = new Array(labels.length).fill(null);
+    const forecastData = new Array(labels.length).fill(null);
+    const confidenceUpper = new Array(labels.length).fill(null);
+    const confidenceLower = new Array(labels.length).fill(null);
+    
+    // Fill historical
+    for (let i = 0; i < histDates.length; i++) {
+        historicalData[i] = histSales[i];
+    }
+    
+    // Connect the lines by putting the last historical point as the start of the forecast line
+    const connectIndex = histDates.length - 1;
+    if (connectIndex >= 0) {
+        forecastData[connectIndex] = histSales[connectIndex];
+        confidenceUpper[connectIndex] = histSales[connectIndex];
+        confidenceLower[connectIndex] = histSales[connectIndex];
+    }
+    
+    // Fill forecast
+    for (let i = 0; i < foreDates.length; i++) {
+        const idx = histDates.length + i;
+        forecastData[idx] = predictedSales[i];
+        confidenceUpper[idx] = upper[i];
+        confidenceLower[idx] = lower[i];
+    }
+    
+    // Update Chart
+    forecastChartInstance.data.labels = labels;
+    forecastChartInstance.data.datasets[0].data = historicalData;
+    forecastChartInstance.data.datasets[1].data = forecastData;
+    forecastChartInstance.data.datasets[2].data = confidenceUpper;
+    forecastChartInstance.data.datasets[3].data = confidenceLower;
+    
+    forecastChartInstance.update();
+}
+
+async function fetchDataFromBackend() {
+    try {
+        const response = await fetch('/api/insight');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            renderInsight(data.insight);
+            renderDrivers(data.drivers);
+        }
+    } catch (error) {
+        console.error('Error fetching insight:', error);
+        // Fallback error state showing exact error to debug
+        const container = document.getElementById('ai-insight-text');
+        container.innerHTML = `<p class="animated-text" style="color: var(--status-danger);">Failed to load AI insights. Error: ${error.message}. <br>Make sure you are at http://127.0.0.1:8000/ and NOT file:///C:/...</p>`;
+        document.getElementById('drivers-list').innerHTML = '<p style="color: var(--text-muted);">Drivers unavailable</p>';
+    }
+}
+
+function renderInsight(insightText) {
     const container = document.getElementById('ai-insight-text');
     
-    // The perfect output text based on backend guidelines
+    // Format the text slightly for HTML display
+    let formattedText = insightText.replace(/Stockout Warning:/g, '<span style="color: var(--status-warning); font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Warning:</span>');
+    formattedText = formattedText.replace(/⚠️/g, ''); // Remove emoji if it's there to avoid duplication with icon
+    
     const insightHTML = `
-        <p class="animated-text">
-            Sales are forecast to increase <b>23%</b> next week to approximately <b>4,850 units</b>, significantly above your baseline. 
-            This surge is driven by the upcoming <b>Eid holiday (+18% impact)</b>, your current promotion campaign (+9%), and typical weekend demand patterns (+5%). 
-            <br><br>
-            <span style="color: var(--status-warning); font-weight: 600;">
-                <i class="fa-solid fa-triangle-exclamation"></i> Stockout Warning:
-            </span> 
-            Your current inventory of 3,200 units will likely be depleted by Thursday. We recommend ordering at least <b>5,200 units</b> (40% above forecast) to meet demand and avoid lost sales. Additionally, schedule extra staff for Friday and Saturday when foot traffic typically peaks during holidays.
+        <p class="animated-text" style="white-space: pre-line;">
+            ${formattedText}
         </p>
     `;
     
-    // Replace skeletons with actual text
     container.innerHTML = insightHTML;
 }
 
-function renderDrivers() {
+function renderDrivers(drivers) {
     const driversList = document.getElementById('drivers-list');
-    
-    // Mock SHAP data
-    const drivers = [
-        { name: "Upcoming Holiday (Eid)", impact: "+18%", value: 85, color: "var(--accent-primary)" },
-        { name: "Active Promotion Campaign", impact: "+9%", value: 45, color: "var(--accent-secondary)" },
-        { name: "Day of Week (Weekend)", impact: "+5%", value: 25, color: "var(--status-success)" }
-    ];
-
     let html = '';
     
     drivers.forEach((driver, index) => {
@@ -87,7 +188,7 @@ function initChart() {
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Outfit', sans-serif";
 
-    new Chart(ctx, {
+    forecastChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
