@@ -44,6 +44,13 @@ function setupCsvUpload() {
             
             if (data.status === 'success') {
                 updateChartWithData(data.historical, data.forecast);
+                if (data.insight && data.drivers) {
+                    renderInsight(data.insight);
+                    renderDrivers(data.drivers);
+                }
+                if (data.kpis) {
+                    updateKPIs(data.kpis);
+                }
             }
         } catch (error) {
             console.error("Upload error:", error);
@@ -54,6 +61,29 @@ function setupCsvUpload() {
             fileInput.value = ''; // Reset input
         }
     });
+}
+
+function updateKPIs(kpis) {
+    document.getElementById('kpi-stock').innerText = kpis.current_stock.toLocaleString();
+    document.getElementById('kpi-demand').innerText = kpis.forecasted_demand.toLocaleString();
+    
+    const changeElem = document.getElementById('kpi-demand-change');
+    changeElem.innerHTML = `${kpis.percent_change.startsWith('+') ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>'} ${kpis.percent_change}`;
+    changeElem.className = `trend ${kpis.percent_change.startsWith('+') ? 'positive' : 'negative'}`;
+    
+    document.getElementById('kpi-order').innerText = kpis.recommended_order.toLocaleString();
+    
+    document.getElementById('kpi-stockout').innerText = kpis.time_to_stockout;
+    const stockoutSub = document.getElementById('kpi-stockout-sub');
+    if (kpis.time_to_stockout === "Healthy") {
+        stockoutSub.innerText = "Sufficient Stock";
+        stockoutSub.className = "trend positive";
+        stockoutSub.parentElement.parentElement.querySelector('.kpi-icon').className = "kpi-icon success-icon";
+    } else {
+        stockoutSub.innerText = "Depletion Warning";
+        stockoutSub.className = "trend negative";
+        stockoutSub.parentElement.parentElement.querySelector('.kpi-icon').className = "kpi-icon warning-icon";
+    }
 }
 
 function updateChartWithData(historical, forecast) {

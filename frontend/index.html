@@ -91,7 +91,7 @@
                         <div class="kpi-icon info-icon"><i class="fa-solid fa-box"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Current Stock</span>
-                            <h3 class="kpi-value">3,200</h3>
+                            <h3 class="kpi-value" id="kpi-stock">3,200</h3>
                             <span class="trend neutral">Units available</span>
                         </div>
                     </div>
@@ -99,15 +99,15 @@
                         <div class="kpi-icon success-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Forecasted Demand</span>
-                            <h3 class="kpi-value">4,850</h3>
-                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> +23% Next Week</span>
+                            <h3 class="kpi-value" id="kpi-demand">4,850</h3>
+                            <span class="trend positive" id="kpi-demand-change"><i class="fa-solid fa-arrow-up"></i> +23% Next Week</span>
                         </div>
                     </div>
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Recommended Order</span>
-                            <h3 class="kpi-value">5,200</h3>
+                            <h3 class="kpi-value" id="kpi-order">5,200</h3>
                             <span class="trend positive">+40% Above Baseline</span>
                         </div>
                     </div>
@@ -115,8 +115,8 @@
                         <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Time to Stockout</span>
-                            <h3 class="kpi-value">5 Days</h3>
-                            <span class="trend negative">Depletion by Thursday</span>
+                            <h3 class="kpi-value" id="kpi-stockout">5 Days</h3>
+                            <span class="trend negative" id="kpi-stockout-sub">Depletion by Thursday</span>
                         </div>
                     </div>
                 </div>

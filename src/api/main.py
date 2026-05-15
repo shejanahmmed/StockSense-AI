@@ -108,10 +108,62 @@ async def predict_demand(file: UploadFile = File(...)):
         forecast_result = forecast.rename(columns={'ds': 'date', 'yhat': 'predicted_sales', 'yhat_lower': 'lower_bound', 'yhat_upper': 'upper_bound'})
         forecast_result['date'] = forecast_result['date'].dt.strftime('%Y-%m-%d')
         
+        # Calculate dynamic KPIs
+        current_week_sales = int(historical_df.tail(7)['sales'].sum())
+        next_week_sales = int(forecast_result['predicted_sales'].sum())
+        percent_change = ((next_week_sales - current_week_sales) / current_week_sales) * 100 if current_week_sales > 0 else 0
+        current_stock = int(current_week_sales * 0.8) # Mock current stock being low
+        recommended_order = int(next_week_sales * 1.4)
+        
+        # Build payload for LLM
+        insight_payload = {
+            "forecast_summary": {
+                "next_week_sales": next_week_sales,
+                "current_week_sales": current_week_sales,
+                "percent_change": f"{'+' if percent_change > 0 else ''}{percent_change:.1f}%",
+                "trend": "increasing" if percent_change > 0 else "decreasing",
+                "confidence_interval": [int(forecast_result['lower_bound'].sum()), int(forecast_result['upper_bound'].sum())]
+            },
+            "top_drivers": [
+                {"feature": "historical_trend", "impact": "+15%"},
+                {"feature": "weekend_effect", "impact": "+8%"},
+                {"feature": "baseline_demand", "impact": "+5%"}
+            ],
+            "context": {
+                "store_id": "Uploaded CSV",
+                "product_category": "All Products",
+                "current_stock_level": current_stock,
+                "days_forecasted": 7
+            },
+            "risk_factors": {
+                "stockout_risk": "high" if current_stock < next_week_sales else "low",
+                "overstock_risk": "high" if current_stock > next_week_sales * 1.5 else "low"
+            }
+        }
+        
+        # Generate Insight via LLM dynamically based on the uploaded data
+        insight_text = generate_insight(insight_payload)
+        
+        # Mock Drivers for UI
+        drivers = [
+            { "name": "Historical Trend", "impact": "+15%", "value": 75, "color": "var(--accent-primary)" },
+            { "name": "Weekend Effect", "impact": "+8%", "value": 40, "color": "var(--accent-secondary)" },
+            { "name": "Baseline Demand", "impact": "+5%", "value": 25, "color": "var(--status-success)" }
+        ]
+        
         return {
             "status": "success",
             "historical": historical_records,
-            "forecast": forecast_result.to_dict(orient="records")
+            "forecast": forecast_result.to_dict(orient="records"),
+            "kpis": {
+                "current_stock": current_stock,
+                "forecasted_demand": next_week_sales,
+                "percent_change": f"{'+' if percent_change > 0 else ''}{percent_change:.1f}% Next Week",
+                "recommended_order": recommended_order,
+                "time_to_stockout": f"{max(1, int(current_stock / (next_week_sales / 7)))} Days" if next_week_sales > 0 else "Healthy"
+            },
+            "insight": insight_text,
+            "drivers": drivers
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

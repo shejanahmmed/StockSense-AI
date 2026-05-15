@@ -16,8 +16,10 @@ class DemandProphetModel:
         Rename columns for Prophet ('ds' for date and 'y' for target).
         """
         df_p = df.copy()
-        if 'date' in df_p.columns and 'sales' in df_p.columns:
-            df_p = df_p.rename(columns={'date': 'ds', 'sales': 'y'})
+        if 'date' in df_p.columns:
+            df_p = df_p.rename(columns={'date': 'ds'})
+        if 'sales' in df_p.columns:
+            df_p = df_p.rename(columns={'sales': 'y'})
         return df_p
 
     def train(self, df: pd.DataFrame):
