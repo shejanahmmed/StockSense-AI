@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSense AI - Intelligent Inventory</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <span>StockSense AI</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <i class="fa-solid fa-chart-line"></i> 
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-boxes-stacked"></i> 
+                    <span>Inventory</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-brain"></i> 
+                    <span>AI Insights</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-gear"></i> 
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="user-profile">
+                <img src="https://i.pravatar.cc/150?img=33" alt="User Avatar" class="avatar">
+                <div class="user-info">
+                    <span class="user-name">Store 12</span>
+                    <span class="user-role">Electronics</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-container glass-panel">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" placeholder="Search inventory or explore insights...">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn glass-panel"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></button>
+                    <button class="primary-btn"><i class="fa-solid fa-plus"></i> New Forecast</button>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <header class="page-header">
+                    <h1>Overview Overview</h1>
+                    <p class="subtitle">AI-driven demand forecasting and actionable intelligence.</p>
+                </header>
+
+                <!-- AI Insight Premium Card -->
+                <section class="insight-section glass-panel premium-glow">
+                    <div class="section-header">
+                        <h2 class="gradient-text"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight for Store 12 — Electronics</h2>
+                        <span class="badge warning-badge"><i class="fa-solid fa-triangle-exclamation"></i> Action Required</span>
+                    </div>
+                    <div class="insight-content" id="ai-insight-text">
+                        <!-- Injected via JavaScript to simulate LLM stream -->
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text short"></div>
+                    </div>
+                </section>
+
+                <!-- KPI Metrics -->
+                <div class="kpi-grid">
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon info-icon"><i class="fa-solid fa-box"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">Current Stock</span>
+                            <h3 class="kpi-value">3,200</h3>
+                            <span class="trend neutral">Units available</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon success-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">Forecasted Demand</span>
+                            <h3 class="kpi-value">4,850</h3>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> +23% Next Week</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">Recommended Order</span>
+                            <h3 class="kpi-value">5,200</h3>
+                            <span class="trend positive">+40% Above Baseline</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">Time to Stockout</span>
+                            <h3 class="kpi-value">5 Days</h3>
+                            <span class="trend negative">Depletion by Thursday</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart and Drivers Section -->
+                <div class="bottom-grid">
+                    <!-- Forecast Chart -->
+                    <section class="chart-section glass-panel">
+                        <div class="section-header">
+                            <h2>Demand Forecast (Next 14 Days)</h2>
+                            <div class="chart-legend-custom">
+                                <span><span class="legend-dot historical"></span> Historical</span>
+                                <span><span class="legend-dot forecast"></span> Predicted</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- SHAP Drivers -->
+                    <section class="drivers-section glass-panel">
+                        <div class="section-header">
+                            <h2>Top Demand Drivers (SHAP)</h2>
+                        </div>
+                        <div class="drivers-list" id="drivers-list">
+                            <!-- Injected via JavaScript -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

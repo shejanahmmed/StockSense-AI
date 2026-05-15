@@ -1,0 +1,16 @@
+pandas
+pyarrow
+numpy
+prophet
+lightgbm
+scikit-learn
+shap
+plotly
+fastapi
+uvicorn
+duckdb
+pydantic
+python-multipart
+ollama
+groq
+python-dotenv
