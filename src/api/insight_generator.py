@@ -84,7 +84,7 @@ def call_llm(prompt: str) -> str:
                 messages=[
                     {"role": "system", "content": prompt}
                 ],
-                model="llama3-70b-8192",
+                model="llama-3.3-70b-versatile",
                 temperature=0.3,
                 max_tokens=150,
             )
@@ -154,6 +154,59 @@ def generate_insight(data: Dict[str, Any]) -> str:
             return fallback
         except Exception:
             return "Unable to generate forecast insights at this time. Please review the raw forecast data."
+
+def generate_chat_response(query: str, history: list, context_data: Dict[str, Any]) -> str:
+    """
+    Generates a conversational AI response for the chat assistant.
+    
+    Args:
+        query: The user's message.
+        history: List of previous messages in the conversation.
+        context_data: Current inventory or forecast data to inform the answer.
+        
+    Returns:
+        A conversational string response.
+    """
+    inventory_summary = json.dumps(context_data, indent=2)
+    
+    system_prompt = f"""You are StockSense AI, an intelligent inventory assistant for SME business owners.
+Your goal is to answer questions about inventory, sales trends, and business strategy using the provided context.
+
+Current Context Data:
+{inventory_summary}
+
+Guidelines:
+1. Be concise, friendly, and professional.
+2. Use the provided context data to give specific answers (mention numbers and names).
+3. If the user asks for advice, provide data-driven recommendations.
+4. Keep answers under 4-5 sentences.
+5. If you are asked about something not in the context, use your general business knowledge but clarify it is general advice.
+"""
+
+    messages = [{"role": "system", "content": system_prompt}]
+    # Add last 5 messages for context window efficiency
+    for msg in history[-5:]:
+        messages.append(msg)
+    messages.append({"role": "user", "content": query})
+
+    env = os.environ.get("DEPLOYMENT_ENV", "local").lower()
+    
+    if env == "production" and Groq is not None:
+        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        try:
+            response = client.chat.completions.create(
+                messages=messages,
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+                max_tokens=400,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"Chat Groq Error: {e}")
+            return f"I apologize, but I'm having an API error: {str(e)}"
+    else:
+        # Fallback to a smart-sounding mock for local testing
+        return f"I've analyzed your query: '{query}'. Based on the 12 items in your inventory, I recommend focusing on your Low Stock items like the MacBook Pro M3 and Samsung Odyssey G9. Would you like me to calculate the specific reorder quantities for these?"
 
 if __name__ == "__main__":
     # Example usage / basic test

@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -13,9 +14,14 @@ sys.path.append(str(project_root))
 
 from src.pipeline.data_loader import validate_schema
 from src.models.prophet_model import DemandProphetModel
-from src.api.insight_generator import generate_insight
+from src.api.insight_generator import generate_insight, generate_chat_response
 
 app = FastAPI(title="StockSense AI API")
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list = []
+    inventory_context: Any = None
 
 # Add CORS middleware for frontend communication
 app.add_middleware(
@@ -82,6 +88,14 @@ async def get_inventory():
             return {"status": "success", "data": data}
         else:
             return {"status": "error", "message": "Inventory database not found."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/chat")
+async def chat_with_ai(request: ChatRequest):
+    try:
+        response = generate_chat_response(request.message, request.history, request.inventory_context)
+        return {"status": "success", "response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

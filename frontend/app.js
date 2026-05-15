@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. Setup Navigation
     setupNavigation();
+
+    // 7. Initialize Chat
+    initChat();
 });
 
 // ==========================================
@@ -31,23 +34,28 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupNavigation() {
     const navDashboard = document.getElementById('navDashboard');
     const navInventory = document.getElementById('navInventory');
+    const navInsights = document.getElementById('navInsights');
+
     const dashboardView = document.getElementById('dashboardView');
     const inventoryView = document.getElementById('inventoryView');
+    const insightsView = document.getElementById('insightsView');
     
     // Default view
     let currentView = 'dashboard';
+
+    function hideAll() {
+        dashboardView.style.display = 'none';
+        inventoryView.style.display = 'none';
+        insightsView.style.display = 'none';
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    }
 
     navDashboard.addEventListener('click', (e) => {
         e.preventDefault();
         if (currentView === 'dashboard') return;
         currentView = 'dashboard';
-        
-        // Update nav UI
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        hideAll();
         navDashboard.classList.add('active');
-        
-        // Update views
-        inventoryView.style.display = 'none';
         dashboardView.style.display = 'flex';
     });
 
@@ -55,13 +63,8 @@ function setupNavigation() {
         e.preventDefault();
         if (currentView === 'inventory') return;
         currentView = 'inventory';
-        
-        // Update nav UI
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        hideAll();
         navInventory.classList.add('active');
-        
-        // Update views
-        dashboardView.style.display = 'none';
         inventoryView.style.display = 'flex';
         
         // Load data if not already loaded
@@ -69,6 +72,15 @@ function setupNavigation() {
         if (tbody.children.length === 0) {
             loadInventoryData();
         }
+    });
+
+    navInsights.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentView === 'insights') return;
+        currentView = 'insights';
+        hideAll();
+        navInsights.classList.add('active');
+        insightsView.style.display = 'flex';
     });
 }
 
@@ -85,6 +97,7 @@ async function loadInventoryData() {
         
         const result = await response.json();
         if (result.status === 'success' && result.data) {
+            currentInventoryContext = result.data; // Capture context for Chat AI
             tbody.innerHTML = '';
             result.data.forEach(item => {
                 const tr = document.createElement('tr');
@@ -133,6 +146,73 @@ async function loadInventoryData() {
         console.error("Inventory error:", error);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory database.</td></tr>';
     }
+}
+
+// ==========================================
+// AI Chat Assistant logic
+// ==========================================
+let chatHistory = [];
+let currentInventoryContext = null;
+
+function initChat() {
+    const input = document.getElementById('chatInput');
+    const btn = document.getElementById('sendChatBtn');
+    
+    if (!input || !btn) return;
+
+    btn.addEventListener('click', () => sendChatMessage());
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Add user message to UI
+    appendMessage('user', text);
+    input.value = '';
+
+    // If context isn't loaded yet, try to load it from the table or memory
+    if (!currentInventoryContext) {
+        // Simple mock context if inventory isn't fetched
+        currentInventoryContext = { info: "SME Electronics Store Inventory" };
+    }
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: text,
+                history: chatHistory,
+                inventory_context: currentInventoryContext
+            })
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+            appendMessage('assistant', result.response);
+            chatHistory.push({ role: 'user', content: text });
+            chatHistory.push({ role: 'assistant', content: result.response });
+        }
+    } catch (error) {
+        console.error("Chat Error:", error);
+        appendMessage('assistant', "I'm sorry, I encountered an error connecting to the AI server. Please try again.");
+    }
+}
+
+function appendMessage(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    div.innerHTML = `<div class="msg-bubble">${content}</div>`;
+    chatMessages.appendChild(div);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function initSearch() {
