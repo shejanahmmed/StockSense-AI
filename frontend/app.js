@@ -34,11 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupNavigation() {
     const navDashboard = document.getElementById('navDashboard');
     const navInventory = document.getElementById('navInventory');
-    const navInsights = document.getElementById('navInsights');
+    const navSettings = document.getElementById('navSettings');
 
     const dashboardView = document.getElementById('dashboardView');
     const inventoryView = document.getElementById('inventoryView');
     const insightsView = document.getElementById('insightsView');
+    const settingsView = document.getElementById('settingsView');
     
     // Default view
     let currentView = 'dashboard';
@@ -47,6 +48,7 @@ function setupNavigation() {
         dashboardView.style.display = 'none';
         inventoryView.style.display = 'none';
         insightsView.style.display = 'none';
+        settingsView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -81,6 +83,15 @@ function setupNavigation() {
         hideAll();
         navInsights.classList.add('active');
         insightsView.style.display = 'flex';
+    });
+
+    navSettings.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentView === 'settings') return;
+        currentView = 'settings';
+        hideAll();
+        navSettings.classList.add('active');
+        settingsView.style.display = 'flex';
     });
 }
 

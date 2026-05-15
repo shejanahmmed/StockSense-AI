@@ -223,6 +223,101 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Settings View -->
+            <div class="settings-content" id="settingsView" style="display: none;">
+                <header class="page-header">
+                    <h1>System Settings</h1>
+                    <p class="subtitle">Configure your StockSense AI preferences and data integrations.</p>
+                </header>
+
+                <div class="settings-grid">
+                    <!-- Profile Settings -->
+                    <section class="settings-card glass-panel">
+                        <h3><i class="fa-solid fa-building"></i> Organization Profile</h3>
+                        <div class="settings-group">
+                            <label>Store Name</label>
+                            <input type="text" class="settings-input" value="Store 12" />
+                        </div>
+                        <div class="settings-group">
+                            <label>Industry / Vertical</label>
+                            <select class="settings-input">
+                                <option>Electronics</option>
+                                <option>Apparel</option>
+                                <option>Groceries</option>
+                                <option>Hardware</option>
+                            </select>
+                        </div>
+                    </section>
+
+                    <!-- AI Configuration -->
+                    <section class="settings-card glass-panel">
+                        <h3><i class="fa-solid fa-microchip"></i> AI Engine Configuration</h3>
+                        <div class="settings-group">
+                            <label>Forecasting Strategy</label>
+                            <p class="settings-desc">Determines how aggressively the AI recommends reordering stock.</p>
+                            <select class="settings-input">
+                                <option>Conservative (Minimize Risk)</option>
+                                <option selected>Balanced (Recommended)</option>
+                                <option>Aggressive (Maximize Sales)</option>
+                            </select>
+                        </div>
+                        <div class="settings-group toggle-group">
+                            <div>
+                                <label>Deep-Learning Insights</label>
+                                <p class="settings-desc">Uses LLaMA 3.3 for advanced strategic analysis.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <!-- Notifications -->
+                    <section class="settings-card glass-panel">
+                        <h3><i class="fa-solid fa-bell"></i> Alert Preferences</h3>
+                        <div class="settings-group toggle-group">
+                            <div>
+                                <label>Critical Stockout Alerts</label>
+                                <p class="settings-desc">Receive dashboard warnings when items fall below 5 days of stock.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="settings-group toggle-group">
+                            <div>
+                                <label>Weekly Summary Report</label>
+                                <p class="settings-desc">Compile AI forecasts into a weekly downloadable PDF.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <!-- Danger Zone -->
+                    <section class="settings-card glass-panel danger-zone">
+                        <h3 style="color: var(--status-danger)"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h3>
+                        <div class="settings-group toggle-group">
+                            <div>
+                                <label>Purge Historical Data</label>
+                                <p class="settings-desc">Permanently delete all uploaded CSVs and retrain baseline models.</p>
+                            </div>
+                            <button class="danger-btn" onclick="alert('Data purging is disabled in demo mode.')">Delete Data</button>
+                        </div>
+                    </section>
+                </div>
+                
+                <div class="settings-actions">
+                    <button class="primary-btn" onclick="addNotification('Settings Saved', 'Your organization preferences have been updated successfully.', 'success')">
+                        <i class="fa-solid fa-check"></i> Save Changes
+                    </button>
+                </div>
+            </div>
         </main>
     </div>
 
