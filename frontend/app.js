@@ -14,7 +14,49 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 3. Setup CSV Upload Listener
     setupCsvUpload();
+
+    // 4. Initialize Search Filtering
+    initSearch();
 });
+
+function initSearch() {
+    const searchInput = document.getElementById('dashboardSearch');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const driverItems = document.querySelectorAll('.driver-item');
+        let visibleCount = 0;
+
+        driverItems.forEach(item => {
+            const name = item.querySelector('.driver-name').textContent.toLowerCase();
+            const impact = item.querySelector('.driver-impact').textContent.toLowerCase();
+            
+            if (name.includes(query) || impact.includes(query)) {
+                item.style.display = 'block'; // Or original display type
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Toggle 'No results' message if needed
+        let noResults = document.getElementById('no-search-results');
+        if (visibleCount === 0 && query !== '') {
+            if (!noResults) {
+                noResults = document.createElement('p');
+                noResults.id = 'no-search-results';
+                noResults.style.color = 'var(--text-muted)';
+                noResults.style.padding = '1rem';
+                noResults.style.textAlign = 'center';
+                noResults.innerText = 'No matching drivers found.';
+                document.getElementById('drivers-list').appendChild(noResults);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    });
+}
 
 function setupCsvUpload() {
     const fileInput = document.getElementById('csvFileInput');
