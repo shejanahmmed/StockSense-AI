@@ -71,6 +71,20 @@ async def get_insight():
         "drivers": drivers
     }
 
+@app.get("/api/inventory")
+async def get_inventory():
+    try:
+        import json
+        inventory_path = project_root / "data" / "inventory.json"
+        if inventory_path.exists():
+            with open(inventory_path, "r") as f:
+                data = json.load(f)
+            return {"status": "success", "data": data}
+        else:
+            return {"status": "error", "message": "Inventory database not found."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/predict")
 async def predict_demand(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):

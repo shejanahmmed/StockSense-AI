@@ -17,7 +17,123 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Initialize Search Filtering
     initSearch();
+
+    // 5. Initialize Notifications
+    initNotifications();
+
+    // 6. Setup Navigation
+    setupNavigation();
 });
+
+// ==========================================
+// Navigation & Views
+// ==========================================
+function setupNavigation() {
+    const navDashboard = document.getElementById('navDashboard');
+    const navInventory = document.getElementById('navInventory');
+    const dashboardView = document.getElementById('dashboardView');
+    const inventoryView = document.getElementById('inventoryView');
+    
+    // Default view
+    let currentView = 'dashboard';
+
+    navDashboard.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentView === 'dashboard') return;
+        currentView = 'dashboard';
+        
+        // Update nav UI
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        navDashboard.classList.add('active');
+        
+        // Update views
+        inventoryView.style.display = 'none';
+        dashboardView.style.display = 'flex';
+    });
+
+    navInventory.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentView === 'inventory') return;
+        currentView = 'inventory';
+        
+        // Update nav UI
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        navInventory.classList.add('active');
+        
+        // Update views
+        dashboardView.style.display = 'none';
+        inventoryView.style.display = 'flex';
+        
+        // Load data if not already loaded
+        const tbody = document.getElementById('inventoryTableBody');
+        if (tbody.children.length === 0) {
+            loadInventoryData();
+        }
+    });
+}
+
+// ==========================================
+// Inventory Management
+// ==========================================
+async function loadInventoryData() {
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading inventory...</td></tr>';
+    
+    try {
+        const response = await fetch('/api/inventory');
+        if (!response.ok) throw new Error('Failed to fetch inventory');
+        
+        const result = await response.json();
+        if (result.status === 'success' && result.data) {
+            tbody.innerHTML = '';
+            result.data.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                let statusClass = 'in-stock';
+                if (item.status === 'Low Stock') statusClass = 'low-stock';
+                if (item.status === 'Out of Stock') statusClass = 'out-of-stock';
+                
+                let icon = 'fa-box';
+                if (item.category === 'Laptops' || item.category === 'Monitors') icon = 'fa-laptop';
+                if (item.category === 'Cameras') icon = 'fa-camera';
+                if (item.category === 'Audio') icon = 'fa-headphones';
+                if (item.category === 'Accessories') icon = 'fa-keyboard';
+                if (item.category === 'TVs') icon = 'fa-tv';
+                if (item.category === 'Tablets') icon = 'fa-tablet-screen-button';
+                if (item.category === 'Components') icon = 'fa-microchip';
+                
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${item.sku}</td>
+                    <td>
+                        <div class="product-cell">
+                            <div class="product-icon"><i class="fa-solid ${icon}"></i></div>
+                            <div class="product-details">
+                                <span class="product-name">${item.name}</span>
+                                <span class="product-category">${item.category}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-weight: 500;">$${item.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: 600; font-size: 1.05rem;">${item.stock}</span>
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">units</span>
+                        </div>
+                    </td>
+                    <td style="color: var(--text-secondary);">${item.supplier}</td>
+                    <td><span class="status-pill ${statusClass}">${item.status}</span></td>
+                    <td>
+                        <button class="icon-btn glass-panel" style="width: 32px; height: 32px; font-size: 0.8rem; border:none; background: transparent;"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        console.error("Inventory error:", error);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory database.</td></tr>';
+    }
+}
 
 function initSearch() {
     const searchInput = document.getElementById('dashboardSearch');
@@ -93,6 +209,9 @@ function setupCsvUpload() {
                 if (data.kpis) {
                     updateKPIs(data.kpis);
                 }
+                
+                // Add success notification
+                addNotification('Forecast Generated', 'New predictions have been generated successfully from your data.', 'success');
             }
         } catch (error) {
             console.error("Upload error:", error);
@@ -125,7 +244,78 @@ function updateKPIs(kpis) {
         stockoutSub.innerText = "Depletion Warning";
         stockoutSub.className = "trend negative";
         stockoutSub.parentElement.parentElement.querySelector('.kpi-icon').className = "kpi-icon warning-icon";
+        
+        // Push warning notification
+        addNotification('Stockout Alert', `Store 12 is at risk of depletion in ${kpis.time_to_stockout}.`, 'warning');
     }
+}
+
+// ==========================================
+// Notification System
+// ==========================================
+let unreadNotifications = 0;
+
+function initNotifications() {
+    const notifBtn = document.getElementById('notificationBtn');
+    const dropdown = document.getElementById('notificationDropdown');
+    const clearBtn = document.getElementById('clearNotifications');
+    
+    // Toggle dropdown
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = dropdown.style.display === 'none';
+        dropdown.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) {
+            unreadNotifications = 0;
+            document.getElementById('notificationDot').style.display = 'none';
+        }
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== notifBtn) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Clear all
+    clearBtn.addEventListener('click', () => {
+        const list = document.getElementById('notificationList');
+        list.innerHTML = '<p class="empty-state">No new notifications</p>';
+        unreadNotifications = 0;
+        document.getElementById('notificationDot').style.display = 'none';
+    });
+}
+
+function addNotification(title, message, type = 'info') {
+    const list = document.getElementById('notificationList');
+    const emptyState = list.querySelector('.empty-state');
+    
+    if (emptyState) {
+        emptyState.remove();
+    }
+
+    let iconClass = 'fa-solid fa-circle-info';
+    if (type === 'success') iconClass = 'fa-solid fa-circle-check';
+    if (type === 'warning') iconClass = 'fa-solid fa-triangle-exclamation';
+
+    const item = document.createElement('div');
+    item.className = `notification-item ${type}`;
+    item.innerHTML = `
+        <i class="notif-icon ${iconClass}"></i>
+        <div class="notif-content">
+            <h5>${title}</h5>
+            <p>${message}</p>
+        </div>
+    `;
+
+    // Add to top of list
+    list.insertBefore(item, list.firstChild);
+
+    // Update unread count
+    unreadNotifications++;
+    const dot = document.getElementById('notificationDot');
+    dot.style.display = 'block';
 }
 
 function updateChartWithData(historical, forecast) {

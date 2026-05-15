@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -22,19 +22,19 @@
             </div>
             
             <nav class="nav-menu">
-                <a href="#" class="nav-item active">
+                <a href="#" class="nav-item active" id="navDashboard">
                     <i class="fa-solid fa-chart-line"></i> 
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" id="navInventory">
                     <i class="fa-solid fa-boxes-stacked"></i> 
                     <span>Inventory</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" id="navInsights">
                     <i class="fa-solid fa-brain"></i> 
                     <span>AI Insights</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" id="navSettings">
                     <i class="fa-solid fa-gear"></i> 
                     <span>Settings</span>
                 </a>
@@ -57,7 +57,21 @@
                     <input type="text" id="dashboardSearch" placeholder="Search inventory or explore insights...">
                 </div>
                 <div class="header-actions">
-                    <button class="icon-btn glass-panel"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></button>
+                    <div class="notification-wrapper" style="position: relative;">
+                        <button class="icon-btn glass-panel" id="notificationBtn">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="notification-dot" id="notificationDot" style="display: none;"></span>
+                        </button>
+                        <div class="notification-dropdown glass-panel" id="notificationDropdown" style="display: none;">
+                            <div class="dropdown-header">
+                                <h4>Notifications</h4>
+                                <span class="clear-btn" id="clearNotifications">Clear All</span>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <p class="empty-state">No new notifications</p>
+                            </div>
+                        </div>
+                    </div>
                     <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
                     <button class="primary-btn" id="uploadCsvBtn" onclick="document.getElementById('csvFileInput').click()">
                         <i class="fa-solid fa-file-csv"></i> Upload CSV Data
@@ -65,7 +79,7 @@
                 </div>
             </header>
 
-            <div class="dashboard-content">
+            <div class="dashboard-content" id="dashboardView">
                 <header class="page-header">
                     <h1>Overview Overview</h1>
                     <p class="subtitle">AI-driven demand forecasting and actionable intelligence.</p>
@@ -147,6 +161,42 @@
                         </div>
                     </section>
                 </div>
+            </div>
+
+            <!-- Inventory Database View -->
+            <div class="inventory-content" id="inventoryView" style="display: none;">
+                <header class="page-header">
+                    <h1>Global Inventory Database</h1>
+                    <p class="subtitle">Live tracking of all SKUs and supply chain metrics.</p>
+                </header>
+
+                <section class="inventory-table-container glass-panel">
+                    <div class="table-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>All Products <span class="badge" style="background: rgba(255,255,255,0.1); display: inline-flex;">12</span></h3>
+                        <div class="table-filters" style="display: flex; gap: 0.5rem;">
+                            <button class="icon-btn glass-panel" style="width: 36px; height: 36px;"><i class="fa-solid fa-filter"></i></button>
+                            <button class="icon-btn glass-panel" style="width: 36px; height: 36px;"><i class="fa-solid fa-download"></i></button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Product Details</th>
+                                    <th>Unit Price</th>
+                                    <th>Current Stock</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </main>
     </div>

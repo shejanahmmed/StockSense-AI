@@ -1,0 +1,14 @@
+[
+    { "sku": "ELEC-001", "name": "Sony Alpha a7 III Camera", "category": "Cameras", "price": 1999.99, "stock": 45, "supplier": "Sony Direct", "status": "In Stock" },
+    { "sku": "ELEC-002", "name": "MacBook Pro M3 14-inch", "category": "Laptops", "price": 1599.00, "stock": 12, "supplier": "Apple Distribution", "status": "Low Stock" },
+    { "sku": "ELEC-003", "name": "Logitech MX Master 3S", "category": "Accessories", "price": 99.99, "stock": 120, "supplier": "LogiTech Wholesale", "status": "In Stock" },
+    { "sku": "ELEC-004", "name": "Samsung 49-inch Odyssey G9", "category": "Monitors", "price": 1299.99, "stock": 4, "supplier": "Samsung Electronics", "status": "Low Stock" },
+    { "sku": "ELEC-005", "name": "Bose QuietComfort 45", "category": "Audio", "price": 329.00, "stock": 0, "supplier": "Bose Corp", "status": "Out of Stock" },
+    { "sku": "ELEC-006", "name": "iPad Pro 12.9-inch", "category": "Tablets", "price": 1099.00, "stock": 34, "supplier": "Apple Distribution", "status": "In Stock" },
+    { "sku": "ELEC-007", "name": "Razer BlackWidow V4 Pro", "category": "Accessories", "price": 229.99, "stock": 8, "supplier": "Razer Inc.", "status": "Low Stock" },
+    { "sku": "ELEC-008", "name": "NVIDIA GeForce RTX 4090", "category": "Components", "price": 1599.00, "stock": 0, "supplier": "NVIDIA Distribution", "status": "Out of Stock" },
+    { "sku": "ELEC-009", "name": "Dell XPS 15 9530", "category": "Laptops", "price": 1899.00, "stock": 25, "supplier": "Dell Technologies", "status": "In Stock" },
+    { "sku": "ELEC-010", "name": "LG C3 Series 65-inch OLED", "category": "TVs", "price": 1699.99, "stock": 15, "supplier": "LG Electronics", "status": "In Stock" },
+    { "sku": "ELEC-011", "name": "AirPods Pro (2nd Gen)", "category": "Audio", "price": 249.00, "stock": 210, "supplier": "Apple Distribution", "status": "In Stock" },
+    { "sku": "ELEC-012", "name": "Keychron Q1 Pro Mechanical", "category": "Accessories", "price": 199.00, "stock": 3, "supplier": "Keychron", "status": "Low Stock" }
+]
