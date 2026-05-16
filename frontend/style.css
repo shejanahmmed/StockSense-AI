@@ -275,6 +275,7 @@ h1, h2, h3, h4 {
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: var(--transition-smooth);
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
@@ -640,6 +641,60 @@ h1, h2, h3, h4 {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 1.5rem;
     margin-bottom: 1.5rem;
+}
+
+.filter-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 250px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    gap: 1rem;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-section label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.filter-actions button {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .table-wrapper {

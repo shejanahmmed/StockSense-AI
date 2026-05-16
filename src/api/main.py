@@ -12,6 +12,27 @@ from pathlib import Path
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
+import sqlite3
+
+# Initialize SQLite DB
+DB_PATH = project_root / "data" / "users.db"
+def init_db():
+    # Ensure data directory exists
+    (project_root / "data").mkdir(exist_ok=True)
+    conn = sqlite3.connect(str(DB_PATH))
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            org_name TEXT PRIMARY KEY,
+            industry TEXT,
+            avatar_url TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
 from src.pipeline.data_loader import validate_schema
 from src.models.prophet_model import DemandProphetModel
 from src.api.insight_generator import generate_insight, generate_chat_response
@@ -22,6 +43,11 @@ class ChatRequest(BaseModel):
     message: str
     history: list = []
     inventory_context: Any = None
+
+class UserProfile(BaseModel):
+    org_name: str
+    industry: str
+    avatar_url: str = ""
 
 # Add CORS middleware for frontend communication
 app.add_middleware(
@@ -96,6 +122,46 @@ async def chat_with_ai(request: ChatRequest):
     try:
         response = generate_chat_response(request.message, request.history, request.inventory_context)
         return {"status": "success", "response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/user/profile")
+async def save_user_profile(profile: UserProfile):
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO users (org_name, industry, avatar_url) 
+            VALUES (?, ?, ?)
+            ON CONFLICT(org_name) DO UPDATE SET 
+                industry=excluded.industry,
+                avatar_url=excluded.avatar_url
+        ''', (profile.org_name, profile.industry, profile.avatar_url))
+        conn.commit()
+        conn.close()
+        return {"status": "success", "message": "Profile saved."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/user/profile/{org_name}")
+async def get_user_profile(org_name: str):
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        cursor.execute('SELECT org_name, industry, avatar_url FROM users WHERE org_name = ?', (org_name,))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            return {
+                "status": "success",
+                "data": {
+                    "org_name": row[0],
+                    "industry": row[1],
+                    "avatar_url": row[2]
+                }
+            }
+        else:
+            return {"status": "not_found"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
