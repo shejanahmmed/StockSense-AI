@@ -32,13 +32,23 @@ def build_prompt(data: Dict[str, Any]) -> str:
     """
     payload_str = json.dumps(data, indent=2)
     
+    strategy = data.get("context", {}).get("engine_strategy", "balanced").lower()
+    
+    strategy_instruction = "Provide a balanced recommendation."
+    if strategy == "conservative":
+        strategy_instruction = "Provide a CONSERVATIVE recommendation. Emphasize minimizing risk and preventing overstock, even if it means missing some potential upside."
+    elif strategy == "aggressive":
+        strategy_instruction = "Provide an AGGRESSIVE recommendation. Emphasize maximizing sales and capturing all potential upside, recommending larger order quantities to ensure zero stockouts."
+
     prompt = f"""You are a top-tier business analyst helping SME owners make data-driven inventory decisions.
 Your task is to generate 3-4 sentences of specific, actionable business advice based on the provided forecast data.
+
+STRATEGY: {strategy_instruction}
 
 The output MUST contain exactly these 4 elements:
 1. The forecast headline with specific numbers (predicted sales, percentage change).
 2. The why: Explain WHY demand is changing by referencing the top 1-3 SHAP drivers and their impact percentages. Do not mention "SHAP" explicitly.
-3. A specific action recommendation (e.g., "ordering at least X units (Y% above forecast)").
+3. A specific action recommendation (e.g., "ordering at least X units (Y% above forecast)"). This MUST align with the STRATEGY above.
 4. A risk flag: If stockout_risk is high, include a clear warning (e.g., "⚠️ Stockout Warning") and provide the timeline.
 
 Example of a PERFECT output:
@@ -205,8 +215,16 @@ Guidelines:
             logger.error(f"Chat Groq Error: {e}")
             return f"I apologize, but I'm having an API error: {str(e)}"
     else:
-        # Fallback to a smart-sounding mock for local testing
-        return f"I've analyzed your query: '{query}'. Based on the 12 items in your inventory, I recommend focusing on your Low Stock items like the MacBook Pro M3 and Samsung Odyssey G9. Would you like me to calculate the specific reorder quantities for these?"
+        # Fallback to a dynamic mock based on actual context for local testing
+        if isinstance(context_data, list):
+            low_stock = [i['name'] for i in context_data if i.get('status') in ['Low Stock', 'Out of Stock']]
+            item_count = len(context_data)
+            if low_stock:
+                examples = ", ".join(low_stock[:2])
+                return f"I've analyzed your query: '{query}'. Based on the {item_count} items in your inventory, I recommend focusing on your low-stock items like {examples}. Would you like me to calculate specific reorder quantities?"
+            else:
+                return f"I've analyzed your query: '{query}'. Your {item_count} items look well-stocked. Is there a specific product category you want to forecast?"
+        return f"I've analyzed your query: '{query}'. Without an LLM connected, I can only provide general advice. Please connect to Groq for full context-aware answers."
 
 if __name__ == "__main__":
     # Example usage / basic test

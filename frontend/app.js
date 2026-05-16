@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAuth();
 
     // 1. Fetch real insight data from the FastAPI backend
-    fetchDataFromBackend();
+    fetchDefaultInsight();
 
     // 2. Initialize the Forecast Chart
     initChart();
@@ -115,22 +115,34 @@ async function loadInventoryData() {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
     
     try {
-        const response = await fetch('/api/inventory');
-        if (!response.ok) throw new Error('Failed to fetch inventory');
+        const token = localStorage.getItem('stockSense_jwt');
+        const response = await fetch('/api/inventory', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const result = await response.json();
         if (result.status === 'success' && result.data) {
             fullInventoryData = result.data;
-            currentInventoryContext = result.data; // Capture context for Chat AI
+            currentInventoryContext = result.data;
             renderInventoryTable(fullInventoryData);
+            // Dynamically populate category filter from real data
+            populateCategoryFilter(fullInventoryData);
         }
     } catch (error) {
         console.error("Inventory error:", error);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory database.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
     }
 }
 
-function renderInventoryTable(data) {
+let currentInventoryPage = 1;
+const itemsPerPage = 15;
+let currentFilteredData = [];
+
+function renderInventoryTable(data, page = 1) {
+    currentFilteredData = data;
+    currentInventoryPage = page;
+    
     const tbody = document.getElementById('inventoryTableBody');
     const badge = document.getElementById('inventoryCountBadge');
     
@@ -139,10 +151,15 @@ function renderInventoryTable(data) {
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No products match your filters.</td></tr>';
+        renderPagination(0, 1);
         return;
     }
 
-    data.forEach(item => {
+    const startIdx = (page - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const paginatedData = data.slice(startIdx, endIdx);
+
+    paginatedData.forEach(item => {
         const tr = document.createElement('tr');
         
         let statusClass = 'in-stock';
@@ -180,19 +197,259 @@ function renderInventoryTable(data) {
             <td style="color: var(--text-secondary);">${item.supplier}</td>
             <td><span class="status-pill ${statusClass}">${item.status}</span></td>
             <td>
-                <button class="icon-btn glass-panel" style="width: 32px; height: 32px; font-size: 0.8rem; border:none; background: transparent;"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <button class="icon-btn action-delete" data-sku="${item.sku}" style="width: 32px; height: 32px; font-size: 0.8rem; border:none; background: rgba(239, 68, 68, 0.1); color: #ef4444; cursor: pointer; border-radius: 8px;" title="Delete Item"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
     });
+
+    // Attach delete listeners
+    document.querySelectorAll('.action-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const sku = e.currentTarget.getAttribute('data-sku');
+            if (confirm(`Are you sure you want to delete SKU ${sku}?`)) {
+                try {
+                    const token = localStorage.getItem('stockSense_jwt');
+                    const res = await fetch(`/api/inventory/${encodeURIComponent(sku)}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        addNotification('Item Deleted', `Successfully removed ${sku} from inventory.`, 'success');
+                        loadInventoryData();
+                    } else {
+                        addNotification('Delete Failed', data.message || 'Could not delete item.', 'warning');
+                    }
+                } catch (error) {
+                    console.error("Delete failed:", error);
+                }
+            }
+        });
+    });
+
+    renderPagination(data.length, page);
+}
+
+function renderPagination(totalItems, currentPage) {
+    let paginationContainer = document.getElementById('inventoryPagination');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'inventoryPagination';
+        paginationContainer.style.display = 'flex';
+        paginationContainer.style.justifyContent = 'space-between';
+        paginationContainer.style.alignItems = 'center';
+        paginationContainer.style.marginTop = '1rem';
+        paginationContainer.style.padding = '1rem';
+        paginationContainer.style.borderTop = '1px solid rgba(255, 255, 255, 0.05)';
+        document.querySelector('.inventory-table-container').appendChild(paginationContainer);
+    }
+    
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+    
+    paginationContainer.innerHTML = `
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} entries
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="secondary-btn" id="prevPageBtn" ${currentPage === 1 ? 'disabled' : ''} style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Previous</button>
+            <button class="secondary-btn" id="nextPageBtn" ${currentPage === totalPages ? 'disabled' : ''} style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Next</button>
+        </div>
+    `;
+    
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    
+    if (prevBtn) prevBtn.addEventListener('click', () => renderInventoryTable(currentFilteredData, currentPage - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => renderInventoryTable(currentFilteredData, currentPage + 1));
+}
+
+// ==========================================
+// Toast (in-page, for auth screen / overlays)
+// ==========================================
+function showToast(message, type = 'info') {
+    let toast = document.getElementById('stocksense-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'stocksense-toast';
+        toast.style.cssText = [
+            'position:fixed', 'bottom:2rem', 'left:50%',
+            'transform:translateX(-50%) translateY(20px)',
+            'background:var(--glass-bg)', 'backdrop-filter:blur(20px)',
+            'border:1px solid rgba(255,255,255,0.1)', 'border-radius:12px',
+            'padding:0.85rem 1.5rem', 'font-size:0.9rem', 'font-weight:500',
+            'color:var(--text-primary)', 'z-index:99999', 'opacity:0',
+            'transition:all 0.3s ease', 'box-shadow:0 8px 32px rgba(0,0,0,0.4)',
+            'display:flex', 'align-items:center', 'gap:0.75rem', 'max-width:380px'
+        ].join(';');
+        document.body.appendChild(toast);
+    }
+    const icons = { info:'fa-circle-info', warning:'fa-triangle-exclamation', error:'fa-circle-xmark', success:'fa-circle-check' };
+    const colors = { info:'var(--accent-primary)', warning:'#f59e0b', error:'var(--status-danger)', success:'var(--status-success)' };
+    toast.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}" style="color:${colors[type]};flex-shrink:0;"></i> ${message}`;
+    toast.style.borderColor = colors[type] || colors.info;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 3500);
+}
+
+// ==========================================
+// Add Item Modal
+// ==========================================
+function showModalAddItem() {
+    const old = document.getElementById('addItemModal');
+    if (old) old.remove();
+
+    const categories = [...new Set(fullInventoryData.map(i => i.category))].filter(Boolean).sort();
+    const catOpts = categories.length > 0
+        ? categories.map(c => `<option value="${c}">${c}</option>`).join('')
+        : '<option value="Electronics">Electronics</option><option value="Accessories">Accessories</option>';
+
+    const modal = document.createElement('div');
+    modal.id = 'addItemModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);';
+    modal.innerHTML = `
+        <div class="glass-panel" style="width:500px;max-width:95vw;padding:2rem;display:flex;flex-direction:column;gap:1.25rem;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:1.2rem;"><i class="fa-solid fa-plus-circle" style="color:var(--accent-primary);margin-right:0.5rem;"></i>Add New Product</h3>
+                <button id="closeAddModal" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="settings-group" style="margin:0;">
+                    <label>SKU <span style="color:var(--status-danger)">*</span></label>
+                    <input type="text" id="modalSku" class="settings-input" placeholder="e.g. ELEC-013" />
+                </div>
+                <div class="settings-group" style="margin:0;">
+                    <label>Category <span style="color:var(--status-danger)">*</span></label>
+                    <select id="modalCategory" class="settings-input">
+                        ${catOpts}
+                        <option value="_new_">+ New Category...</option>
+                    </select>
+                </div>
+                <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                    <label>Product Name <span style="color:var(--status-danger)">*</span></label>
+                    <input type="text" id="modalName" class="settings-input" placeholder="e.g. Sony WH-1000XM5" />
+                </div>
+                <div class="settings-group" style="margin:0;">
+                    <label>Unit Price ($) <span style="color:var(--status-danger)">*</span></label>
+                    <input type="number" id="modalPrice" class="settings-input" placeholder="0.00" min="0" step="0.01" />
+                </div>
+                <div class="settings-group" style="margin:0;">
+                    <label>Stock Quantity <span style="color:var(--status-danger)">*</span></label>
+                    <input type="number" id="modalStock" class="settings-input" placeholder="0" min="0" step="1" />
+                </div>
+                <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                    <label>Supplier Name</label>
+                    <input type="text" id="modalSupplier" class="settings-input" placeholder="e.g. Sony Direct" />
+                </div>
+            </div>
+            <p id="modalError" style="color:var(--status-danger);font-size:0.85rem;margin:0;display:none;padding:0.5rem 0.75rem;background:rgba(239,68,68,0.1);border-radius:8px;"></p>
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem;">
+                <button id="cancelAddModal" class="secondary-btn" style="padding:0.6rem 1.25rem;">Cancel</button>
+                <button id="confirmAddModal" class="primary-btn" style="padding:0.6rem 1.5rem;"><i class="fa-solid fa-plus"></i> Add Product</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const closeModal = () => { modal.style.opacity = '0'; setTimeout(() => modal.remove(), 200); };
+    document.getElementById('closeAddModal').addEventListener('click', closeModal);
+    document.getElementById('cancelAddModal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    document.getElementById('modalCategory').addEventListener('change', function() {
+        if (this.value === '_new_') {
+            const newCat = (window.prompt('Enter new category name:') || '').trim();
+            if (newCat) {
+                const opt = new Option(newCat, newCat);
+                this.insertBefore(opt, this.lastElementChild);
+                this.value = newCat;
+            } else {
+                this.value = categories[0] || 'Electronics';
+            }
+        }
+    });
+
+    document.getElementById('confirmAddModal').addEventListener('click', async () => {
+        const sku      = document.getElementById('modalSku').value.trim();
+        const name     = document.getElementById('modalName').value.trim();
+        const category = document.getElementById('modalCategory').value;
+        const price    = parseFloat(document.getElementById('modalPrice').value) || 0;
+        const stockVal = parseInt(document.getElementById('modalStock').value)   || 0;
+        const supplier = document.getElementById('modalSupplier').value.trim();
+        const errEl    = document.getElementById('modalError');
+
+        if (!sku || !name || !category || category === '_new_') {
+            errEl.textContent = 'SKU, Product Name, and Category are required fields.';
+            errEl.style.display = 'block'; return;
+        }
+        if (price < 0 || stockVal < 0) {
+            errEl.textContent = 'Price and Stock must be non-negative numbers.';
+            errEl.style.display = 'block'; return;
+        }
+        errEl.style.display = 'none';
+
+        const status = stockVal === 0 ? 'Out of Stock' : stockVal < 10 ? 'Low Stock' : 'In Stock';
+        const confirmBtn = document.getElementById('confirmAddModal');
+        confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        confirmBtn.disabled = true;
+
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ sku, name, category, price, stock: stockVal, supplier, status })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                closeModal();
+                addNotification('Product Added', `"${name}" (${sku}) added successfully.`, 'success');
+                loadInventoryData();
+            } else {
+                errEl.textContent = data.message || 'Failed to add item.';
+                errEl.style.display = 'block';
+            }
+        } catch (e) {
+            errEl.textContent = 'Network error. Is the server running?';
+            errEl.style.display = 'block';
+        } finally {
+            confirmBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Product';
+            confirmBtn.disabled = false;
+        }
+    });
+}
+
+// ==========================================
+// Dynamic Category Filter Population
+// ==========================================
+function populateCategoryFilter(data) {
+    const select = document.getElementById('filterCategory');
+    if (!select) return;
+    const categories = [...new Set(data.map(i => i.category))].filter(Boolean).sort();
+    select.innerHTML = '<option value="all">All Categories</option>'
+        + categories.map(c => `<option value="${c}">${c}</option>`).join('');
 }
 
 function initInventoryActions() {
+
     const filterBtn = document.getElementById('inventoryFilterBtn');
     const downloadBtn = document.getElementById('inventoryDownloadBtn');
     const dropdown = document.getElementById('inventoryFilterDropdown');
     const applyBtn = document.getElementById('applyFilters');
     const resetBtn = document.getElementById('resetFilters');
+    const addBtn = document.getElementById('inventoryAddBtn');
+
+    if (addBtn) {
+        addBtn.addEventListener('click', () => showModalAddItem());
+    }
 
     if (!filterBtn || !downloadBtn) return;
 
@@ -284,6 +541,34 @@ function initChat() {
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendChatMessage();
     });
+    
+    // Load existing history
+    loadChatHistory();
+}
+
+async function loadChatHistory() {
+    const token = localStorage.getItem('stockSense_jwt');
+    if (!token) return;
+    try {
+        const res = await fetch('/api/chat/history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.history) {
+            chatHistory = data.history;
+            const chatMessages = document.getElementById('chatMessages');
+            // Keep the first default message if any, then append
+            chatHistory.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.role}`;
+                div.innerHTML = `<div class="msg-bubble">${msg.content}</div>`;
+                chatMessages.appendChild(div);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    } catch (e) {
+        console.error("Failed to load chat history", e);
+    }
 }
 
 async function sendChatMessage() {
@@ -302,9 +587,13 @@ async function sendChatMessage() {
     }
 
     try {
+        const token = localStorage.getItem('stockSense_jwt');
         const response = await fetch('/api/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({
                 message: text,
                 history: chatHistory,
@@ -341,35 +630,38 @@ function initSearch() {
 
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
+        
+        // Filter drivers if on dashboard
         const driverItems = document.querySelectorAll('.driver-item');
-        let visibleCount = 0;
-
         driverItems.forEach(item => {
             const name = item.querySelector('.driver-name').textContent.toLowerCase();
             const impact = item.querySelector('.driver-impact').textContent.toLowerCase();
             
             if (name.includes(query) || impact.includes(query)) {
-                item.style.display = 'block'; // Or original display type
-                visibleCount++;
+                item.style.display = 'block';
             } else {
                 item.style.display = 'none';
             }
         });
-
-        // Toggle 'No results' message if needed
-        let noResults = document.getElementById('no-search-results');
-        if (visibleCount === 0 && query !== '') {
-            if (!noResults) {
-                noResults = document.createElement('p');
-                noResults.id = 'no-search-results';
-                noResults.style.color = 'var(--text-muted)';
-                noResults.style.padding = '1rem';
-                noResults.style.textAlign = 'center';
-                noResults.innerText = 'No matching drivers found.';
-                document.getElementById('drivers-list').appendChild(noResults);
+        
+        // Filter global inventory
+        if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
+            const filteredInventory = fullInventoryData.filter(item => {
+                return (item.name && item.name.toLowerCase().includes(query)) ||
+                       (item.sku && item.sku.toLowerCase().includes(query)) ||
+                       (item.category && item.category.toLowerCase().includes(query)) ||
+                       (item.supplier && item.supplier.toLowerCase().includes(query));
+            });
+            renderInventoryTable(filteredInventory);
+        }
+        
+        // Seamlessly switch to Inventory Database if searching
+        if (query.length > 0 && typeof currentView !== 'undefined' && currentView === 'dashboard') {
+            const navInventory = document.getElementById('navInventory');
+            if (navInventory) {
+                navInventory.click();
+                searchInput.focus(); // Re-focus after view switch
             }
-        } else if (noResults) {
-            noResults.remove();
         }
     });
 }
@@ -392,8 +684,13 @@ function setupCsvUpload() {
         formData.append('file', file);
         
         try {
-            const response = await fetch('/api/predict', {
+            const token = localStorage.getItem('stockSense_jwt');
+            const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+            const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+            
+            const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}`, {
                 method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
             
@@ -570,9 +867,16 @@ function updateChartWithData(historical, forecast) {
     forecastChartInstance.update();
 }
 
-async function fetchDataFromBackend() {
+async function fetchDefaultInsight() {
     try {
-        const response = await fetch('/api/insight');
+        const token = localStorage.getItem('stockSense_jwt');
+        const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+        const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+        const stockout = localStorage.getItem('stockSense_cfgStockout') !== 'false';
+
+        const response = await fetch(`/api/insight?strategy=${strategy}&deep_learning=${dl}&stockout_alerts=${stockout}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         
@@ -785,13 +1089,34 @@ function initAuth() {
     checkAuth();
     
     const loginBtn = document.getElementById('loginBtn');
+    const toggleAuthBtn = document.getElementById('toggleAuthBtn');
+    const authIndustryGroup = document.getElementById('authIndustryGroup');
+    
+    let isSignup = false;
+    
+    if (toggleAuthBtn) {
+        toggleAuthBtn.addEventListener('click', () => {
+            isSignup = !isSignup;
+            if (isSignup) {
+                authIndustryGroup.style.display = 'block';
+                loginBtn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
+                toggleAuthBtn.innerHTML = 'Already have an account? Log In';
+            } else {
+                authIndustryGroup.style.display = 'none';
+                loginBtn.innerHTML = 'Access Dashboard <i class="fa-solid fa-arrow-right"></i>';
+                toggleAuthBtn.innerHTML = 'Need an account? Sign Up';
+            }
+        });
+    }
+    
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             const orgName = document.getElementById('authStoreName').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
             const industry = document.getElementById('authIndustry').value;
             
-            if (!orgName) {
-                alert('Please enter your Organization Name');
+            if (!orgName || !password) {
+                showToast('Please enter both Organization Name and Password', 'warning');
                 return;
             }
 
@@ -800,34 +1125,38 @@ function initAuth() {
             loginBtn.disabled = true;
 
             try {
-                // Fetch from SQLite DB via FastAPI
-                const response = await fetch(`/api/user/profile/${encodeURIComponent(orgName)}`);
+                const endpoint = isSignup ? '/api/user/signup' : '/api/user/login';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        org_name: orgName,
+                        industry: isSignup ? industry : "N/A",
+                        password: password,
+                        avatar_url: ""
+                    })
+                });
+                
                 const data = await response.json();
+                
+                if (data.status !== 'success') {
+                    showToast(data.message || 'Authentication failed.', 'error');
+                    return;
+                }
                 
                 let finalIndustry = industry;
                 let finalAvatar = '';
-
-                if (data.status === 'success') {
-                    // Existing User - Load DB values
+                
+                if (!isSignup && data.data) {
                     finalIndustry = data.data.industry;
                     finalAvatar = data.data.avatar_url;
-                } else {
-                    // New User - Save to DB
-                    await fetch('/api/user/profile', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            org_name: orgName,
-                            industry: industry,
-                            avatar_url: ""
-                        })
-                    });
                 }
 
                 // Update LocalStorage Session
                 localStorage.setItem('stockSense_storeName', orgName);
                 localStorage.setItem('stockSense_industry', finalIndustry);
                 localStorage.setItem('stockSense_avatarUrl', finalAvatar);
+                if (data.token) localStorage.setItem('stockSense_jwt', data.token);
                 
                 // Update settings inputs
                 const storeNameInput = document.getElementById('settingStoreName');
@@ -838,10 +1167,10 @@ function initAuth() {
                 if (avatarInput) avatarInput.value = finalAvatar;
                 
                 checkAuth(); // Proceed to dashboard
-                addNotification('Authentication Successful', `Welcome to StockSense AI, ${orgName}!`, 'success');
+                addNotification(isSignup ? 'Account Created' : 'Login Successful', `Welcome to StockSense AI, ${orgName}!`, 'success');
             } catch (error) {
                 console.error("Auth Error:", error);
-                alert("Failed to connect to SQLite database.");
+                showToast('Connection failed. Is the server running?', 'error');
             } finally {
                 loginBtn.innerHTML = originalText;
                 loginBtn.disabled = false;
@@ -865,11 +1194,145 @@ function initUserProfile() {
     const storeNameInput = document.getElementById('settingStoreName');
     const industryInput = document.getElementById('settingIndustry');
     const avatarInput = document.getElementById('settingAvatarUrl');
+    
+    const strategyInput = document.getElementById('settingStrategy');
+    const dlInput = document.getElementById('settingDeepLearning');
+    const stockoutInput = document.getElementById('settingStockoutAlerts');
+
     if (storeNameInput && savedName) storeNameInput.value = savedName;
     if (industryInput && savedRole) industryInput.value = savedRole;
     if (avatarInput) avatarInput.value = savedAvatar;
+
+    if (strategyInput) strategyInput.value = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+    if (dlInput) dlInput.checked = localStorage.getItem('stockSense_cfgDL') !== 'false'; // default true
+    if (stockoutInput) stockoutInput.checked = localStorage.getItem('stockSense_cfgStockout') !== 'false';
     
-    // 2. Profile Dropdown Toggle
+    // PDF Generation Logic
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
+    if (generatePdfBtn) {
+        generatePdfBtn.addEventListener('click', async () => {
+            const originalText = generatePdfBtn.innerHTML;
+            generatePdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+            generatePdfBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                const response = await fetch('/api/report', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.detail || 'Failed to generate report');
+                }
+
+                // Convert response to blob and trigger download
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // Get filename from header if possible, else default
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'StockSense_Weekly_Report.pdf';
+                if (contentDisposition && contentDisposition.includes('filename=')) {
+                    filename = contentDisposition.split('filename=')[1].replace(/["']/g, '');
+                }
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                
+                addNotification('Report Generated', 'Your weekly PDF report is downloading.', 'success');
+            } catch (error) {
+                console.error("PDF Generation Error:", error);
+                showToast(error.message || 'Failed to generate PDF report.', 'error');
+            } finally {
+                generatePdfBtn.innerHTML = originalText;
+                generatePdfBtn.disabled = false;
+            }
+        });
+    }
+
+    // 2. Avatar Upload Logic
+    const uploadBtn = document.getElementById('uploadAvatarBtn');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    
+    if (uploadBtn && avatarFileInput) {
+        uploadBtn.addEventListener('click', () => avatarFileInput.click());
+        
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file size (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('File is too large. Max 2MB allowed.', 'warning');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const originalText = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+            uploadBtn.disabled = true;
+            
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                const response = await fetch('/api/user/upload-avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Update hidden input
+                    if (avatarInput) avatarInput.value = result.avatar_url;
+                    
+                    // Immediately update local storage
+                    localStorage.setItem('stockSense_avatarUrl', result.avatar_url);
+                    
+                    // Fetch current name/role for the update
+                    const currentName = localStorage.getItem('stockSense_storeName') || 'Store';
+                    const currentRole = localStorage.getItem('stockSense_industry') || 'Electronics';
+                    
+                    // Auto-save the new avatar to the backend database
+                    const token = localStorage.getItem('stockSense_jwt');
+                    fetch('/api/user/profile', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            org_name: currentName,
+                            industry: currentRole,
+                            avatar_url: result.avatar_url
+                        })
+                    }).catch(err => console.error("Auto-save avatar failed", err));
+                    
+                    // Immediately update the entire UI (sidebar, settings, etc.)
+                    updateUserProfileUI(currentName, currentRole, result.avatar_url);
+                    
+                    addNotification('Avatar Applied', 'Your new profile picture has been updated and saved successfully.', 'success');
+                } else {
+                    throw new Error(result.message || 'Upload failed');
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                addNotification('Upload Failed', 'Could not upload your logo.', 'warning');
+            } finally {
+                uploadBtn.innerHTML = originalText;
+                uploadBtn.disabled = false;
+            }
+        });
+    }
+    
+    // 3. Profile Dropdown Toggle
     const profileBtn = document.getElementById('userProfileBtn');
     const profileDropdown = document.getElementById('profileDropdown');
     const chevron = document.getElementById('userProfileChevron');
@@ -913,6 +1376,7 @@ function initUserProfile() {
                 // Clear state
                 localStorage.removeItem('stockSense_storeName');
                 localStorage.removeItem('stockSense_industry');
+                localStorage.removeItem('stockSense_jwt');
                 // Reload to reset
                 window.location.reload();
             }
@@ -937,9 +1401,13 @@ function initUserProfile() {
 
             try {
                 // Save to SQLite DB
+                const token = localStorage.getItem('stockSense_jwt');
                 const response = await fetch('/api/user/profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({
                         org_name: newName,
                         industry: newRole,
@@ -954,6 +1422,11 @@ function initUserProfile() {
                 localStorage.setItem('stockSense_industry', newRole);
                 localStorage.setItem('stockSense_avatarUrl', newAvatar);
                 
+                // Update Configs
+                if (strategyInput) localStorage.setItem('stockSense_cfgStrategy', strategyInput.value);
+                if (dlInput) localStorage.setItem('stockSense_cfgDL', dlInput.checked);
+                if (stockoutInput) localStorage.setItem('stockSense_cfgStockout', stockoutInput.checked);
+                
                 updateUserProfileUI(newName, newRole, newAvatar);
                 addNotification('Settings Saved', 'Your preferences have been successfully updated in SQLite.', 'success');
             } catch (error) {
@@ -962,6 +1435,45 @@ function initUserProfile() {
             } finally {
                 saveSettingsBtn.innerHTML = originalText;
                 saveSettingsBtn.disabled = false;
+            }
+        });
+    }
+
+    // 5. Danger Zone — Purge All Data
+    const purgeBtn = document.getElementById('purgeDataBtn');
+    if (purgeBtn) {
+        purgeBtn.addEventListener('click', async () => {
+            const orgName = localStorage.getItem('stockSense_storeName') || 'your organization';
+            const confirmed = confirm(
+                `⚠️ WARNING: This will permanently delete ALL inventory items and chat history for "${orgName}".\n\nThis action cannot be undone. Are you absolutely sure?`
+            );
+            if (!confirmed) return;
+
+            const originalText = purgeBtn.innerHTML;
+            purgeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Purging...';
+            purgeBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                const response = await fetch('/api/user/purge', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    addNotification('Data Purged', result.message, 'warning');
+                    // Clear the local inventory table immediately
+                    if (typeof fullInventoryData !== 'undefined') fullInventoryData = [];
+                    renderInventoryTable([]);
+                } else {
+                    throw new Error(result.detail || 'Purge failed');
+                }
+            } catch (error) {
+                console.error("Purge Error:", error);
+                addNotification('Purge Failed', 'Could not purge data. Check your connection.', 'warning');
+            } finally {
+                purgeBtn.innerHTML = originalText;
+                purgeBtn.disabled = false;
             }
         });
     }
@@ -987,11 +1499,37 @@ function updateUserProfileUI(name, role, avatarUrl) {
         }
     }
     
+    // Settings Preview
+    const settingsPreview = document.getElementById('settingsAvatarPreview');
+    const settingsIcon = document.getElementById('settingsAvatarIcon');
+    if (settingsPreview && settingsIcon) {
+        if (avatarUrl && avatarUrl.trim() !== '') {
+            settingsPreview.style.backgroundImage = `url('${avatarUrl}')`;
+            settingsIcon.style.display = 'none';
+        } else {
+            settingsPreview.style.backgroundImage = `linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))`;
+            settingsIcon.style.display = 'block';
+        }
+    }
+    
     // Dropdown Header
     const dropdownName = document.getElementById('dropdownUserName');
     const dropdownRole = document.getElementById('dropdownUserRole');
     if (dropdownName) dropdownName.textContent = name;
     if (dropdownRole) dropdownRole.textContent = role;
+    
+    // Dropdown Avatar Logic
+    const dropdownAvatar = document.getElementById('dropdownAvatar');
+    const dropdownAvatarIcon = document.getElementById('dropdownAvatarIcon');
+    if (dropdownAvatar && dropdownAvatarIcon) {
+        if (avatarUrl && avatarUrl.trim() !== '') {
+            dropdownAvatar.style.backgroundImage = `url('${avatarUrl}')`;
+            dropdownAvatarIcon.style.display = 'none';
+        } else {
+            dropdownAvatar.style.backgroundImage = `linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))`;
+            dropdownAvatarIcon.style.display = 'block';
+        }
+    }
     
     // Update main header dashboard text
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');

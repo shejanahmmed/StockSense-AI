@@ -10,10 +10,6 @@ model:
     yearly_seasonality: true
     weekly_seasonality: true
     daily_seasonality: false
-  lightgbm:
-    learning_rate: 0.1
-    num_leaves: 31
-    n_estimators: 100
 
 api:
   host: "0.0.0.0"
