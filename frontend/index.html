@@ -252,9 +252,9 @@
                             <span class="kpi-label"><i class="fa-solid fa-scale-balanced" style="color: var(--accent-primary);"></i> Daily vs Forecast</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-daily-sales" style="font-size: 1.25rem;">$1,240</h3>
+                            <h3 class="kpi-value" id="metric-daily-sales" style="font-size: 1.25rem;">৳1,240</h3>
                         </div>
-                        <span class="trend positive" style="font-size: 0.75rem;">vs $1,100 forecasted</span>
+                        <span class="trend positive" style="font-size: 0.75rem;">vs ৳1,100 forecasted</span>
                     </div>
 
                     <!-- 4. Cash flow projection -->
@@ -263,7 +263,7 @@
                             <span class="kpi-label"><i class="fa-solid fa-money-bill-wave" style="color: var(--status-success);"></i> Cash Flow (30d)</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-cash-flow" style="font-size: 1.25rem;">+$4,500</h3>
+                            <h3 class="kpi-value" id="metric-cash-flow" style="font-size: 1.25rem;">+৳4,500</h3>
                         </div>
                         <span class="trend neutral" style="font-size: 0.75rem;">Est. impact</span>
                     </div>
@@ -509,6 +509,16 @@
                                 <option value="US">USA</option>
                                 <option value="CA">Canada</option>
                                 <option value="GB">UK</option>
+                            </select>
+                        </div>
+                        <div class="settings-group">
+                            <label>Dashboard Currency</label>
+                            <p class="settings-desc">Choose the default currency symbol for financial metrics.</p>
+                            <select id="settingCurrency" class="settings-input">
+                                <option value="BDT" selected>BDT (৳)</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="CAD">CAD ($)</option>
+                                <option value="CNY">CNY (¥)</option>
                             </select>
                         </div>
                         <div class="settings-group">

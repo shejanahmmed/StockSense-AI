@@ -41,6 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let fullInventoryData = [];
 
+function formatCurrency(amount) {
+    let formattedAmount = Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (formattedAmount.endsWith('.00')) formattedAmount = formattedAmount.slice(0, -3);
+    
+    return `${getCurrencySymbol()}${formattedAmount}`;
+}
+
+function getCurrencySymbol() {
+    const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+    if (currency === 'USD') return '$';
+    if (currency === 'CAD') return 'C$';
+    if (currency === 'CNY') return '¥';
+    return '৳';
+}
+
 // ==========================================
 // Navigation & Views
 // ==========================================
@@ -200,7 +215,7 @@ function renderInventoryTable(data, page = 1) {
         const forecastDemand = item.forecasted_demand !== undefined ? item.forecasted_demand : '—';
         const reorderPt = item.reorder_point !== undefined ? item.reorder_point : '—';
         const leadDays = item.supplier_lead_days !== undefined ? item.supplier_lead_days : '—';
-        const price = (item.price && item.price > 0) ? `$${parseFloat(item.price).toFixed(2)}` : '—';
+        const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
 
         tr.innerHTML = `
             <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${item.sku}</td>
@@ -364,7 +379,7 @@ function showModalAddItem() {
                     <input type="text" id="modalName" class="settings-input" placeholder="e.g. Sony WH-1000XM5" />
                 </div>
                 <div class="settings-group" style="margin:0;">
-                    <label>Unit Price ($) <span style="color:var(--status-danger)">*</span></label>
+                    <label>Unit Price (${getCurrencySymbol()}) <span style="color:var(--status-danger)">*</span></label>
                     <input type="number" id="modalPrice" class="settings-input" placeholder="0.00" min="0" step="0.01" />
                 </div>
                 <div class="settings-group" style="margin:0;">
@@ -850,14 +865,14 @@ function updateBIMetrics(metrics) {
         if (el) el.innerHTML = text;
     };
 
-    setElemText('metric-daily-sales', `$${metrics.daily_sales.toLocaleString()}`);
+    setElemText('metric-daily-sales', formatCurrency(metrics.daily_sales));
     // Assuming we want to show forecast too, we can adjust the sub-text.
     const salesCard = document.getElementById('metric-daily-sales');
     if (salesCard && salesCard.parentElement && salesCard.parentElement.nextElementSibling) {
-        salesCard.parentElement.nextElementSibling.innerHTML = `vs $${metrics.daily_forecast.toLocaleString()} forecasted`;
+        salesCard.parentElement.nextElementSibling.innerHTML = `vs ${formatCurrency(metrics.daily_forecast)} forecasted`;
     }
 
-    setElemText('metric-cash-flow', `+$${metrics.cash_flow.toLocaleString()}`);
+    setElemText('metric-cash-flow', `+${formatCurrency(metrics.cash_flow)}`);
     
     setElemText('metric-demand-trend', metrics.demand_trend);
     const trendCard = document.getElementById('metric-demand-trend');
@@ -1401,6 +1416,7 @@ function initUserProfile() {
     const dlInput = document.getElementById('settingDeepLearning');
     const stockoutInput = document.getElementById('settingStockoutAlerts');
     const regionInput = document.getElementById('settingRegion');
+    const currencyInput = document.getElementById('settingCurrency');
 
     if (storeNameInput && savedName) storeNameInput.value = savedName;
     if (industryInput && savedRole) industryInput.value = savedRole;
@@ -1410,6 +1426,7 @@ function initUserProfile() {
     if (dlInput) dlInput.checked = localStorage.getItem('stockSense_cfgDL') !== 'false'; // default true
     if (stockoutInput) stockoutInput.checked = localStorage.getItem('stockSense_cfgStockout') !== 'false';
     if (regionInput) regionInput.value = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+    if (currencyInput) currencyInput.value = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
     
     // PDF Generation Logic
     const generatePdfBtn = document.getElementById('generatePdfBtn');
@@ -1631,6 +1648,11 @@ function initUserProfile() {
                 if (dlInput) localStorage.setItem('stockSense_cfgDL', dlInput.checked);
                 if (stockoutInput) localStorage.setItem('stockSense_cfgStockout', stockoutInput.checked);
                 if (regionInput) localStorage.setItem('stockSense_cfgRegion', regionInput.value);
+                if (currencyInput) localStorage.setItem('stockSense_cfgCurrency', currencyInput.value);
+                
+                if (typeof currentFilteredData !== 'undefined' && currentFilteredData.length > 0) {
+                    renderInventoryTable(currentFilteredData, currentInventoryPage);
+                }
                 
                 updateUserProfileUI(newName, newRole, newAvatar);
                 addNotification('Settings Saved', 'Your preferences have been successfully updated in SQLite.', 'success');
