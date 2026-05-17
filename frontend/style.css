@@ -160,6 +160,38 @@ h1, h2, h3, h4 {
     border-bottom: none;
 }
 
+/* Hover-based Dropdowns */
+.notification-dropdown {
+    display: none !important;
+    animation: fade-in-up 0.2s ease-out forwards;
+}
+.notification-wrapper:hover .notification-dropdown {
+    display: block !important;
+}
+
+.profile-dropdown {
+    display: none !important;
+    animation: fade-in-up 0.2s ease-out forwards;
+}
+.user-profile-container:hover .profile-dropdown {
+    display: flex !important;
+}
+
+.user-profile-container:hover #userProfileChevron {
+    transform: rotate(180deg) !important;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .user-profile {
     display: flex;
     align-items: center;
@@ -302,12 +334,18 @@ h1, h2, h3, h4 {
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
-/* Dashboard Content */
-.dashboard-content {
+/* View Content Layouts */
+.dashboard-content,
+.inventory-content,
+.insights-content,
+.settings-content {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     padding-bottom: 2rem;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 .page-header h1 {
@@ -825,11 +863,18 @@ h1, h2, h3, h4 {
 
 /* Chat Assistant Styles */
 .chat-container {
-    height: 600px;
+    height: calc(100vh - 280px);
+    min-height: 400px;
+    max-height: 600px;
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     padding: 0;
     overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 .chat-messages {
