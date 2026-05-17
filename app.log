@@ -23,3 +23,41 @@
 2026-05-17 16:49:58,277 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-05-17 17:53:13,810 - src.api.main - INFO - Initializing database...
 2026-05-17 17:53:13,820 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 18:50:50,194 - src.api.main - INFO - Initializing database...
+2026-05-17 18:50:50,211 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 18:52:13,745 - src.api.main - INFO - Initializing database...
+2026-05-17 18:52:13,747 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:00:49,237 - src.api.main - INFO - Initializing database...
+2026-05-17 19:00:49,238 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:01:02,664 - src.api.main - INFO - Initializing database...
+2026-05-17 19:01:02,665 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:01:42,551 - src.api.main - INFO - Initializing database...
+2026-05-17 19:01:42,552 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:02:33,155 - src.api.main - INFO - Initializing database...
+2026-05-17 19:02:33,157 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:03:35,049 - src.api.main - INFO - Initializing database...
+2026-05-17 19:03:35,050 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:08:07,520 - src.api.main - INFO - Initializing database...
+2026-05-17 19:08:07,522 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:11:00,499 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-17 19:11:00,520 - prophet - INFO - n_changepoints greater than number of observations. Using 10.
+2026-05-17 19:11:00,525 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-17 19:11:01,099 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-17 19:12:04,379 - src.api.main - INFO - Initializing database...
+2026-05-17 19:12:04,381 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 19:14:25,945 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-17 19:14:25,957 - prophet - INFO - n_changepoints greater than number of observations. Using 10.
+2026-05-17 19:14:25,964 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-17 19:14:36,008 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-17 19:14:36,120 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-17 19:14:36,130 - prophet - INFO - n_changepoints greater than number of observations. Using 10.
+2026-05-17 19:14:36,135 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-17 19:14:40,133 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-17 19:14:40,244 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-17 19:14:40,256 - prophet - INFO - n_changepoints greater than number of observations. Using 10.
+2026-05-17 19:14:40,260 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-17 19:14:41,015 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-17 19:14:42,005 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-17 19:17:43,947 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-17 21:23:04,086 - src.api.main - INFO - Initializing database...
+2026-05-17 21:23:04,099 - src.api.main - INFO - Database initialized successfully.

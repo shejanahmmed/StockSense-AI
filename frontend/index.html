@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -174,7 +174,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon info-icon"><i class="fa-solid fa-box"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Current Stock</span>
+                            <span class="kpi-label">Total SKUs</span>
                             <h3 class="kpi-value" id="kpi-stock">0</h3>
                             <span class="trend neutral">Units available</span>
                         </div>
@@ -190,7 +190,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Recommended Order</span>
+                            <span class="kpi-label">At-Risk Products</span>
                             <h3 class="kpi-value" id="kpi-order">0</h3>
                             <span class="trend neutral">Awaiting data</span>
                         </div>
@@ -198,7 +198,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Time to Stockout</span>
+                            <span class="kpi-label">Inventory Health</span>
                             <h3 class="kpi-value" id="kpi-stockout">N/A</h3>
                             <span class="trend neutral" id="kpi-stockout-sub">Awaiting data</span>
                         </div>
@@ -282,12 +282,13 @@
                             <thead>
                                 <tr>
                                     <th>SKU</th>
-                                    <th>Product Details</th>
+                                    <th>Product / Category</th>
                                     <th>Unit Price</th>
-                                    <th>Current Stock</th>
-                                    <th>Supplier</th>
+                                    <th>Stock</th>
+                                    <th>Reorder Pt.</th>
+                                    <th>Lead Days</th>
+                                    <th>7-Day Forecast</th>
                                     <th>Status</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
@@ -443,6 +444,6 @@
         </main>
     </div>
 
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=10"></script>
 </body>
 </html>

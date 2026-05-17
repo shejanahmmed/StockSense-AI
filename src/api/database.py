@@ -44,9 +44,38 @@ def init_db():
             category TEXT,
             price REAL,
             stock INTEGER,
+            reorder_point INTEGER DEFAULT 50,
+            supplier_lead_days INTEGER DEFAULT 7,
             supplier TEXT,
             status TEXT,
+            forecasted_demand INTEGER DEFAULT 0,
+            last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(org_name, sku)
+        )
+    ''')
+    # Migrate existing DBs gracefully
+    for col in [
+        "ALTER TABLE inventory ADD COLUMN reorder_point INTEGER DEFAULT 50",
+        "ALTER TABLE inventory ADD COLUMN supplier_lead_days INTEGER DEFAULT 7",
+        "ALTER TABLE inventory ADD COLUMN forecasted_demand INTEGER DEFAULT 0",
+        "ALTER TABLE inventory ADD COLUMN last_updated TEXT DEFAULT '2025-01-01'",
+    ]:
+        try:
+            cursor.execute(col)
+        except Exception:
+            pass
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS forecasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            org_name TEXT,
+            sku TEXT,
+            forecast_date TEXT,
+            predicted_sales REAL,
+            lower_bound REAL,
+            upper_bound REAL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(org_name, sku, forecast_date)
         )
     ''')
     conn.commit()

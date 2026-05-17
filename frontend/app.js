@@ -197,6 +197,11 @@ function renderInventoryTable(data, page = 1) {
         if (category.includes('tablet')) icon = 'fa-tablet-screen-button';
         if (category.includes('component') || category.includes('microchip')) icon = 'fa-microchip';
         
+        const forecastDemand = item.forecasted_demand !== undefined ? item.forecasted_demand : '—';
+        const reorderPt = item.reorder_point !== undefined ? item.reorder_point : '—';
+        const leadDays = item.supplier_lead_days !== undefined ? item.supplier_lead_days : '—';
+        const price = (item.price && item.price > 0) ? `$${parseFloat(item.price).toFixed(2)}` : '—';
+
         tr.innerHTML = `
             <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${item.sku}</td>
             <td>
@@ -208,18 +213,17 @@ function renderInventoryTable(data, page = 1) {
                     </div>
                 </div>
             </td>
-            <td style="font-weight: 500;">$${item.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+            <td style="font-weight: 500;">${price}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <span style="font-weight: 600; font-size: 1.05rem;">${item.stock}</span>
                     <span style="color: var(--text-muted); font-size: 0.8rem;">units</span>
                 </div>
             </td>
-            <td style="color: var(--text-secondary);">${item.supplier}</td>
+            <td style="color: var(--text-secondary);">${reorderPt}</td>
+            <td style="color: var(--text-secondary);">${leadDays}d</td>
+            <td style="color: var(--accent-primary); font-weight: 600;">${forecastDemand !== '—' ? forecastDemand + ' units' : '—'}</td>
             <td><span class="status-pill ${statusClass}">${item.status}</span></td>
-            <td>
-                <button class="icon-btn action-delete" data-sku="${item.sku}" style="width: 32px; height: 32px; font-size: 0.8rem; border:none; background: rgba(239, 68, 68, 0.1); color: #ef4444; cursor: pointer; border-radius: 8px;" title="Delete Item"><i class="fa-solid fa-trash"></i></button>
-            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -698,7 +702,7 @@ function setupCsvUpload() {
         if (!file) return;
         
         const originalText = uploadBtn.innerHTML;
-        uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysing Products...';
         uploadBtn.disabled = true;
         
         const formData = new FormData();
@@ -716,58 +720,119 @@ function setupCsvUpload() {
                 body: formData
             });
             
-            if (!response.ok) throw new Error('Prediction failed');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.detail || 'Prediction failed');
+            }
             const data = await response.json();
             
             if (data.status === 'success') {
+                // Update main chart
                 updateChartWithData(data.historical, data.forecast);
+                
+                // Update AI insight panel
                 if (data.insight && data.drivers) {
                     renderInsight(data.insight);
                     renderDrivers(data.drivers);
                 }
+                
+                // Update dashboard KPIs
                 if (data.kpis) {
                     updateKPIs(data.kpis);
                 }
+
+                // Auto-refresh the inventory table from the DB (now populated from CSV)
+                loadInventoryData();
                 
-                // Add success notification
-                addNotification('Forecast Generated', 'New predictions have been generated successfully from your data.', 'success');
+                const productCount = data.products ? data.products.length : 0;
+                const atRisk = data.kpis ? (data.kpis.at_risk_products || 0) : 0;
+                
+                addNotification(
+                    'Multi-Product Forecast Complete',
+                    `Successfully analysed ${productCount} SKUs. ${atRisk > 0 ? `⚠ ${atRisk} products need attention.` : 'All products look healthy.'}`,
+                    atRisk > 0 ? 'warning' : 'success'
+                );
+
+                // If any products are at risk, fire individual alerts
+                if (data.products) {
+                    data.products
+                        .filter(p => p.status === 'Out of Stock')
+                        .forEach(p => addNotification(
+                            '🚨 Out of Stock',
+                            `${p.product_name} (${p.product_id}) has zero inventory.`,
+                            'error'
+                        ));
+                    data.products
+                        .filter(p => p.status === 'Low Stock')
+                        .slice(0, 3) // Limit to 3 alerts max
+                        .forEach(p => addNotification(
+                            '⚠ Low Stock Alert',
+                            `${p.product_name}: Only ${p.current_stock} units left (reorder at ${p.reorder_point}).`,
+                            'warning'
+                        ));
+                }
             }
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Failed to process CSV file. Ensure it has date, sales, promo, and holiday columns.");
+            addNotification('Upload Failed', error.message || 'Could not process CSV file. Check the column format.', 'error');
         } finally {
             uploadBtn.innerHTML = originalText;
             uploadBtn.disabled = false;
-            fileInput.value = ''; // Reset input
+            fileInput.value = '';
         }
     });
 }
 
 function updateKPIs(kpis) {
-    document.getElementById('kpi-stock').innerText = kpis.current_stock.toLocaleString();
-    document.getElementById('kpi-demand').innerText = kpis.forecasted_demand.toLocaleString();
+    // Total SKUs (new multi-product field)
+    const skuElem = document.getElementById('kpi-stock');
+    if (skuElem) {
+        if (kpis.total_skus !== undefined) {
+            skuElem.innerText = kpis.total_skus.toLocaleString() + ' SKUs';
+        } else {
+            skuElem.innerText = (kpis.current_stock || 0).toLocaleString();
+        }
+    }
+
+    // Forecasted demand
+    const demandElem = document.getElementById('kpi-demand');
+    if (demandElem) demandElem.innerText = (kpis.forecasted_demand || 0).toLocaleString();
     
     const changeElem = document.getElementById('kpi-demand-change');
-    changeElem.innerHTML = `${kpis.percent_change.startsWith('+') ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>'} ${kpis.percent_change}`;
-    changeElem.className = `trend ${kpis.percent_change.startsWith('+') ? 'positive' : 'negative'}`;
+    if (changeElem && kpis.percent_change) {
+        const isPositive = kpis.percent_change.startsWith('+');
+        changeElem.innerHTML = `${isPositive ? '<i class="fa-solid fa-arrow-up"></i>' : '<i class="fa-solid fa-arrow-down"></i>'} ${kpis.percent_change}`;
+        changeElem.className = `trend ${isPositive ? 'positive' : 'negative'}`;
+    }
     
-    document.getElementById('kpi-order').innerText = kpis.recommended_order.toLocaleString();
+    // Recommended order or at-risk products
+    const orderElem = document.getElementById('kpi-order');
+    if (orderElem) {
+        orderElem.innerText = kpis.at_risk_products !== undefined
+            ? kpis.at_risk_products + ' Items'
+            : (kpis.recommended_order || 0).toLocaleString();
+    }
     
-    document.getElementById('kpi-stockout').innerText = kpis.time_to_stockout;
+    // Stockout KPI
+    const stockoutElem = document.getElementById('kpi-stockout');
+    if (stockoutElem) {
+        const atRisk = kpis.at_risk_products || 0;
+        stockoutElem.innerText = atRisk > 0 ? `${atRisk} at Risk` : 'Healthy';
+    }
     const stockoutSub = document.getElementById('kpi-stockout-sub');
-    if (kpis.time_to_stockout === "Healthy") {
-        stockoutSub.innerText = "Sufficient Stock";
-        stockoutSub.className = "trend positive";
-        stockoutSub.parentElement.parentElement.querySelector('.kpi-icon').className = "kpi-icon success-icon";
-    } else {
-        stockoutSub.innerText = "Depletion Warning";
-        stockoutSub.className = "trend negative";
-        stockoutSub.parentElement.parentElement.querySelector('.kpi-icon').className = "kpi-icon warning-icon";
-        
-        // Push warning notification
-        addNotification('Stockout Alert', `Store 12 is at risk of depletion in ${kpis.time_to_stockout}.`, 'warning');
+    if (stockoutSub) {
+        const atRisk = kpis.at_risk_products || 0;
+        if (atRisk === 0) {
+            stockoutSub.innerText = "All SKUs Stocked";
+            stockoutSub.className = "trend positive";
+        } else {
+            stockoutSub.innerText = "Reorder Required";
+            stockoutSub.className = "trend negative";
+            addNotification('Inventory Alert', `${atRisk} products need restocking.`, 'warning');
+        }
     }
 }
+
 
 // ==========================================
 // Notification System
