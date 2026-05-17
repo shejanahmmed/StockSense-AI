@@ -155,9 +155,9 @@ h1, h2, h3, h4 {
 }
 
 .nav-item.active {
-    background: linear-gradient(0deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%);
-    color: var(--accent-primary);
-    border-bottom: 3px solid var(--accent-primary);
+    background: var(--accent-primary);
+    color: #ffffff;
+    border-bottom: none;
 }
 
 .user-profile {
