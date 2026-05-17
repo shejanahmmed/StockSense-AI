@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -56,8 +56,8 @@
     </div>
 
     <div class="app-container" id="appContainer">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar glass-panel">
+        <!-- Top Navigation -->
+        <header class="top-navbar glass-panel">
             <div class="logo">
                 <div class="logo-icon" style="background: transparent;"><img src="assets/logo/StockSense%20AI.svg" alt="StockSense Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
                 <span>StockSense AI</span>
@@ -81,9 +81,27 @@
                     <span>Settings</span>
                 </a>
             </nav>
-            
-            <div class="user-profile-container" style="position: relative; margin-top: auto;">
-                <div class="user-profile" id="userProfileBtn" style="cursor: pointer; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 1rem;">
+            <div class="right-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+                <!-- Notification Bell -->
+                <div class="notification-wrapper" style="position: relative;">
+                    <button class="icon-btn glass-panel" id="notificationBtn" style="width: 40px; height: 40px;">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-dot" id="notificationDot" style="display: none;"></span>
+                    </button>
+                    <div class="notification-dropdown glass-panel" id="notificationDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 300px; padding: 1rem; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div class="dropdown-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="margin: 0; font-size: 0.95rem;">Notifications</h4>
+                            <span class="clear-btn" id="clearNotifications" style="font-size: 0.8rem; cursor: pointer; color: var(--accent-primary);">Clear All</span>
+                        </div>
+                        <div class="notification-list" id="notificationList">
+                            <p class="empty-state" style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="user-profile-container" style="position: relative;">
+                <div class="user-profile" id="userProfileBtn" style="cursor: pointer; padding: 0.5rem; display: flex; align-items: center; gap: 1rem; border-radius: var(--radius-md); transition: var(--transition-smooth);">
                     <div id="sidebarAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; background-size: cover; background-position: center; flex-shrink: 0;">
                         <i class="fa-solid fa-building" id="sidebarAvatarIcon"></i>
                     </div>
@@ -91,11 +109,11 @@
                         <span class="user-name" id="sidebarUserName">Store 12</span>
                         <span class="user-role" id="sidebarUserRole">Electronics</span>
                     </div>
-                    <i class="fa-solid fa-chevron-up" style="margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: transform 0.3s ease;" id="userProfileChevron"></i>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted); transition: transform 0.3s ease;" id="userProfileChevron"></i>
                 </div>
                 
                 <!-- Profile Dropdown -->
-                <div class="profile-dropdown glass-panel" id="profileDropdown" style="display: none; position: absolute; bottom: 100%; left: 0; width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; flex-direction: column; z-index: 100;">
+                <div class="profile-dropdown glass-panel" id="profileDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 220px; padding: 0.5rem; flex-direction: column; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                     <div class="profile-dropdown-header" style="padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
                         <div id="dropdownAvatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; background-size: cover; background-position: center; flex-shrink: 0;">
                             <i class="fa-solid fa-building" id="dropdownAvatarIcon"></i>
@@ -113,7 +131,8 @@
                     </a>
                 </div>
             </div>
-        </aside>
+            </div>
+        </header>
 
         <!-- Main Dashboard Content -->
         <main class="main-content">
@@ -123,21 +142,6 @@
                     <input type="text" id="dashboardSearch" placeholder="Search inventory or explore insights...">
                 </div>
                 <div class="header-actions">
-                    <div class="notification-wrapper" style="position: relative;">
-                        <button class="icon-btn glass-panel" id="notificationBtn">
-                            <i class="fa-regular fa-bell"></i>
-                            <span class="notification-dot" id="notificationDot" style="display: none;"></span>
-                        </button>
-                        <div class="notification-dropdown glass-panel" id="notificationDropdown" style="display: none;">
-                            <div class="dropdown-header">
-                                <h4>Notifications</h4>
-                                <span class="clear-btn" id="clearNotifications">Clear All</span>
-                            </div>
-                            <div class="notification-list" id="notificationList">
-                                <p class="empty-state">No new notifications</p>
-                            </div>
-                        </div>
-                    </div>
                     <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
                     <button class="primary-btn" id="uploadCsvBtn" onclick="document.getElementById('csvFileInput').click()">
                         <i class="fa-solid fa-file-csv"></i> Upload CSV Data
@@ -439,6 +443,6 @@
         </main>
     </div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
 </body>
 </html>

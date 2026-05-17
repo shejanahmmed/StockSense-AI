@@ -107,6 +107,25 @@ function setupNavigation() {
         navSettings.classList.add('active');
         settingsView.style.display = 'flex';
     });
+
+    // Auto-hide Top Navbar on scroll
+    const mainContent = document.querySelector('.main-content');
+    const topNavbar = document.querySelector('.top-navbar');
+    let lastScrollTop = 0;
+    
+    if (mainContent && topNavbar) {
+        mainContent.addEventListener('scroll', () => {
+            let scrollTop = mainContent.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 70) {
+                // Scrolling down past the header height
+                topNavbar.classList.add('navbar-hidden');
+            } else {
+                // Scrolling up
+                topNavbar.classList.remove('navbar-hidden');
+            }
+            lastScrollTop = scrollTop;
+        });
+    }
 }
 
 // ==========================================
