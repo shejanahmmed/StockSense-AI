@@ -137,8 +137,8 @@ async def upload_avatar(file: UploadFile = File(...), user: dict = Depends(get_c
 @router.delete("/api/user/purge")
 async def purge_org_data(user: dict = Depends(get_current_user)):
     """
-    Permanently deletes all inventory items and chat history for the authenticated
-    organization. This is a hard, irreversible operation.
+    Permanently deletes all inventory items, forecast rows, and chat history for the
+    authenticated organization and removes any cached Prophet model files.
     """
     try:
         org_name = user.get("sub", "Unknown")
@@ -148,15 +148,32 @@ async def purge_org_data(user: dict = Depends(get_current_user)):
         cursor.execute("DELETE FROM inventory WHERE org_name = ?", (org_name,))
         deleted_inventory = cursor.rowcount
 
+        cursor.execute("DELETE FROM forecasts WHERE org_name = ?", (org_name,))
+        deleted_forecasts = cursor.rowcount
+
         cursor.execute("DELETE FROM chat_history WHERE org_name = ?", (org_name,))
         deleted_chat = cursor.rowcount
 
         conn.commit()
         conn.close()
 
+        # Wipe cached Prophet model files so stale predictions don't persist
+        models_dir = project_root / "data" / "models"
+        if models_dir.exists():
+            for model_file in models_dir.glob("*.json"):
+                try:
+                    model_file.unlink()
+                except Exception:
+                    pass
+
         return {
             "status": "success",
-            "message": f"Purged {deleted_inventory} inventory items and {deleted_chat} chat messages for '{org_name}'."
+            "message": (
+                f"Purged {deleted_inventory} inventory items, "
+                f"{deleted_forecasts} forecast rows, and "
+                f"{deleted_chat} chat messages for '{org_name}'."
+            )
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

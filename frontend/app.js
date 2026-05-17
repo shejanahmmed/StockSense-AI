@@ -6,18 +6,13 @@
 let forecastChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 0. Initialize Authentication (Free Database System)
+    // 0. Initialize Authentication
     initAuth();
-
-    // 1. Fetch real insight data only if logged in
-    if (checkAuth()) {
-        fetchDefaultInsight();
-    }
 
     // 2. Initialize the Forecast Chart
     initChart();
-    
-    // 3. Setup CSV Upload Listener
+
+    // 3. Setup CSV Upload Listener (also restores cached data if CSV was uploaded before)
     setupCsvUpload();
 
     // 4. Initialize Search Filtering
@@ -37,9 +32,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 9. Initialize User Profile
     initUserProfile();
+
+    // 10. If no CSV has been uploaded, show a clean empty state
+    //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
+    if (checkAuth()) {
+        const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
+        if (hasUploadedFile) {
+            // Data will be restored from localStorage cache inside setupCsvUpload
+        } else {
+            resetDashboardToEmpty();
+        }
+    }
 });
 
 let fullInventoryData = [];
+
+// ==========================================
+// Reset Dashboard to Empty / Fresh State
+// ==========================================
+function resetDashboardToEmpty() {
+    // KPI cards → zeroed out
+    const kpiFields = {
+        'kpi-stock': '0',
+        'kpi-total-units': '0',
+        'kpi-demand': '0',
+        'kpi-order': '0',
+        'kpi-stockout': 'N/A',
+    };
+    Object.entries(kpiFields).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    });
+    const demandChange = document.getElementById('kpi-demand-change');
+    if (demandChange) { demandChange.textContent = 'Awaiting data'; demandChange.className = 'trend neutral'; }
+    const stockoutSub = document.getElementById('kpi-stockout-sub');
+    if (stockoutSub) { stockoutSub.textContent = 'Awaiting data'; stockoutSub.className = 'trend neutral'; }
+
+    // AI Insight panel → placeholder
+    const insightContainer = document.getElementById('ai-insight-text');
+    if (insightContainer) {
+        insightContainer.innerHTML = `
+            <p class="animated-text" style="color: var(--text-muted);">
+                <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
+                Upload a multi-product sales CSV to generate AI-driven demand forecasts, populate your inventory, and unlock actionable insights.
+            </p>`;
+    }
+
+    // SHAP drivers → placeholder
+    const driversList = document.getElementById('drivers-list');
+    if (driversList) {
+        driversList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Upload a CSV to see demand drivers.</p>';
+    }
+
+    // BI Metrics → zeroed out
+    const biFields = ['metric-daily-sales', 'metric-cash-flow', 'metric-gross-margin',
+                      'metric-sell-through', 'metric-inventory-turn', 'metric-revenue'];
+    biFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '—';
+    });
+
+    // Chart → clear to empty
+    if (forecastChartInstance) {
+        forecastChartInstance.data.labels = [];
+        forecastChartInstance.data.datasets.forEach(ds => ds.data = []);
+        forecastChartInstance.update();
+    }
+
+    // Top products section → clear
+    const topProducts = document.getElementById('topProductsList');
+    if (topProducts) {
+        topProducts.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file.</p>';
+    }
+}
 
 function formatCurrency(amount) {
     let formattedAmount = Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -69,8 +134,7 @@ function setupNavigation() {
     const inventoryView = document.getElementById('inventoryView');
     const insightsView = document.getElementById('insightsView');
     const settingsView = document.getElementById('settingsView');
-    
-    // Default view
+
     let currentView = 'dashboard';
 
     function hideAll() {
@@ -81,61 +145,48 @@ function setupNavigation() {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
-    navDashboard.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentView === 'dashboard') return;
-        currentView = 'dashboard';
+    function switchView(view) {
+        if (currentView === view) return;
+        currentView = view;
+        localStorage.setItem('stockSense_activeView', view);
         hideAll();
-        navDashboard.classList.add('active');
-        dashboardView.style.display = 'flex';
-    });
-
-    navInventory.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentView === 'inventory') return;
-        currentView = 'inventory';
-        hideAll();
-        navInventory.classList.add('active');
-        inventoryView.style.display = 'flex';
-        
-        // Load data if not already loaded
-        const tbody = document.getElementById('inventoryTableBody');
-        if (tbody.children.length === 0) {
-            loadInventoryData();
+        if (view === 'dashboard') {
+            navDashboard.classList.add('active');
+            dashboardView.style.display = 'flex';
+        } else if (view === 'inventory') {
+            navInventory.classList.add('active');
+            inventoryView.style.display = 'flex';
+            const tbody = document.getElementById('inventoryTableBody');
+            if (tbody.children.length === 0) loadInventoryData();
+        } else if (view === 'insights') {
+            navInsights.classList.add('active');
+            insightsView.style.display = 'flex';
+        } else if (view === 'settings') {
+            navSettings.classList.add('active');
+            settingsView.style.display = 'flex';
         }
-    });
+    }
 
-    navInsights.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentView === 'insights') return;
-        currentView = 'insights';
-        hideAll();
-        navInsights.classList.add('active');
-        insightsView.style.display = 'flex';
-    });
+    // Restore last active view from localStorage
+    const savedView = localStorage.getItem('stockSense_activeView') || 'dashboard';
+    currentView = 'dashboard'; // reset before switching
+    switchView(savedView);
 
-    navSettings.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (currentView === 'settings') return;
-        currentView = 'settings';
-        hideAll();
-        navSettings.classList.add('active');
-        settingsView.style.display = 'flex';
-    });
+    navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
+    navInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
+    navInsights.addEventListener('click',  (e) => { e.preventDefault(); switchView('insights');  });
+    navSettings.addEventListener('click',  (e) => { e.preventDefault(); switchView('settings');  });
 
     // Auto-hide Top Navbar on scroll
     const mainContent = document.querySelector('.main-content');
     const topNavbar = document.querySelector('.top-navbar');
     let lastScrollTop = 0;
-    
     if (mainContent && topNavbar) {
         mainContent.addEventListener('scroll', () => {
             let scrollTop = mainContent.scrollTop;
             if (scrollTop > lastScrollTop && scrollTop > 70) {
-                // Scrolling down past the header height
                 topNavbar.classList.add('navbar-hidden');
             } else {
-                // Scrolling up
                 topNavbar.classList.remove('navbar-hidden');
             }
             lastScrollTop = scrollTop;
@@ -709,12 +760,68 @@ function initSearch() {
 function setupCsvUpload() {
     const fileInput = document.getElementById('csvFileInput');
     const uploadBtn = document.getElementById('uploadCsvBtn');
+    const fileIndicator = document.getElementById('uploadedFileIndicator');
+    const fileNameDisplay = document.getElementById('uploadedFileName');
+    const clearFileBtn = document.getElementById('clearUploadedFileBtn');
     
+    // Restore uploaded file indicator and all dashboard data from localStorage
+    const savedFileName = localStorage.getItem('stockSense_uploadedFile');
+    if (savedFileName && fileIndicator && fileNameDisplay) {
+        fileNameDisplay.textContent = savedFileName;
+        fileIndicator.style.display = 'flex';
+
+        // Restore cached dashboard data so refresh doesn't wipe the analysis
+        try {
+            const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+            if (cachedData) {
+                if (cachedData.historical && cachedData.forecast) {
+                    updateChartWithData(cachedData.historical, cachedData.forecast);
+                }
+                if (cachedData.insight) renderInsight(cachedData.insight);
+                if (cachedData.drivers) renderDrivers(cachedData.drivers);
+                if (cachedData.kpis)    updateKPIs(cachedData.kpis);
+                if (cachedData.bi_metrics) updateBIMetrics(cachedData.bi_metrics);
+            }
+        } catch (e) {
+            console.warn('Could not restore cached dashboard data:', e);
+        }
+    }
+
+    if (clearFileBtn) {
+        clearFileBtn.addEventListener('click', async () => {
+            const confirmed = confirm('Remove CSV data? This will clear all inventory and forecast data from the app so it is ready for a fresh upload.');
+            if (!confirmed) return;
+
+            // Wipe backend DB (inventory + forecasts) for this org
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                await fetch('/api/user/purge', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (e) {
+                console.warn('Backend purge failed, continuing with local clear:', e);
+            }
+
+            // Clear all cached frontend state
+            localStorage.removeItem('stockSense_uploadedFile');
+            localStorage.removeItem('stockSense_lastResult');
+
+            if (fileIndicator) fileIndicator.style.display = 'none';
+            if (fileInput) fileInput.value = '';
+
+            // Full page reload — app is now fresh and ready for another upload
+            window.location.reload();
+        });
+    }
+
     if (!fileInput || !uploadBtn) return;
     
     fileInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        
+        if (fileIndicator) fileIndicator.style.display = 'none';
         
         const originalText = uploadBtn.innerHTML;
         uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysing Products...';
@@ -742,6 +849,22 @@ function setupCsvUpload() {
             const data = await response.json();
             
             if (data.status === 'success') {
+                if (fileIndicator && fileNameDisplay) {
+                    fileNameDisplay.textContent = file.name;
+                    fileIndicator.style.display = 'flex';
+                    localStorage.setItem('stockSense_uploadedFile', file.name);
+                }
+
+                // Cache the full result so it survives page refreshes
+                localStorage.setItem('stockSense_lastResult', JSON.stringify({
+                    historical:  data.historical,
+                    forecast:    data.forecast,
+                    insight:     data.insight,
+                    drivers:     data.drivers,
+                    kpis:        data.kpis,
+                    bi_metrics:  data.bi_metrics
+                }));
+
                 // Update main chart
                 updateChartWithData(data.historical, data.forecast);
                 
@@ -752,12 +875,8 @@ function setupCsvUpload() {
                 }
                 
                 // Update dashboard KPIs
-                if (data.kpis) {
-                    updateKPIs(data.kpis);
-                }
-                if (data.bi_metrics) {
-                    updateBIMetrics(data.bi_metrics);
-                }
+                if (data.kpis)        updateKPIs(data.kpis);
+                if (data.bi_metrics)  updateBIMetrics(data.bi_metrics);
 
                 // Auto-refresh the inventory table from the DB (now populated from CSV)
                 loadInventoryData();
@@ -1707,57 +1826,51 @@ function initUserProfile() {
 }
 
 function updateUserProfileUI(name, role, avatarUrl) {
+    const DEFAULT_AVATAR = '/default_avatar.png';
+    const effectiveAvatar = (avatarUrl && avatarUrl.trim() !== '') ? avatarUrl : DEFAULT_AVATAR;
+
     // Sidebar
     const sidebarName = document.getElementById('sidebarUserName');
     const sidebarRole = document.getElementById('sidebarUserRole');
     if (sidebarName) sidebarName.textContent = name;
     if (sidebarRole) sidebarRole.textContent = role;
-    
-    // Avatar Logic
+
+    // Sidebar Avatar
     const sidebarAvatar = document.getElementById('sidebarAvatar');
     const sidebarAvatarIcon = document.getElementById('sidebarAvatarIcon');
-    if (sidebarAvatar && sidebarAvatarIcon) {
-        if (avatarUrl && avatarUrl.trim() !== '') {
-            sidebarAvatar.style.backgroundImage = `url('${avatarUrl}')`;
-            sidebarAvatarIcon.style.display = 'none';
-        } else {
-            sidebarAvatar.style.backgroundImage = `linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))`;
-            sidebarAvatarIcon.style.display = 'block';
-        }
+    if (sidebarAvatar) {
+        sidebarAvatar.style.backgroundImage = `url('${effectiveAvatar}')`;
+        sidebarAvatar.style.backgroundSize = 'cover';
+        sidebarAvatar.style.backgroundPosition = 'center';
     }
-    
+    if (sidebarAvatarIcon) sidebarAvatarIcon.style.display = 'none';
+
     // Settings Preview
     const settingsPreview = document.getElementById('settingsAvatarPreview');
     const settingsIcon = document.getElementById('settingsAvatarIcon');
-    if (settingsPreview && settingsIcon) {
-        if (avatarUrl && avatarUrl.trim() !== '') {
-            settingsPreview.style.backgroundImage = `url('${avatarUrl}')`;
-            settingsIcon.style.display = 'none';
-        } else {
-            settingsPreview.style.backgroundImage = `linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))`;
-            settingsIcon.style.display = 'block';
-        }
+    if (settingsPreview) {
+        settingsPreview.style.backgroundImage = `url('${effectiveAvatar}')`;
+        settingsPreview.style.backgroundSize = 'cover';
+        settingsPreview.style.backgroundPosition = 'center';
     }
-    
+    if (settingsIcon) settingsIcon.style.display = 'none';
+
     // Dropdown Header
     const dropdownName = document.getElementById('dropdownUserName');
     const dropdownRole = document.getElementById('dropdownUserRole');
     if (dropdownName) dropdownName.textContent = name;
     if (dropdownRole) dropdownRole.textContent = role;
-    
-    // Dropdown Avatar Logic
+
+    // Dropdown Avatar
     const dropdownAvatar = document.getElementById('dropdownAvatar');
     const dropdownAvatarIcon = document.getElementById('dropdownAvatarIcon');
-    if (dropdownAvatar && dropdownAvatarIcon) {
-        if (avatarUrl && avatarUrl.trim() !== '') {
-            dropdownAvatar.style.backgroundImage = `url('${avatarUrl}')`;
-            dropdownAvatarIcon.style.display = 'none';
-        } else {
-            dropdownAvatar.style.backgroundImage = `linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))`;
-            dropdownAvatarIcon.style.display = 'block';
-        }
+    if (dropdownAvatar) {
+        dropdownAvatar.style.backgroundImage = `url('${effectiveAvatar}')`;
+        dropdownAvatar.style.backgroundSize = 'cover';
+        dropdownAvatar.style.backgroundPosition = 'center';
     }
-    
+    if (dropdownAvatarIcon) dropdownAvatarIcon.style.display = 'none';
+
     // Update main header dashboard text
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');
     if (aiInsightTitle) {

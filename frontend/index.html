@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -141,8 +141,16 @@
                     <i class="fa-solid fa-search"></i>
                     <input type="text" id="dashboardSearch" placeholder="Search inventory or explore insights...">
                 </div>
-                <div class="header-actions">
+                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
                     <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                    
+                    <!-- Uploaded File Indicator (Placed before the button so the button doesn't shift left) -->
+                    <div id="uploadedFileIndicator" class="glass-panel" style="display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-file-csv" style="color: var(--status-success);"></i>
+                        <span id="uploadedFileName" style="color: var(--text-primary); font-weight: 500; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                        <i class="fa-solid fa-xmark" id="clearUploadedFileBtn" style="cursor: pointer; color: var(--text-muted); margin-left: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='var(--status-danger)'" onmouseout="this.style.color='var(--text-muted)'"></i>
+                    </div>
+
                     <button class="primary-btn" id="uploadCsvBtn" onclick="document.getElementById('csvFileInput').click()">
                         <i class="fa-solid fa-file-csv"></i> Upload CSV Data
                     </button>
@@ -274,9 +282,9 @@
                             <span class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color: var(--status-info);"></i> Demand Trend</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-demand-trend" style="font-size: 1.25rem;">Rising</h3>
+                            <h3 class="kpi-value" id="metric-demand-trend" style="font-size: 1.25rem;">—</h3>
                         </div>
-                        <span class="trend positive" style="font-size: 0.75rem;"><i class="fa-solid fa-caret-up"></i> +12% this week</span>
+                        <span class="trend neutral" style="font-size: 0.75rem;" id="metric-demand-trend-sub">Awaiting data</span>
                     </div>
 
                     <!-- 6. Holiday/event impact -->
@@ -285,9 +293,9 @@
                             <span class="kpi-label"><i class="fa-solid fa-calendar-star" style="color: var(--status-warning);"></i> Next Event</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-event" style="font-size: 1.2rem;">Summer Sale</h3>
+                            <h3 class="kpi-value" id="metric-event" style="font-size: 1.2rem;">—</h3>
                         </div>
-                        <span class="trend positive" style="font-size: 0.75rem;">+25% expected</span>
+                        <span class="trend neutral" style="font-size: 0.75rem;" id="metric-event-sub">Awaiting data</span>
                     </div>
 
                     <!-- 7. Profit margin indicator -->
@@ -296,9 +304,9 @@
                             <span class="kpi-label"><i class="fa-solid fa-percent" style="color: var(--accent-secondary);"></i> Avg. Margin</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-margin" style="font-size: 1.25rem;">24.5%</h3>
+                            <h3 class="kpi-value" id="metric-margin" style="font-size: 1.25rem;">—</h3>
                         </div>
-                        <span class="trend positive" style="font-size: 0.75rem;">Healthy</span>
+                        <span class="trend neutral" style="font-size: 0.75rem;" id="metric-margin-sub">Awaiting data</span>
                     </div>
                 </div>
 
@@ -307,7 +315,7 @@
                     <div style="font-size: 2rem; color: var(--status-warning);"><i class="fa-solid fa-lightbulb"></i></div>
                     <div>
                         <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-primary);">Priority Next Step</h3>
-                        <p style="font-size: 0.95rem; color: var(--text-secondary);" id="metric-next-step">Approve purchase order for <strong>Wireless Earbuds</strong> before Friday to avoid stockout.</p>
+                        <p style="font-size: 0.95rem; color: var(--text-muted);" id="metric-next-step">Upload a CSV file to generate AI-driven recommendations.</p>
                     </div>
                 </div>
 
@@ -316,29 +324,7 @@
                     <section class="glass-panel" style="padding: 1.5rem;">
                         <h2 style="font-size: 1.15rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
                         <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
-                            <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
-                                <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--status-danger); box-shadow: 0 0 10px var(--status-danger);"></div>
-                                <div style="flex: 1; display: flex; flex-direction: column;">
-                                    <strong style="color: var(--text-primary);">Wireless Mouse <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem;">(2 left)</span></strong>
-                                    <span style="font-size: 0.8rem; color: var(--status-danger);">Reorder immediately</span>
-                                </div>
-                                <span class="badge warning-badge" style="background: var(--status-danger-bg); color: var(--status-danger); border-color: rgba(239, 68, 68, 0.3);">Critical</span>
-                            </li>
-                            <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
-                                <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--status-warning); box-shadow: 0 0 10px var(--status-warning);"></div>
-                                <div style="flex: 1; display: flex; flex-direction: column;">
-                                    <strong style="color: var(--text-primary);">Gaming Keyboard <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem;">(15 left)</span></strong>
-                                    <span style="font-size: 0.8rem; color: var(--status-warning);">Restock in 5 days</span>
-                                </div>
-                                <span class="badge warning-badge">Plan</span>
-                            </li>
-                            <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
-                                <div style="width: 12px; height: 12px; border-radius: 50%; background: var(--status-success); box-shadow: 0 0 10px var(--status-success);"></div>
-                                <div style="flex: 1; display: flex; flex-direction: column;">
-                                    <strong style="color: var(--text-primary);">27" Monitor <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem;">(40 left)</span></strong>
-                                    <span style="font-size: 0.8rem; color: var(--status-success);">Restock in 14+ days</span>
-                                </div>
-                            </li>
+                            <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
                         </ul>
                     </section>
 
@@ -346,41 +332,7 @@
                     <section class="glass-panel" style="padding: 1.5rem;">
                         <h2 style="font-size: 1.15rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid var(--accent-primary);">
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">1</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">Noise Cancelling Headphones</span>
-                                </div>
-                                <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">+35% Margin</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid var(--accent-secondary);">
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">2</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">Mechanical Keyboards</span>
-                                </div>
-                                <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">+28% Margin</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid rgba(255,255,255,0.1);">
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">3</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">Webcams 1080p</span>
-                                </div>
-                                <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">+22% Margin</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid rgba(255,255,255,0.1);">
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">4</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">Wireless Mice</span>
-                                </div>
-                                <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">+18% Margin</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid rgba(255,255,255,0.1);">
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">5</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">USB-C Hubs</span>
-                                </div>
-                                <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">+15% Margin</span>
-                            </div>
+                            <p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file to see top profit drivers.</p>
                         </div>
                     </section>
                 </div>
