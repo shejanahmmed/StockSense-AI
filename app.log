@@ -61,3 +61,6 @@
 2026-05-17 19:17:43,947 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-05-17 21:23:04,086 - src.api.main - INFO - Initializing database...
 2026-05-17 21:23:04,099 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 22:16:13,900 - src.api.main - INFO - Initializing database...
+2026-05-17 22:16:13,906 - src.api.main - INFO - Database initialized successfully.
+2026-05-17 22:17:29,182 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"

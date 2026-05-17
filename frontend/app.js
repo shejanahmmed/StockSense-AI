@@ -740,6 +740,9 @@ function setupCsvUpload() {
                 if (data.kpis) {
                     updateKPIs(data.kpis);
                 }
+                if (data.bi_metrics) {
+                    updateBIMetrics(data.bi_metrics);
+                }
 
                 // Auto-refresh the inventory table from the DB (now populated from CSV)
                 loadInventoryData();
@@ -788,10 +791,16 @@ function updateKPIs(kpis) {
     const skuElem = document.getElementById('kpi-stock');
     if (skuElem) {
         if (kpis.total_skus !== undefined) {
-            skuElem.innerText = kpis.total_skus.toLocaleString() + ' SKUs';
+            skuElem.innerText = kpis.total_skus.toLocaleString();
         } else {
-            skuElem.innerText = (kpis.current_stock || 0).toLocaleString();
+            skuElem.innerText = '0';
         }
+    }
+
+    // Total Units
+    const unitsElem = document.getElementById('kpi-total-units');
+    if (unitsElem) {
+        unitsElem.innerText = (kpis.current_stock || 0).toLocaleString();
     }
 
     // Forecasted demand
@@ -833,6 +842,104 @@ function updateKPIs(kpis) {
     }
 }
 
+function updateBIMetrics(metrics) {
+    if (!metrics) return;
+    
+    const setElemText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = text;
+    };
+
+    setElemText('metric-daily-sales', `$${metrics.daily_sales.toLocaleString()}`);
+    // Assuming we want to show forecast too, we can adjust the sub-text.
+    const salesCard = document.getElementById('metric-daily-sales');
+    if (salesCard && salesCard.parentElement && salesCard.parentElement.nextElementSibling) {
+        salesCard.parentElement.nextElementSibling.innerHTML = `vs $${metrics.daily_forecast.toLocaleString()} forecasted`;
+    }
+
+    setElemText('metric-cash-flow', `+$${metrics.cash_flow.toLocaleString()}`);
+    
+    setElemText('metric-demand-trend', metrics.demand_trend);
+    const trendCard = document.getElementById('metric-demand-trend');
+    if (trendCard && trendCard.parentElement && trendCard.parentElement.nextElementSibling) {
+        const trendSpan = trendCard.parentElement.nextElementSibling;
+        const isRising = metrics.demand_trend === "Rising";
+        trendSpan.className = `trend ${isRising ? 'positive' : 'negative'}`;
+        trendSpan.innerHTML = `<i class="fa-solid fa-caret-${isRising ? 'up' : 'down'}"></i> ${metrics.demand_trend_pct}`;
+    }
+
+    setElemText('metric-event', metrics.upcoming_event);
+    const eventCard = document.getElementById('metric-event');
+    if (eventCard && eventCard.parentElement && eventCard.parentElement.nextElementSibling) {
+        eventCard.parentElement.nextElementSibling.innerHTML = metrics.event_impact;
+    }
+
+    setElemText('metric-margin', metrics.avg_margin);
+    
+    // Priority Next Step
+    const nextStepEl = document.getElementById('metric-next-step');
+    if (nextStepEl) {
+        // Find if it mentions a product and bold it if so
+        const text = metrics.next_step;
+        const bolded = text.replace(/'([^']+)'/g, '<strong>$1</strong>');
+        nextStepEl.innerHTML = bolded;
+    }
+    
+    // Timeline
+    const timelineEl = document.getElementById('metric-timeline');
+    if (timelineEl && metrics.timeline) {
+        let html = '';
+        metrics.timeline.forEach(item => {
+            let colorVar = 'var(--status-success)';
+            let badgeHtml = '';
+            let textHtml = `<span style="font-size: 0.8rem; color: ${colorVar};">${item.text}</span>`;
+            
+            if (item.urgency === 'Critical') {
+                colorVar = 'var(--status-danger)';
+                badgeHtml = `<span class="badge warning-badge" style="background: var(--status-danger-bg); color: var(--status-danger); border-color: rgba(239, 68, 68, 0.3);">Critical</span>`;
+                textHtml = `<span style="font-size: 0.8rem; color: ${colorVar};">${item.text}</span>`;
+            } else if (item.urgency === 'Plan') {
+                colorVar = 'var(--status-warning)';
+                badgeHtml = `<span class="badge warning-badge">Plan</span>`;
+                textHtml = `<span style="font-size: 0.8rem; color: ${colorVar};">${item.text}</span>`;
+            }
+            
+            html += `
+                <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorVar}; box-shadow: 0 0 10px ${colorVar};"></div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <strong style="color: var(--text-primary);">${item.name} <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem;">(${item.stock} left)</span></strong>
+                        ${textHtml}
+                    </div>
+                    ${badgeHtml}
+                </li>
+            `;
+        });
+        timelineEl.innerHTML = html || '<p style="color: var(--text-muted);">No timeline alerts.</p>';
+    }
+
+    // Top Products
+    const topProductsEl = document.getElementById('metric-top-products');
+    if (topProductsEl && metrics.top_products) {
+        let html = '';
+        metrics.top_products.forEach((prod, idx) => {
+            let borderColor = 'rgba(255,255,255,0.1)';
+            if (idx === 0) borderColor = 'var(--accent-primary)';
+            else if (idx === 1) borderColor = 'var(--accent-secondary)';
+            
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid ${borderColor};">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-weight: bold; color: var(--text-secondary); width: 20px;">${idx + 1}</span>
+                        <span style="color: var(--text-primary); font-weight: 500;">${prod.name}</span>
+                    </div>
+                    <span style="color: var(--status-success); font-weight: 600; font-size: 0.9rem;">${prod.margin}</span>
+                </div>
+            `;
+        });
+        topProductsEl.innerHTML = html || '<p style="color: var(--text-muted);">No products found.</p>';
+    }
+}
 
 // ==========================================
 // Notification System
