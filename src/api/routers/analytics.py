@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse
 from fpdf import FPDF
 import tempfile
 import os
+import holidays
 
 router = APIRouter()
 project_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -61,6 +62,7 @@ async def predict_demand(
     file: UploadFile = File(...),
     strategy: str = "balanced",
     deep_learning: bool = True,
+    region: str = "BD",
     user: dict = Depends(get_current_user)
 ):
     if not file.filename.endswith(".csv"):
@@ -90,10 +92,20 @@ async def predict_demand(
         # 1. Apply Date Features
         combined_df = create_date_features(combined_df)
         
-        # 2. Simulate future promotions and holidays dynamically
-        # Let's say weekends are holidays and Fridays are promo days
+        # 2. Simulate future promotions and use real holidays dynamically
         future_mask = combined_df['sales'].isna()
-        combined_df.loc[future_mask, 'holiday'] = combined_df.loc[future_mask, 'is_weekend']
+        
+        # Instantiate holiday calendar based on region (free, offline, dynamic)
+        try:
+            local_holidays = holidays.country_holidays(region)
+        except Exception:
+            local_holidays = holidays.BD() # Fallback to Bangladesh
+            
+        # Mark as 1 if the date is a real holiday, otherwise 0. Apply to the ENTIRE dataset
+        # so historical training data is also corrected to use the true local holidays!
+        combined_df['holiday'] = combined_df['date'].apply(lambda d: 1 if d in local_holidays else 0)
+        
+        # Keep promo logic (e.g., assuming Fridays are promo days for the sake of the forecast)
         combined_df.loc[future_mask, 'promo'] = (combined_df.loc[future_mask, 'day_of_week'] == 4).astype(int)
         
         # 3. Apply Lag Features (Requires past data, which is now preceding the future dates)

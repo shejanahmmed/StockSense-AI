@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StockSense AI - Intelligent Inventory</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo/StockSense%20AI.svg">
     <!-- Modern Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -17,7 +18,7 @@
     <div id="authScreen" style="display: none; height: 100vh; width: 100vw; align-items: center; justify-content: center; background: var(--bg-base); background-image: radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%); position: fixed; top: 0; left: 0; z-index: 10000;">
         <div class="glass-panel" style="width: 400px; padding: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <div class="logo" style="justify-content: center; margin-bottom: 0.5rem;">
-                <div class="logo-icon" style="width: 56px; height: 56px; font-size: 1.8rem; border-radius: 16px;"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="logo-icon" style="width: 56px; height: 56px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center;"><img src="assets/logo/StockSense%20AI.svg" alt="StockSense Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
             </div>
             <h2 class="gradient-text" style="font-size: 1.8rem;">StockSense AI</h2>
             <p class="subtitle" style="margin-top: -10px;">Enterprise Authentication</p>
@@ -58,7 +59,7 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar glass-panel">
             <div class="logo">
-                <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="logo-icon" style="background: transparent;"><img src="assets/logo/StockSense%20AI.svg" alt="StockSense Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
                 <span>StockSense AI</span>
             </div>
             
@@ -170,7 +171,7 @@
                         <div class="kpi-icon info-icon"><i class="fa-solid fa-box"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Current Stock</span>
-                            <h3 class="kpi-value" id="kpi-stock">3,200</h3>
+                            <h3 class="kpi-value" id="kpi-stock">0</h3>
                             <span class="trend neutral">Units available</span>
                         </div>
                     </div>
@@ -178,24 +179,24 @@
                         <div class="kpi-icon success-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Forecasted Demand</span>
-                            <h3 class="kpi-value" id="kpi-demand">4,850</h3>
-                            <span class="trend positive" id="kpi-demand-change"><i class="fa-solid fa-arrow-up"></i> +23% Next Week</span>
+                            <h3 class="kpi-value" id="kpi-demand">0</h3>
+                            <span class="trend neutral" id="kpi-demand-change">Awaiting data</span>
                         </div>
                     </div>
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Recommended Order</span>
-                            <h3 class="kpi-value" id="kpi-order">5,200</h3>
-                            <span class="trend positive">+40% Above Baseline</span>
+                            <h3 class="kpi-value" id="kpi-order">0</h3>
+                            <span class="trend neutral">Awaiting data</span>
                         </div>
                     </div>
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
                         <div class="kpi-details">
                             <span class="kpi-label">Time to Stockout</span>
-                            <h3 class="kpi-value" id="kpi-stockout">5 Days</h3>
-                            <span class="trend negative" id="kpi-stockout-sub">Depletion by Thursday</span>
+                            <h3 class="kpi-value" id="kpi-stockout">N/A</h3>
+                            <span class="trend neutral" id="kpi-stockout-sub">Awaiting data</span>
                         </div>
                     </div>
                 </div>
@@ -343,6 +344,16 @@
                             </select>
                         </div>
                         <div class="settings-group">
+                            <label>Geographic Region</label>
+                            <p class="settings-desc">Used to sync local public holidays for accurate demand forecasting.</p>
+                            <select id="settingRegion" class="settings-input">
+                                <option value="BD" selected>Bangladesh</option>
+                                <option value="US">USA</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">UK</option>
+                            </select>
+                        </div>
+                        <div class="settings-group">
                             <label>Organization Logo / Avatar</label>
                             <div class="avatar-upload-container" style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem;">
                                 <div id="settingsAvatarPreview" style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.1);">
@@ -428,6 +439,6 @@
         </main>
     </div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>

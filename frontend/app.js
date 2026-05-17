@@ -9,8 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 0. Initialize Authentication (Free Database System)
     initAuth();
 
-    // 1. Fetch real insight data from the FastAPI backend
-    fetchDefaultInsight();
+    // 1. Fetch real insight data only if logged in
+    if (checkAuth()) {
+        fetchDefaultInsight();
+    }
 
     // 2. Initialize the Forecast Chart
     initChart();
@@ -687,8 +689,9 @@ function setupCsvUpload() {
             const token = localStorage.getItem('stockSense_jwt');
             const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
             const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+            const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
             
-            const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}`, {
+            const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}&region=${region}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -877,6 +880,14 @@ async function fetchDefaultInsight() {
         const response = await fetch(`/api/insight?strategy=${strategy}&deep_learning=${dl}&stockout_alerts=${stockout}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
+        if (response.status === 401) {
+            localStorage.removeItem('stockSense_storeName');
+            localStorage.removeItem('stockSense_jwt');
+            localStorage.removeItem('stockSense_industry');
+            localStorage.removeItem('stockSense_avatarUrl');
+            window.location.reload();
+            return;
+        }
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         
@@ -941,14 +952,13 @@ function initChart() {
     gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
     gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
 
-    // Mock Data: 7 days historical, 7 days forecast
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon (F)', 'Tue (F)', 'Wed (F)', 'Thu (F)', 'Fri (F)', 'Sat (F)', 'Sun (F)'];
+    // Empty initial state
+    const labels = [];
     
-    // Historical data ends at index 6, Forecast starts at index 6 to connect the line
-    const historicalData = [310, 340, 325, 380, 450, 520, 480, null, null, null, null, null, null, null];
-    const forecastData = [null, null, null, null, null, null, 480, 510, 560, 590, 720, 850, 910, 890];
-    const confidenceUpper = [null, null, null, null, null, null, 480, 530, 590, 620, 780, 920, 990, 960];
-    const confidenceLower = [null, null, null, null, null, null, 480, 490, 530, 560, 660, 780, 830, 820];
+    const historicalData = [];
+    const forecastData = [];
+    const confidenceUpper = [];
+    const confidenceLower = [];
 
     // Global chart defaults for dark theme
     Chart.defaults.color = '#94a3b8';
@@ -1167,6 +1177,7 @@ function initAuth() {
                 if (avatarInput) avatarInput.value = finalAvatar;
                 
                 checkAuth(); // Proceed to dashboard
+                fetchDefaultInsight(); // Load initial insights
                 addNotification(isSignup ? 'Account Created' : 'Login Successful', `Welcome to StockSense AI, ${orgName}!`, 'success');
             } catch (error) {
                 console.error("Auth Error:", error);
@@ -1198,6 +1209,7 @@ function initUserProfile() {
     const strategyInput = document.getElementById('settingStrategy');
     const dlInput = document.getElementById('settingDeepLearning');
     const stockoutInput = document.getElementById('settingStockoutAlerts');
+    const regionInput = document.getElementById('settingRegion');
 
     if (storeNameInput && savedName) storeNameInput.value = savedName;
     if (industryInput && savedRole) industryInput.value = savedRole;
@@ -1206,6 +1218,7 @@ function initUserProfile() {
     if (strategyInput) strategyInput.value = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
     if (dlInput) dlInput.checked = localStorage.getItem('stockSense_cfgDL') !== 'false'; // default true
     if (stockoutInput) stockoutInput.checked = localStorage.getItem('stockSense_cfgStockout') !== 'false';
+    if (regionInput) regionInput.value = localStorage.getItem('stockSense_cfgRegion') || 'BD';
     
     // PDF Generation Logic
     const generatePdfBtn = document.getElementById('generatePdfBtn');
@@ -1426,6 +1439,7 @@ function initUserProfile() {
                 if (strategyInput) localStorage.setItem('stockSense_cfgStrategy', strategyInput.value);
                 if (dlInput) localStorage.setItem('stockSense_cfgDL', dlInput.checked);
                 if (stockoutInput) localStorage.setItem('stockSense_cfgStockout', stockoutInput.checked);
+                if (regionInput) localStorage.setItem('stockSense_cfgRegion', regionInput.value);
                 
                 updateUserProfileUI(newName, newRole, newAvatar);
                 addNotification('Settings Saved', 'Your preferences have been successfully updated in SQLite.', 'success');
