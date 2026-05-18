@@ -13,34 +13,38 @@
 
 **StockSense AI** is a machine learning-driven inventory forecasting system designed specifically for e-commerce Small and Medium Enterprises (SMEs). 
 
-While most enterprise forecasting tools output complex charts and dataframes, StockSense AI takes it a step further. It predicts future demand, explains *why* demand is changing using SHAP values, and uses Large Language Models (LLMs) to translate these metrics into **3-4 sentences of highly actionable, plain-English advice** for the shop owner.
+While most enterprise forecasting tools output complex charts and dataframes, StockSense AI takes it a step further. It predicts future demand, explains *why* demand is changing using SHAP values, and uses Large Language Models (LLMs) to translate these metrics into **highly actionable, plain-English advice** for the shop owner.
 
 No data science degree required. Just clear instructions on what to order, when to order it, and why.
 
 ## ✨ Key Features
 
 - 📈 **Ensemble Forecasting**: Combines Prophet and LightGBM for highly accurate time-series demand predictions (7–30 days out) with calculated confidence intervals.
-- 🧠 **Explainable AI (XAI)**: Utilizes SHAP TreeExplainer to break open the "black box" and identify the top 3-5 drivers influencing your specific forecast (e.g., upcoming holidays, active promotions, weekend effects).
-- 💬 **Actionable LLM Insights**: A sophisticated pipeline that packages forecast data, SHAP drivers, and business context into a structured JSON payload, which is then fed to an LLM (Llama 3.1) to generate direct, risk-aware business advice.
+- 🧠 **Explainable AI (XAI)**: Utilizes SHAP TreeExplainer to break open the "black box" and identify the top drivers influencing your specific forecast (e.g., upcoming holidays, active promotions, weekend effects).
+- 💬 **Actionable LLM Insights & Chat Assistant**: A sophisticated pipeline that packages forecast data, SHAP drivers, and business context into a structured JSON payload, which is fed to an LLM (Llama 3.3/Groq) to generate direct business advice. You can also chat directly with the AI about your inventory.
+- 📦 **Global Inventory Management**: Fully-featured inventory database with live tracking, category filtering, low-stock alerts, one-click CSV export, and SKU addition/deletion interfaces.
+- 📄 **Automated PDF Reporting**: Generate professional weekly summary reports directly from the dashboard.
 - 🎨 **Premium Dashboard**: A stunning, modern frontend built with glassmorphism aesthetics, dark mode, and dynamic Chart.js visualizations that wow users at first glance.
+- 🔒 **Enterprise-Grade Security**: Secured with SHA-256 hashed SQLite databases and robust JWT authentication with secure HMAC key lengths.
 
 ## 🏗️ The 5-Step Architecture Pipeline
 
-1. **Forecast Model Runs**: Prophet + LightGBM ensemble generates predictions, confidence intervals, and trend direction.
+1. **Forecast Model Runs**: Prophet + LightGBM ensemble generates predictions, confidence intervals, and trend direction for multiple products.
 2. **SHAP Explainability Runs**: SHAP TreeExplainer extracts feature importance for the specific forecast window.
-3. **Calculate Business Metrics**: The system computes percent change vs. current week, stockout risks, and time-to-depletion.
-4. **Package into Structured JSON**: All outputs are combined into a clean JSON "insight payload" — zero raw data.
+3. **Calculate Business Metrics**: The system computes percent change, stockout risks, reorder points, and supplier lead times.
+4. **Package into Structured JSON**: All outputs are combined into a clean JSON "insight payload".
 5. **LLM Generation**: The payload is sent to Ollama (local) or Groq API (deployed). The LLM processes the facts and outputs specific, actionable business advice.
 
 ## 💻 Tech Stack
 
 ### Backend & Machine Learning
 - **Python 3.10+**
-- **FastAPI / Uvicorn**: High-performance backend API routing.
+- **FastAPI / Uvicorn**: High-performance backend API routing and authentication.
 - **Prophet & LightGBM**: Ensemble time-series forecasting.
 - **SHAP**: Model explainability.
 - **DuckDB & Pandas**: Fast, analytical data processing.
 - **Ollama / Groq**: LLM integration for insight generation.
+- **FPDF**: Automated PDF report generation.
 
 ### Frontend
 - **HTML5 / CSS3 / Vanilla JS**: Lightweight, zero-dependency foundation.
@@ -78,17 +82,11 @@ No data science degree required. Just clear instructions on what to order, when 
 
 ### Running the Application
 
-**1. Start the Frontend UI:**
-Simply open `frontend/index.html` in your modern web browser, or serve it via a simple HTTP server:
+**Start the FastAPI Backend (includes the frontend):**
 ```bash
-cd frontend
-python -m http.server 8000
+python -m uvicorn src.api.main:app --reload
 ```
-
-**2. Test the LLM Insight Generator:**
-```bash
-python src/api/insight_generator.py
-```
+Then navigate to `http://127.0.0.1:8000` in your browser.
 
 ## 📊 Example Output
 
@@ -98,7 +96,7 @@ What the SME owner sees directly on their dashboard:
 >
 > Sales are forecast to increase **23%** next week to approximately **4,850 units**, significantly above your baseline. This surge is driven by the upcoming **Eid holiday (+18% impact)**, your current promotion campaign (+9%), and typical weekend demand patterns (+5%). 
 > 
-> ⚠️ **Stockout Warning**: Your current inventory of 3,200 units will likely be depleted by Thursday. We recommend ordering at least **5,200 units** (40% above forecast) to meet demand and avoid lost sales. Additionally, schedule extra staff for Friday and Saturday when foot traffic typically peaks during holidays.
+> ⚠️ **Stockout Warning**: Your current inventory of 3,200 units will likely be depleted by Thursday. We recommend ordering at least **5,200 units** (40% above forecast) to meet demand and avoid lost sales.
 
 ---
 *Built with ❤️ for SMEs. Empowering small businesses with enterprise-grade AI.*
