@@ -62,8 +62,8 @@ No data science degree required. Just clear instructions on what to order, when 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/stocksense-ai.git
-   cd stocksense-ai
+   git clone https://github.com/shejanahmmed/StockSense-AI.git
+   cd StockSense-AI
    ```
 
 2. **Create a virtual environment & install dependencies**
