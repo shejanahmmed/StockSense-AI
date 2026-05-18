@@ -18,7 +18,7 @@ async def get_inventory(
         
         offset = (page - 1) * limit
         cursor.execute('''
-            SELECT sku, name, category, price, stock, supplier, status 
+            SELECT sku, name, category, price, stock, supplier, status, reorder_point, supplier_lead_days, forecasted_demand 
             FROM inventory 
             WHERE org_name = ? 
             LIMIT ? OFFSET ?

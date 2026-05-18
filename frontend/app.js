@@ -89,7 +89,16 @@ function resetDashboardToEmpty() {
                       'metric-sell-through', 'metric-inventory-turn', 'metric-revenue'];
     biFields.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.textContent = '—';
+        if (el) {
+            el.textContent = '—';
+            if (el.parentElement && el.parentElement.nextElementSibling) {
+                const sub = el.parentElement.nextElementSibling;
+                if (sub.classList.contains('trend')) {
+                    sub.textContent = 'Awaiting data';
+                    sub.className = 'trend neutral';
+                }
+            }
+        }
     });
 
     // Chart → clear to empty
@@ -290,6 +299,11 @@ function renderInventoryTable(data, page = 1) {
             <td style="color: var(--text-secondary);">${leadDays}d</td>
             <td style="color: var(--accent-primary); font-weight: 600;">${forecastDemand !== '—' ? forecastDemand + ' units' : '—'}</td>
             <td><span class="status-pill ${statusClass}">${item.status}</span></td>
+            <td style="text-align: right;">
+                <button class="icon-btn action-delete" data-sku="${item.sku}" title="Delete SKU ${item.sku}" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });

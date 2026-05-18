@@ -167,10 +167,20 @@ async def predict_demand(
         df['date'] = pd.to_datetime(df['date'])
 
         # â”€â”€ Holiday calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        import datetime
+        today = datetime.date.today()
+        current_year = today.year
         try:
-            local_holidays = holidays.country_holidays(region)
+            local_holidays = holidays.country_holidays(region, years=[current_year, current_year + 1])
         except Exception:
-            local_holidays = holidays.BD()
+            local_holidays = holidays.BD(years=[current_year, current_year + 1])
+            
+        future_holidays = {d: n for d, n in local_holidays.items() if getattr(d, 'year', 0) >= current_year and d >= today}
+        if future_holidays:
+            next_date = min(future_holidays.keys())
+            upcoming_event_name = future_holidays[next_date]
+        else:
+            upcoming_event_name = "End of Month Sale"
 
         # â”€â”€ Per-product loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         org_name = user.get("sub", "Unknown")
@@ -331,7 +341,7 @@ async def predict_demand(
                 "cash_flow": int(aggregate_next_week * 50), # Mock avg $50 per unit
                 "demand_trend": "Rising" if overall_pct > 0 else "Falling",
                 "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this week",
-                "upcoming_event": "Upcoming Holiday" if local_holidays else "End of Month Sale",
+                "upcoming_event": upcoming_event_name,
                 "event_impact": "+15% expected",
                 "avg_margin": "24.5%",
                 "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",

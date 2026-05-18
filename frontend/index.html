@@ -182,7 +182,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon info-icon"><i class="fa-solid fa-layer-group"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Total SKUs</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The total number of unique products currently tracked in your inventory database.</span></div> Total SKUs</span>
                             <h3 class="kpi-value" id="kpi-stock">0</h3>
                             <span class="trend neutral">Items tracked</span>
                         </div>
@@ -190,7 +190,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon info-icon"><i class="fa-solid fa-box-open"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Total Units</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The total sum of all physical stock currently available across all tracked products.</span></div> Total Units</span>
                             <h3 class="kpi-value" id="kpi-total-units">0</h3>
                             <span class="trend neutral">Available in stock</span>
                         </div>
@@ -198,7 +198,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon success-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Forecasted Demand</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The AI's prediction of total units that will be sold over the next 7 days based on historical trends.</span></div> Forecasted Demand</span>
                             <h3 class="kpi-value" id="kpi-demand">0</h3>
                             <span class="trend neutral" id="kpi-demand-change">Awaiting data</span>
                         </div>
@@ -206,7 +206,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">At-Risk Products</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">Products that are currently out of stock or projected to run out of stock before they can be replenished.</span></div> At-Risk Products</span>
                             <h3 class="kpi-value" id="kpi-order">0</h3>
                             <span class="trend neutral">Awaiting data</span>
                         </div>
@@ -214,7 +214,7 @@
                     <div class="kpi-card glass-panel">
                         <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
                         <div class="kpi-details">
-                            <span class="kpi-label">Inventory Health</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">A general indicator of your overall stock reliability and risk of stockouts.</span></div> Inventory Health</span>
                             <h3 class="kpi-value" id="kpi-stockout">N/A</h3>
                             <span class="trend neutral" id="kpi-stockout-sub">Awaiting data</span>
                         </div>
@@ -257,29 +257,29 @@
                     <!-- 1. Daily sales vs forecast -->
                     <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><i class="fa-solid fa-scale-balanced" style="color: var(--accent-primary);"></i> Daily vs Forecast</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">Compares your recent daily sales average to the AI's predicted daily sales average for next week.</span></div> <i class="fa-solid fa-scale-balanced" style="color: var(--accent-primary);"></i> Daily vs Forecast</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-daily-sales" style="font-size: 1.25rem;">৳1,240</h3>
+                            <h3 class="kpi-value" id="metric-daily-sales" style="font-size: 1.25rem;">—</h3>
                         </div>
-                        <span class="trend positive" style="font-size: 0.75rem;">vs ৳1,100 forecasted</span>
+                        <span class="trend neutral" style="font-size: 0.75rem;" id="metric-daily-sales-sub">Awaiting data</span>
                     </div>
 
                     <!-- 4. Cash flow projection -->
                     <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><i class="fa-solid fa-money-bill-wave" style="color: var(--status-success);"></i> Cash Flow (30d)</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">Estimated incoming cash flow over the next 30 days based on forecasted product demand.</span></div> <i class="fa-solid fa-money-bill-wave" style="color: var(--status-success);"></i> Cash Flow (30d)</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                            <h3 class="kpi-value" id="metric-cash-flow" style="font-size: 1.25rem;">+৳4,500</h3>
+                            <h3 class="kpi-value" id="metric-cash-flow" style="font-size: 1.25rem;">—</h3>
                         </div>
-                        <span class="trend neutral" style="font-size: 0.75rem;">Est. impact</span>
+                        <span class="trend neutral" style="font-size: 0.75rem;" id="metric-cash-flow-sub">Awaiting data</span>
                     </div>
 
                     <!-- 5. Customer demand trend -->
                     <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color: var(--status-info);"></i> Demand Trend</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The directional trajectory of overall customer demand comparing last week to next week's forecast.</span></div> <i class="fa-solid fa-arrow-trend-up" style="color: var(--status-info);"></i> Demand Trend</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
                             <h3 class="kpi-value" id="metric-demand-trend" style="font-size: 1.25rem;">—</h3>
@@ -290,7 +290,7 @@
                     <!-- 6. Holiday/event impact -->
                     <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><i class="fa-solid fa-calendar-star" style="color: var(--status-warning);"></i> Next Event</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The next upcoming holiday or scheduled promotional event that the AI has factored into demand projections.</span></div> <i class="fa-solid fa-calendar-star" style="color: var(--status-warning);"></i> Next Event</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
                             <h3 class="kpi-value" id="metric-event" style="font-size: 1.2rem;">—</h3>
@@ -301,7 +301,7 @@
                     <!-- 7. Profit margin indicator -->
                     <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><i class="fa-solid fa-percent" style="color: var(--accent-secondary);"></i> Avg. Margin</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The estimated average profit margin across your top performing inventory items.</span></div> <i class="fa-solid fa-percent" style="color: var(--accent-secondary);"></i> Avg. Margin</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
                             <h3 class="kpi-value" id="metric-margin" style="font-size: 1.25rem;">—</h3>
@@ -394,6 +394,7 @@
                                     <th>Lead Days</th>
                                     <th>7-Day Forecast</th>
                                     <th>Status</th>
+                                    <th style="text-align: right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">

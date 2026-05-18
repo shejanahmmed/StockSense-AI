@@ -3,7 +3,7 @@ import datetime
 import hashlib
 from fastapi import Depends, Header, HTTPException
 
-SECRET_KEY = "StockSenseEnterpriseSecret2026"
+SECRET_KEY = "StockSenseEnterpriseSecret2026_Key"
 ALGORITHM = "HS256"
 
 def create_access_token(data: dict):
