@@ -416,60 +416,145 @@ function showModalAddItem() {
     const categories = [...new Set(fullInventoryData.map(i => i.category))].filter(Boolean).sort();
     const catOpts = categories.length > 0
         ? categories.map(c => `<option value="${c}">${c}</option>`).join('')
-        : '<option value="Electronics">Electronics</option><option value="Accessories">Accessories</option>';
+        : '<option value="Electronics">Electronics</option><option value="Apparel">Apparel</option><option value="Footwear">Footwear</option><option value="Accessories">Accessories</option>';
+
+    const hasCSV     = !!localStorage.getItem('stockSense_uploadedFile');
+    const csvName    = localStorage.getItem('stockSense_uploadedFile') || '';
+    const csvBanner  = hasCSV
+        ? `<div style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.65rem 0.85rem;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.18);border-radius:10px;">
+               <i class="fa-solid fa-circle-info" style="color:var(--accent-primary);margin-top:0.1rem;flex-shrink:0;font-size:0.85rem;"></i>
+               <span style="font-size:0.8rem;color:var(--text-secondary);">Sales history data you enter below will be appended to <strong style="color:var(--text-primary);">${csvName}</strong> so the AI can forecast demand for this product on the next run.</span>
+           </div>`
+        : `<div style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.65rem 0.85rem;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:10px;">
+               <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;margin-top:0.1rem;flex-shrink:0;font-size:0.85rem;"></i>
+               <span style="font-size:0.8rem;color:var(--text-secondary);">No CSV uploaded yet. The product will be saved to inventory, but <strong>AI forecasting</strong> won't be available until you upload a CSV file.</span>
+           </div>`;
 
     const modal = document.createElement('div');
     modal.id = 'addItemModal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(10px);';
+
     modal.innerHTML = `
-        <div class="glass-panel" style="width:500px;max-width:95vw;padding:2rem;display:flex;flex-direction:column;gap:1.25rem;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h3 style="margin:0;font-size:1.2rem;"><i class="fa-solid fa-plus-circle" style="color:var(--accent-primary);margin-right:0.5rem;"></i>Add New Product</h3>
-                <button id="closeAddModal" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        <div class="glass-panel" style="width:660px;max-width:96vw;max-height:92vh;overflow-y:auto;padding:2rem;display:flex;flex-direction:column;gap:1.5rem;box-shadow:0 30px 80px rgba(0,0,0,0.6);">
+
+            <!-- ── Header ─────────────────────────────────────── -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                    <h3 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fa-solid fa-box-open" style="color:var(--accent-primary);"></i> Add New Product
+                    </h3>
+                    <p style="margin:0.2rem 0 0;font-size:0.78rem;color:var(--text-muted);">Fill in product details and sales history to enable AI demand forecasting.</p>
+                </div>
+                <button id="closeAddModal" style="background:none;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;line-height:1;padding:0.2rem;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                <div class="settings-group" style="margin:0;">
-                    <label>SKU <span style="color:var(--status-danger)">*</span></label>
-                    <input type="text" id="modalSku" class="settings-input" placeholder="e.g. ELEC-013" />
+
+            <!-- ── Section 1: Product & Inventory Details ─────── -->
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;padding-bottom:0.45rem;border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <i class="fa-solid fa-warehouse" style="color:var(--accent-primary);font-size:0.8rem;"></i>
+                    <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);">Product &amp; Inventory Details</span>
                 </div>
-                <div class="settings-group" style="margin:0;">
-                    <label>Category <span style="color:var(--status-danger)">*</span></label>
-                    <select id="modalCategory" class="settings-input">
-                        ${catOpts}
-                        <option value="_new_">+ New Category...</option>
-                    </select>
-                </div>
-                <div class="settings-group" style="grid-column:1/-1;margin:0;">
-                    <label>Product Name <span style="color:var(--status-danger)">*</span></label>
-                    <input type="text" id="modalName" class="settings-input" placeholder="e.g. Sony WH-1000XM5" />
-                </div>
-                <div class="settings-group" style="margin:0;">
-                    <label>Unit Price (${getCurrencySymbol()}) <span style="color:var(--status-danger)">*</span></label>
-                    <input type="number" id="modalPrice" class="settings-input" placeholder="0.00" min="0" step="0.01" />
-                </div>
-                <div class="settings-group" style="margin:0;">
-                    <label>Stock Quantity <span style="color:var(--status-danger)">*</span></label>
-                    <input type="number" id="modalStock" class="settings-input" placeholder="0" min="0" step="1" />
-                </div>
-                <div class="settings-group" style="grid-column:1/-1;margin:0;">
-                    <label>Supplier Name</label>
-                    <input type="text" id="modalSupplier" class="settings-input" placeholder="e.g. Sony Direct" />
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="settings-group" style="margin:0;">
+                        <label>Product ID / SKU <span style="color:var(--status-danger)">*</span></label>
+                        <input type="text" id="modalSku" class="settings-input" placeholder="e.g. SKU-005" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Category <span style="color:var(--status-danger)">*</span></label>
+                        <select id="modalCategory" class="settings-input">
+                            ${catOpts}
+                            <option value="_new_">+ New Category...</option>
+                        </select>
+                    </div>
+                    <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                        <label>Product Name <span style="color:var(--status-danger)">*</span></label>
+                        <input type="text" id="modalName" class="settings-input" placeholder="e.g. Sony WH-1000XM5 Headphones" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Unit Price (${getCurrencySymbol()}) <span style="color:var(--status-danger)">*</span></label>
+                        <input type="number" id="modalPrice" class="settings-input" placeholder="0.00" min="0" step="0.01" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Stock on Hand <span style="color:var(--status-danger)">*</span></label>
+                        <input type="number" id="modalStock" class="settings-input" placeholder="Current units in stock" min="0" step="1" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Reorder Point <span style="color:var(--status-danger)">*</span>
+                            <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — trigger restocking below this</span>
+                        </label>
+                        <input type="number" id="modalReorder" class="settings-input" placeholder="e.g. 50" min="0" step="1" value="50" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Supplier Lead Days <span style="color:var(--status-danger)">*</span>
+                            <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — days to receive stock</span>
+                        </label>
+                        <input type="number" id="modalLeadDays" class="settings-input" placeholder="e.g. 7" min="1" step="1" value="7" />
+                    </div>
+                    <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                        <label>Supplier Name <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;">(optional)</span></label>
+                        <input type="text" id="modalSupplier" class="settings-input" placeholder="e.g. Sony Direct, Alibaba" />
+                    </div>
                 </div>
             </div>
-            <p id="modalError" style="color:var(--status-danger);font-size:0.85rem;margin:0;display:none;padding:0.5rem 0.75rem;background:rgba(239,68,68,0.1);border-radius:8px;"></p>
-            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem;">
+
+            <!-- ── Section 2: CSV / Sales History ─────────────── -->
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;padding-bottom:0.45rem;border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <i class="fa-solid fa-file-csv" style="color:var(--status-success);font-size:0.8rem;"></i>
+                    <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);">Sales History for CSV &amp; AI Forecasting</span>
+                </div>
+                ${csvBanner}
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="settings-group" style="margin:0;">
+                        <label>Avg Daily Sales Qty <span style="color:var(--status-danger)">*</span>
+                            <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — units sold per day</span>
+                        </label>
+                        <input type="number" id="modalAvgSales" class="settings-input" placeholder="e.g. 25" min="0" step="1" ${!hasCSV ? 'disabled' : ''} style="${!hasCSV ? 'opacity:0.45;' : ''}" />
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Days of History to Generate</label>
+                        <select id="modalHistoryDays" class="settings-input" ${!hasCSV ? 'disabled' : ''} style="${!hasCSV ? 'opacity:0.45;' : ''}">
+                            <option value="7">7 days</option>
+                            <option value="14" selected>14 days</option>
+                            <option value="30">30 days</option>
+                            <option value="60">60 days</option>
+                        </select>
+                    </div>
+                    <div class="settings-group" style="margin:0;">
+                        <label>Promotional Sales Period?</label>
+                        <label style="display:flex;align-items:center;gap:0.6rem;cursor:${hasCSV ? 'pointer' : 'not-allowed'};padding:0.6rem 0.8rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-top:0.25rem;">
+                            <input type="checkbox" id="modalPromo" style="width:15px;height:15px;accent-color:var(--accent-primary);" ${!hasCSV ? 'disabled' : ''} />
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">Mark as promotional period</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Error Message ───────────────────────────────── -->
+            <p id="modalError" style="color:var(--status-danger);font-size:0.84rem;margin:0;display:none;padding:0.5rem 0.8rem;background:rgba(239,68,68,0.09);border:1px solid rgba(239,68,68,0.2);border-radius:8px;"></p>
+
+            <!-- ── Actions ─────────────────────────────────────── -->
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;padding-top:0.25rem;border-top:1px solid rgba(255,255,255,0.06);">
                 <button id="cancelAddModal" class="secondary-btn" style="padding:0.6rem 1.25rem;">Cancel</button>
-                <button id="confirmAddModal" class="primary-btn" style="padding:0.6rem 1.5rem;"><i class="fa-solid fa-plus"></i> Add Product</button>
+                <button id="confirmAddModal" class="primary-btn" style="padding:0.6rem 1.6rem;gap:0.5rem;">
+                    <i class="fa-solid fa-plus"></i> Add Product
+                </button>
             </div>
         </div>`;
+
     document.body.appendChild(modal);
 
-    const closeModal = () => { modal.style.opacity = '0'; setTimeout(() => modal.remove(), 200); };
+    const closeModal = () => {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.18s ease';
+        setTimeout(() => modal.remove(), 200);
+    };
+
     document.getElementById('closeAddModal').addEventListener('click', closeModal);
     document.getElementById('cancelAddModal').addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-    document.getElementById('modalCategory').addEventListener('change', function() {
+    document.getElementById('modalCategory').addEventListener('change', function () {
         if (this.value === '_new_') {
             const newCat = (window.prompt('Enter new category name:') || '').trim();
             if (newCat) {
@@ -483,25 +568,38 @@ function showModalAddItem() {
     });
 
     document.getElementById('confirmAddModal').addEventListener('click', async () => {
-        const sku      = document.getElementById('modalSku').value.trim();
-        const name     = document.getElementById('modalName').value.trim();
-        const category = document.getElementById('modalCategory').value;
-        const price    = parseFloat(document.getElementById('modalPrice').value) || 0;
-        const stockVal = parseInt(document.getElementById('modalStock').value)   || 0;
-        const supplier = document.getElementById('modalSupplier').value.trim();
-        const errEl    = document.getElementById('modalError');
+        const sku        = document.getElementById('modalSku').value.trim();
+        const name       = document.getElementById('modalName').value.trim();
+        const category   = document.getElementById('modalCategory').value;
+        const price      = parseFloat(document.getElementById('modalPrice').value) || 0;
+        const stockVal   = parseInt(document.getElementById('modalStock').value)   || 0;
+        const reorderPt  = parseInt(document.getElementById('modalReorder').value) || 50;
+        const leadDays   = parseInt(document.getElementById('modalLeadDays').value) || 7;
+        const supplier   = document.getElementById('modalSupplier').value.trim();
+        const avgSales   = parseInt(document.getElementById('modalAvgSales').value)  || 0;
+        const histDays   = parseInt(document.getElementById('modalHistoryDays').value) || 14;
+        const promo      = document.getElementById('modalPromo').checked ? 1 : 0;
+        const errEl      = document.getElementById('modalError');
 
+        // ── Validation ────────────────────────────────────────────────────────
         if (!sku || !name || !category || category === '_new_') {
-            errEl.textContent = 'SKU, Product Name, and Category are required fields.';
+            errEl.textContent = 'Product ID, Product Name, and Category are required.';
             errEl.style.display = 'block'; return;
         }
-        if (price < 0 || stockVal < 0) {
-            errEl.textContent = 'Price and Stock must be non-negative numbers.';
+        if (price < 0 || stockVal < 0 || reorderPt < 0) {
+            errEl.textContent = 'Price, Stock, and Reorder Point must be non-negative numbers.';
+            errEl.style.display = 'block'; return;
+        }
+        if (leadDays < 1) {
+            errEl.textContent = 'Supplier Lead Days must be at least 1.';
+            errEl.style.display = 'block'; return;
+        }
+        if (hasCSV && avgSales <= 0) {
+            errEl.textContent = 'Average Daily Sales Qty is required to update the CSV for AI forecasting.';
             errEl.style.display = 'block'; return;
         }
         errEl.style.display = 'none';
 
-        const status = stockVal === 0 ? 'Out of Stock' : stockVal < 10 ? 'Low Stock' : 'In Stock';
         const confirmBtn = document.getElementById('confirmAddModal');
         confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
         confirmBtn.disabled = true;
@@ -511,15 +609,27 @@ function showModalAddItem() {
             const res = await fetch('/api/inventory', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ sku, name, category, price, stock: stockVal, supplier, status })
+                body: JSON.stringify({
+                    sku, name, category, price,
+                    stock:               stockVal,
+                    reorder_point:       reorderPt,
+                    supplier_lead_days:  leadDays,
+                    supplier,
+                    avg_daily_sales:     avgSales,
+                    history_days:        histDays,
+                    promo,
+                })
             });
             const data = await res.json();
             if (data.status === 'success') {
                 closeModal();
-                addNotification('Product Added', `"${name}" (${sku}) added successfully.`, 'success');
+                const notifMsg = data.csv_updated
+                    ? `"${name}" added. ${data.csv_rows_added} CSV rows written — re-run forecast to include this product.`
+                    : `"${name}" (${sku}) added to inventory.`;
+                addNotification('Product Added', notifMsg, 'success');
                 loadInventoryData();
             } else {
-                errEl.textContent = data.message || 'Failed to add item.';
+                errEl.textContent = data.message || 'Failed to add product.';
                 errEl.style.display = 'block';
             }
         } catch (e) {
@@ -858,7 +968,62 @@ function setupCsvUpload() {
             
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.detail || 'Prediction failed');
+                const detail  = errData.detail || {};
+
+                // Special case: not enough data in the CSV
+                if (detail.error === 'INSUFFICIENT_DATA') {
+                    const days    = detail.data_span_days || '?';
+                    const errMsg  = detail.message || 'Insufficient data.';
+                    addNotification(
+                        '⚠ Not Enough Data',
+                        `Your CSV covers only ${days} day(s). Upload at least 90 days to enable forecasting.`,
+                        'warning'
+                    );
+                    // Show a prominent blocking banner in the AI Insight panel
+                    const insightContainer = document.getElementById('ai-insight-text');
+                    if (insightContainer) {
+                        insightContainer.innerHTML = `
+                            <div style="display:flex;flex-direction:column;gap:1rem;">
+                                <div style="display:flex;align-items:flex-start;gap:0.75rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;">
+                                    <i class="fa-solid fa-circle-xmark" style="color:var(--status-danger);font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;"></i>
+                                    <div>
+                                        <strong style="color:var(--status-danger);font-size:1rem;">Forecast Blocked — Insufficient Data</strong>
+                                        <p style="margin:0.4rem 0 0;font-size:0.88rem;color:var(--text-secondary);line-height:1.6;">Your CSV covers only <strong>${days} day(s)</strong> of sales history. StockSense AI requires a minimum of <strong>90 days</strong> to produce a reliable forecast.</p>
+                                    </div>
+                                </div>
+                                <table style="width:100%;border-collapse:collapse;font-size:0.84rem;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Historical Data Provided</th>
+                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Forecast Window Unlocked</th>
+                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">90 – 179 days</td>
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">7-Day Forecast</td>
+                                            <td style="padding:0.5rem 0.75rem;">${days >= 90 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
+                                        </tr>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">180 – 359 days</td>
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">14-Day Forecast</td>
+                                            <td style="padding:0.5rem 0.75rem;">${days >= 180 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">360+ days</td>
+                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">30-Day Forecast</td>
+                                            <td style="padding:0.5rem 0.75rem;">${days >= 360 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-size:0.8rem;color:var(--text-muted);margin:0;"><i class="fa-solid fa-circle-info" style="color:var(--accent-primary);"></i> Please upload a CSV with at least 90 days of daily sales data to enable AI forecasting.</p>
+                            </div>`;
+                    }
+                    return; // Don't throw — we handled it
+                }
+
+                throw new Error(typeof detail === 'string' ? detail : (errData.detail?.message || 'Prediction failed'));
             }
             const data = await response.json();
             
@@ -867,6 +1032,13 @@ function setupCsvUpload() {
                     fileNameDisplay.textContent = file.name;
                     fileIndicator.style.display = 'flex';
                     localStorage.setItem('stockSense_uploadedFile', file.name);
+                }
+
+                // Update chart title with actual forecast horizon from server
+                const chartTitle = document.getElementById('forecastChartTitle');
+                if (chartTitle && data.forecast_label) {
+                    chartTitle.textContent =
+                        `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
                 }
 
                 // Cache the full result so it survives page refreshes

@@ -36,12 +36,12 @@ def _compute_product_status(stock: int, reorder_point: int) -> str:
     return "In Stock"
 
 
-def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str) -> dict:
+def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7) -> dict:
     """Run the full feature-engineering + Prophet pipeline for a single product's time series."""
     product_df = product_df.sort_values('date')
 
     last_date = pd.to_datetime(product_df['date']).max()
-    future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, 8)]
+    future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, forecast_horizon + 1)]
     future_df = pd.DataFrame({'date': future_dates})
 
     combined_df = pd.concat(
@@ -139,6 +139,15 @@ async def predict_demand(
 
     try:
         contents = await file.read()
+        org_name = user.get("sub", "Unknown")
+
+        # Persist the uploaded CSV so new products can be appended to it later
+        raw_dir = project_root / "data" / "raw"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        csv_save_path = raw_dir / f"{org_name}_uploaded.csv"
+        with open(csv_save_path, "wb") as _f:
+            _f.write(contents)
+
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
         # â”€â”€ Column normalisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -166,6 +175,38 @@ async def predict_demand(
 
         df['date'] = pd.to_datetime(df['date'])
 
+        # -- Data span validation & dynamic forecast horizon ------------------
+        date_min       = df['date'].min()
+        date_max       = df['date'].max()
+        data_span_days = (date_max - date_min).days + 1
+
+        if data_span_days < 30:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error":          "INSUFFICIENT_DATA",
+                    "data_span_days": data_span_days,
+                    "required_days":  30,
+                    "message": (
+                        f"Your CSV only covers {data_span_days} day(s) of sales history, "
+                        f"which is not enough to generate a reliable forecast. "
+                        f"Minimum: 90 days -> 7-day forecast | "
+                        f"180 days -> 14-day forecast | 360 days -> 30-day forecast."
+                    )
+                }
+            )
+
+        # Select forecast horizon based on how much data the user provided
+        if data_span_days >= 360:
+            forecast_horizon = 30
+            forecast_label   = "30-Day Forecast"
+        elif data_span_days >= 180:
+            forecast_horizon = 14
+            forecast_label   = "14-Day Forecast"
+        else:
+            forecast_horizon = 7
+            forecast_label   = "7-Day Forecast"
+
         # â”€â”€ Holiday calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         import datetime
         today = datetime.date.today()
@@ -183,7 +224,7 @@ async def predict_demand(
             upcoming_event_name = "End of Month Sale"
 
         # â”€â”€ Per-product loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        org_name = user.get("sub", "Unknown")
+        # org_name already resolved above
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -208,9 +249,9 @@ async def predict_demand(
 
             # Run forecast
             try:
-                result = _forecast_for_product(product_df.copy(), local_holidays, strategy)
+                result = _forecast_for_product(product_df.copy(), local_holidays, strategy, forecast_horizon)
             except Exception:
-                # Skip products with insufficient data (< 7 rows)
+                # Skip products with insufficient data
                 result = {
                     "forecast": [],
                     "current_week_sales": 0,
@@ -328,11 +369,14 @@ async def predict_demand(
             "status": "success",
             "historical": historical_records,
             "forecast": chart_forecast,
+            "forecast_horizon": forecast_horizon,
+            "forecast_label": forecast_label,
+            "data_span_days": data_span_days,
             "kpis": {
                 "total_skus": len(all_product_results),
                 "current_stock": aggregate_current_stock,
                 "forecasted_demand": aggregate_next_week,
-                "percent_change": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% Next Week",
+                "percent_change": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% Next {forecast_horizon} Days",
                 "at_risk_products": len(at_risk),
             },
             "bi_metrics": {
