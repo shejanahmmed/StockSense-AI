@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. Initialize User Profile
     initUserProfile();
 
+    // 10. Initialize Footer
+    initFooter();
+
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
@@ -1041,6 +1044,9 @@ function setupCsvUpload() {
                         `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
                 }
 
+                // Update footer CSV status indicator
+                updateFooterCsvStatus(file.name);
+
                 // Cache the full result so it survives page refreshes
                 localStorage.setItem('stockSense_lastResult', JSON.stringify({
                     historical:  data.historical,
@@ -1188,7 +1194,14 @@ function updateBIMetrics(metrics) {
         trendSpan.innerHTML = `<i class="fa-solid fa-caret-${isRising ? 'up' : 'down'}"></i> ${metrics.demand_trend_pct}`;
     }
 
-    setElemText('metric-event', metrics.upcoming_event);
+    // Show event name + date (in small text) inside the value element
+    const eventEl = document.getElementById('metric-event');
+    if (eventEl) {
+        eventEl.innerHTML = metrics.upcoming_event +
+            (metrics.upcoming_event_date
+                ? `<span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-muted);margin-top:0.2rem;letter-spacing:0.02em;">${metrics.upcoming_event_date}</span>`
+                : '');
+    }
     const eventCard = document.getElementById('metric-event');
     if (eventCard && eventCard.parentElement && eventCard.parentElement.nextElementSibling) {
         eventCard.parentElement.nextElementSibling.innerHTML = metrics.event_impact;
@@ -2061,5 +2074,52 @@ function updateUserProfileUI(name, role, avatarUrl) {
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');
     if (aiInsightTitle) {
         aiInsightTitle.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight for ${name} — ${role}`;
+    }
+}
+
+// ==========================================
+// Footer
+// ==========================================
+function initFooter() {
+    // Set copyright year dynamically
+    const yearEl = document.getElementById('footerYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Wire up footer nav links to trigger the matching top-nav link
+    const footerNavMap = {
+        'footerNavDashboard': 'navDashboard',
+        'footerNavInventory':  'navInventory',
+        'footerNavInsights':   'navInsights',
+        'footerNavSettings':   'navSettings',
+    };
+    Object.entries(footerNavMap).forEach(([footerId, navId]) => {
+        const footerBtn = document.getElementById(footerId);
+        const navBtn    = document.getElementById(navId);
+        if (footerBtn && navBtn) {
+            footerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navBtn.click();
+                // Scroll back to top
+                document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+    });
+
+    // Set initial CSV status
+    updateFooterCsvStatus();
+}
+
+function updateFooterCsvStatus(csvFileName = null) {
+    const dot   = document.getElementById('footerCsvStatus');
+    const label = document.getElementById('footerCsvLabel');
+    if (!dot || !label) return;
+
+    const fileName = csvFileName || localStorage.getItem('stockSense_uploadedFile');
+    if (fileName) {
+        dot.className   = 'status-dot success-dot';
+        label.textContent = fileName.length > 22 ? fileName.substring(0, 20) + '…' : fileName;
+    } else {
+        dot.className   = 'status-dot warning-dot';
+        label.textContent = 'No CSV Uploaded';
     }
 }

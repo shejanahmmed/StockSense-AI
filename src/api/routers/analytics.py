@@ -220,8 +220,13 @@ async def predict_demand(
         if future_holidays:
             next_date = min(future_holidays.keys())
             upcoming_event_name = future_holidays[next_date]
+            upcoming_event_date = next_date.strftime("%b %d, %Y")
         else:
             upcoming_event_name = "End of Month Sale"
+            # Last day of current month as a fallback
+            import calendar
+            last_day = calendar.monthrange(today.year, today.month)[1]
+            upcoming_event_date = today.replace(day=last_day).strftime("%b %d, %Y")
 
         # â”€â”€ Per-product loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         # org_name already resolved above
@@ -386,6 +391,7 @@ async def predict_demand(
                 "demand_trend": "Rising" if overall_pct > 0 else "Falling",
                 "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this week",
                 "upcoming_event": upcoming_event_name,
+                "upcoming_event_date": upcoming_event_date,
                 "event_impact": "+15% expected",
                 "avg_margin": "24.5%",
                 "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",

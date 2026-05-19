@@ -557,6 +557,70 @@
                     </button>
                 </div>
             </div>
+            <!-- ===================== FOOTER ===================== -->
+            <footer class="app-footer glass-panel">
+                <div class="footer-inner">
+
+                    <!-- Left: Brand -->
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <div class="logo-icon" style="width:32px;height:32px;border-radius:10px;background:transparent;">
+                                <img src="assets/logo/StockSense%20AI.svg" alt="StockSense Logo" style="width:100%;height:100%;object-fit:contain;">
+                            </div>
+                            <span>StockSense <span class="gradient-text">AI</span></span>
+                        </div>
+                        <p class="footer-tagline">Enterprise-grade demand forecasting &amp; supply chain intelligence powered by machine learning.</p>
+                        <div class="footer-badges">
+                            <span class="footer-badge"><i class="fa-solid fa-microchip"></i> Prophet ML</span>
+                            <span class="footer-badge"><i class="fa-solid fa-bolt"></i> FastAPI</span>
+                            <span class="footer-badge"><i class="fa-solid fa-database"></i> SQLite</span>
+                        </div>
+                    </div>
+
+                    <!-- Center: Navigation -->
+                    <div class="footer-nav-group">
+                        <h4 class="footer-heading">Platform</h4>
+                        <a href="#" class="footer-link" id="footerNavDashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                        <a href="#" class="footer-link" id="footerNavInventory"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+                        <a href="#" class="footer-link" id="footerNavInsights"><i class="fa-solid fa-brain"></i> AI Insights</a>
+                        <a href="#" class="footer-link" id="footerNavSettings"><i class="fa-solid fa-gear"></i> Settings</a>
+                    </div>
+
+                    <!-- Right: System Status -->
+                    <div class="footer-nav-group">
+                        <h4 class="footer-heading">System Status</h4>
+                        <div class="footer-status-item">
+                            <span class="status-dot success-dot"></span>
+                            <span>Forecasting Engine</span>
+                        </div>
+                        <div class="footer-status-item">
+                            <span class="status-dot success-dot"></span>
+                            <span>API Gateway</span>
+                        </div>
+                        <div class="footer-status-item">
+                            <span class="status-dot success-dot"></span>
+                            <span>Database</span>
+                        </div>
+                        <div class="footer-status-item">
+                            <span class="status-dot" id="footerCsvStatus"></span>
+                            <span id="footerCsvLabel">No CSV Uploaded</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Bottom bar -->
+                <div class="footer-bottom">
+                    <span style="color:var(--text-muted);font-size:0.78rem;">
+                        &copy; <span id="footerYear"></span> StockSense AI &mdash; All rights reserved.
+                    </span>
+                    <span style="color:var(--text-muted);font-size:0.78rem;display:flex;align-items:center;gap:0.4rem;">
+                        <i class="fa-solid fa-shield-halved" style="color:var(--accent-primary);"></i>
+                        Secured &bull; JWT Auth &bull; SHA-256 Hashed Storage
+                    </span>
+                </div>
+            </footer>
+
         </main>
     </div>
 
