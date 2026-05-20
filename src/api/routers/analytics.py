@@ -36,16 +36,41 @@ def _compute_product_status(stock: int, reorder_point: int) -> str:
     return "In Stock"
 
 
-def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD") -> dict:
+def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD", date_min=None, date_max=None) -> dict:
     """Run the full feature-engineering + Prophet pipeline for a single product's time series."""
-    product_df = product_df.sort_values('date')
+    product_df = product_df.copy()
+    product_df['date'] = pd.to_datetime(product_df['date'])
 
-    last_date = pd.to_datetime(product_df['date']).max()
+    # Aggregate to ONE row per date. If the CSV has multiple transaction rows
+    # per day for a product, Prophet would train on individual transaction values
+    # instead of the correct daily total, causing a scale mismatch vs. the chart.
+    product_daily = (
+        product_df
+        .groupby('date', as_index=False)
+        .agg(sales_qty=('sales_qty', 'sum'),
+             promo=('promo', 'max'),
+             holiday=('holiday', 'max'))
+        .sort_values('date')
+    )
+
+    # Reindex daily aggregate to fill missing dates with 0. This ensures a continuous daily time
+    # series is fed to Prophet and used for recent 30-calendar-day mean anchoring, correcting
+    # major forecasting inflation spikes on sparse/slow-moving SKU records.
+    if date_min is not None and date_max is not None:
+        product_daily = product_daily.set_index('date')
+        full_idx = pd.date_range(start=date_min, end=date_max, freq='D')
+        product_daily = product_daily.reindex(full_idx, fill_value=0).reset_index()
+        product_daily = product_daily.rename(columns={'index': 'date'})
+    else:
+        product_daily = product_daily.reset_index(drop=True)
+
+
+    last_date = product_daily['date'].max()
     future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, forecast_horizon + 1)]
     future_df = pd.DataFrame({'date': future_dates})
 
     combined_df = pd.concat(
-        [product_df[['date', 'sales_qty', 'promo', 'holiday']]
+        [product_daily[['date', 'sales_qty', 'promo', 'holiday']]
          .rename(columns={'sales_qty': 'sales'}),
          future_df],
         ignore_index=True
@@ -55,29 +80,57 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
     future_mask = combined_df['sales'].isna()
 
     combined_df['holiday'] = combined_df['date'].apply(lambda d: 1 if d in local_holidays else 0)
-    # Assume promotions in future run on the primary off-day (Friday (4) for BD, Sunday (6) for other regions)
-    primary_off_day = 4 if region == "BD" else 6
-    combined_df.loc[future_mask, 'promo'] = (combined_df.loc[future_mask, 'day_of_week'] == primary_off_day).astype(int)
+    # Set future promotions to 0 to represent organic baseline demand.
+    combined_df.loc[future_mask, 'promo'] = 0
     combined_df.loc[~future_mask, 'promo'] = combined_df.loc[~future_mask, 'promo'].fillna(0)
 
-    combined_df = create_lag_features(combined_df, lags=[7, 30])
-    combined_df['temp_sales'] = combined_df['sales'].ffill()
-    combined_df = create_rolling_stats(combined_df, target_col='temp_sales', windows=[7, 30])
-    combined_df = combined_df.drop(columns=['temp_sales']).fillna(0)
+    # Only pass truly EXOGENOUS regressors to Prophet — events that are
+    # EXTERNAL to the time series and not already modelled internally.
+    #
+    # ❌ REMOVED: day_of_week, month, is_weekend
+    #    These are temporal features already fully captured by Prophet's own
+    #    weekly_seasonality component. Passing them as additional regressors
+    #    causes double-counting: the weekly component adds +30 for a peak day
+    #    AND the day_of_week regressor adds another +20 for the same day.
+    #    With more training data (181/365 days) the regressor coefficients
+    #    grow stronger, inflating peak-day predictions by 3-4x.
+    #
+    # ✅ KEPT: promo, holiday
+    #    These are genuinely external events Prophet cannot learn on its own.
+    EXOGENOUS_COLS = ['date', 'sales', 'promo', 'holiday']
+    model_cols = [c for c in EXOGENOUS_COLS if c in combined_df.columns]
 
-    processed_df = combined_df[~future_mask].copy()
-    processed_future_df = combined_df[future_mask].copy()
+    processed_df        = combined_df.loc[~future_mask, model_cols].fillna(0).copy()
+    processed_future_df = combined_df.loc[future_mask,  model_cols].fillna(0).copy()
 
-    # Per-product model cache key
-    sku_hash = hashlib.md5(product_df['product_id'].iloc[0].encode()).hexdigest()
+    # Per-product model cache key — always retrain so stale models don't persist.
+    sku_hash   = hashlib.md5(product_df['product_id'].iloc[0].encode()).hexdigest()
     model_path = models_dir / f"{sku_hash}.json"
-
     if model_path.exists():
-        model = DemandProphetModel.load(model_path)
-    else:
-        model = DemandProphetModel(yearly_seasonality=True, weekly_seasonality=True)
-        model.train(processed_df)
-        model.save(model_path)
+        model_path.unlink()
+
+    # ── Prophet hyperparameters ──────────────────────────────────────────────
+    # growth='flat': no trend extrapolation. With only 1-2 years of data a
+    #   linear trend would project 2x the recent baseline into the next month.
+    #
+    # yearly_seasonality: requires AT LEAST 2 full years (730 days) of data.
+    #   With a single year Prophet memorises whatever happened in the same
+    #   calendar month last year and reprojects it — even if that was a fluke
+    #   spike — producing 3-4x over-predictions. Disable below 730 days.
+    #
+    # seasonality_prior_scale=5 (default 10): more conservative regularisation
+    #   so weekly amplitude doesn't overfit to noisy peaks in the training data.
+    data_span_days = (product_daily['date'].max() - product_daily['date'].min()).days
+    use_yearly_seasonality = data_span_days >= 730
+
+    model = DemandProphetModel(
+        growth='flat',
+        yearly_seasonality=use_yearly_seasonality,
+        weekly_seasonality=True,
+        seasonality_prior_scale=5,
+    )
+    model.train(processed_df)
+    model.save(model_path)
 
     forecast = model.predict(processed_future_df)
     forecast_result = forecast.rename(columns={
@@ -86,10 +139,40 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
     })
     forecast_result['date'] = forecast_result['date'].dt.strftime('%Y-%m-%d')
 
-    historical_df = product_df.sort_values('date').tail(14)
-    current_week_sales = int(historical_df.tail(7)['sales_qty'].sum())
+    # ── Post-hoc level correction ────────────────────────────────────────────
+    # Stage 1 – Mean-anchor: scale Prophet's output so its mean exactly
+    # matches the recent 30-day historical mean. Prophet's flat-growth model
+    # should already be close, but the weekly seasonality component can still
+    # push the average up or down. This one-line correction is the strongest
+    # possible guard: no matter what Prophet predicts, the forecast level is
+    # always anchored to actual recent sales.
+    recent_sales  = product_daily['sales_qty'].tail(30)
+    hist_mean     = recent_sales.mean()
+    prophet_mean  = forecast_result['predicted_sales'].mean()
+
+    if prophet_mean > 0:
+        scale = hist_mean / prophet_mean
+        forecast_result['predicted_sales'] = forecast_result['predicted_sales'] * scale
+        forecast_result['lower_bound']     = forecast_result['lower_bound']     * scale
+        forecast_result['upper_bound']     = forecast_result['upper_bound']     * scale
+
+    # Stage 2 – Hard cap: clip any single-day spike to 1.5× the highest
+    # daily sales seen in the last 30 days. This prevents extreme weekly-peak
+    # days from going far beyond what has ever been observed.
+    hist_max  = recent_sales.max()
+    hard_ceil = max(hist_max * 1.5, hist_mean * 2.0)   # whichever is larger
+    hard_floor = 0.0
+
+    forecast_result['predicted_sales'] = forecast_result['predicted_sales'].clip(hard_floor, hard_ceil)
+    forecast_result['lower_bound']     = forecast_result['lower_bound'].clip(hard_floor, hard_ceil)
+    forecast_result['upper_bound']     = forecast_result['upper_bound'].clip(hard_floor, hard_ceil)
+
+    # Use product_daily (already date-aggregated) for KPI calculations.
+    # Align the historical sales window to match the length of the forecast horizon dynamically.
+    current_week_sales   = int(product_daily.tail(forecast_horizon)['sales_qty'].sum())
     next_week_sales = max(0, int(forecast_result['predicted_sales'].sum()))
     percent_change = ((next_week_sales - current_week_sales) / current_week_sales * 100) if current_week_sales > 0 else 0
+
 
     return {
         "forecast": forecast_result[['date', 'predicted_sales', 'lower_bound', 'upper_bound']].to_dict(orient='records'),
@@ -226,7 +309,30 @@ async def predict_demand(
         future_holidays = {d: n for d, n in local_holidays.items() if d > csv_end_date}
         if future_holidays:
             next_date = min(future_holidays.keys())
-            upcoming_event_name = future_holidays[next_date]
+            raw_name  = future_holidays[next_date]
+
+            # The `holidays` library returns Bangla strings for the BD locale.
+            # Map every known Bangladesh public holiday to its English name.
+            BD_HOLIDAY_EN = {
+                "শহীদ দিবস ও আন্তর্জাতিক মাতৃভাষা দিবস": "International Mother Language Day",
+                "জাতির জনকের জন্মদিন ও জাতীয় শিশু দিবস": "National Children's Day (Sheikh Mujibur Rahman's Birthday)",
+                "স্বাধীনতা ও জাতীয় দিবস": "Independence & National Day",
+                "শব-ই-বরাত": "Shab-e-Barat",
+                "বাংলা নববর্ষ": "Bengali New Year (Pohela Boishakh)",
+                "মে দিবস": "May Day (International Workers' Day)",
+                "বুদ্ধ পূর্ণিমা": "Buddha Purnima",
+                "ঈদুল ফিতর": "Eid ul-Fitr",
+                "ঈদুল আযহা": "Eid ul-Adha",
+                "জাতীয় শোক দিবস": "National Mourning Day",
+                "জন্মাষ্টমী": "Janmashtami",
+                "ঈদে মিলাদুন্নবী (সাঃ)": "Eid-e-Miladunnabi (Prophet's Birthday)",
+                "দুর্গাপূজা": "Durga Puja",
+                "বিজয় দিবস": "Victory Day",
+                "বড়দিন": "Christmas Day",
+                "আশুরা": "Ashura",
+            }
+            upcoming_event_name = BD_HOLIDAY_EN.get(raw_name, raw_name)
+
             upcoming_event_date = next_date.strftime("%b %d, %Y")
         else:
             upcoming_event_name = "End of Period"
@@ -259,7 +365,15 @@ async def predict_demand(
 
             # Run forecast
             try:
-                result = _forecast_for_product(product_df.copy(), local_holidays, strategy, forecast_horizon, region)
+                result = _forecast_for_product(
+                    product_df.copy(),
+                    local_holidays,
+                    strategy,
+                    forecast_horizon,
+                    region,
+                    date_min=date_min,
+                    date_max=date_max
+                )
             except Exception:
                 # Skip products with insufficient data
                 result = {
@@ -333,12 +447,14 @@ async def predict_demand(
             if aggregate_current_week > 0 else 0
         )
 
-        # â”€â”€ Aggregate historical chart data (all SKUs combined by date) â”€â”€â”€â”€â”€â”€
+        # ── Aggregate historical chart data (all SKUs combined by date) ──────
+        # Show as many historical days as the forecast horizon so both sides
+        # of the chart are symmetric and show comparable time windows.
         historical_agg = (
             df.groupby('date')['sales_qty'].sum()
             .reset_index()
             .sort_values('date')
-            .tail(14)
+            .tail(forecast_horizon)
         )
         historical_agg['date'] = historical_agg['date'].dt.strftime('%Y-%m-%d')
         historical_records = historical_agg.rename(columns={'sales_qty': 'sales'}).to_dict(orient='records')
@@ -362,7 +478,7 @@ async def predict_demand(
                 "store_id": org_name,
                 "product_category": "All Products",
                 "current_stock_level": aggregate_current_stock,
-                "days_forecasted": 7,
+                "days_forecasted": forecast_horizon,
                 "engine_strategy": strategy,
             },
             "risk_factors": {
@@ -372,8 +488,24 @@ async def predict_demand(
         }
         insight_text = generate_insight(insight_payload)
 
-        # Pick first product's forecast for the main chart display
-        chart_forecast = all_product_results[0]["forecast"] if all_product_results else []
+        # Fix: Build an AGGREGATE forecast chart so the predicted line is on
+        # the same scale as the aggregate historical line. Previously only the
+        # first product's forecast was shown, which looked tiny vs. the sum.
+        if all_product_results:
+            from collections import defaultdict
+            agg_by_date: dict = defaultdict(lambda: {"predicted_sales": 0.0, "lower_bound": 0.0, "upper_bound": 0.0})
+            for prod in all_product_results:
+                for row in prod["forecast"]:
+                    d = row["date"]
+                    agg_by_date[d]["predicted_sales"] += row["predicted_sales"]
+                    agg_by_date[d]["lower_bound"]     += row["lower_bound"]
+                    agg_by_date[d]["upper_bound"]     += row["upper_bound"]
+            chart_forecast = [
+                {"date": d, **vals}
+                for d, vals in sorted(agg_by_date.items())
+            ]
+        else:
+            chart_forecast = []
 
         return {
             "status": "success",
@@ -390,11 +522,11 @@ async def predict_demand(
                 "at_risk_products": len(at_risk),
             },
             "bi_metrics": {
-                "daily_sales": int(aggregate_current_week / 7) if aggregate_current_week > 0 else 0,
-                "daily_forecast": int(aggregate_next_week / 7) if aggregate_next_week > 0 else 0,
+                "daily_sales": int(aggregate_current_week / forecast_horizon) if aggregate_current_week > 0 else 0,
+                "daily_forecast": int(aggregate_next_week / forecast_horizon) if aggregate_next_week > 0 else 0,
                 "cash_flow": int(aggregate_next_week * 50), # Mock avg $50 per unit
                 "demand_trend": "Rising" if overall_pct > 0 else "Falling",
-                "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this week",
+                "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this period",
                 "upcoming_event": upcoming_event_name,
                 "upcoming_event_date": upcoming_event_date,
                 "event_impact": "+15% expected",

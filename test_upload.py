@@ -4,11 +4,11 @@ BASE = 'http://localhost:8000'
 login = requests.post(BASE+'/api/user/login', json={'org_name': 'TestStore', 'industry': 'Electronics', 'password': 'test123'})
 token = login.json()['token']
 
-with open('data/raw/sample_multi_product.csv', 'rb') as f:
+with open('data/raw/camp_uploaded.csv', 'rb') as f:
     r = requests.post(
         BASE+'/api/predict?strategy=balanced&deep_learning=true&region=BD',
         headers={'Authorization': 'Bearer ' + token},
-        files={'file': ('sample.csv', f, 'text/csv')},
+        files={'file': ('camp_uploaded.csv', f, 'text/csv')},
         timeout=120
     )
 
