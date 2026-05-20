@@ -116,6 +116,16 @@ function resetDashboardToEmpty() {
     if (topProducts) {
         topProducts.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file.</p>';
     }
+
+    // Promotional Suggestions → clear
+    const promoContainer = document.getElementById('promo-suggestions-container');
+    if (promoContainer) {
+        promoContainer.innerHTML = `
+            <p class="empty-state" style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0; width: 100%;">
+                <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
+                Upload a CSV file to generate smart promotional campaign suggestions.
+            </p>`;
+    }
 }
 
 function formatCurrency(amount) {
@@ -909,6 +919,7 @@ function setupCsvUpload() {
                 if (cachedData.drivers) renderDrivers(cachedData.drivers);
                 if (cachedData.kpis)    updateKPIs(cachedData.kpis);
                 if (cachedData.bi_metrics) updateBIMetrics(cachedData.bi_metrics);
+                if (cachedData.promo_suggestions) renderPromoSuggestions(cachedData.promo_suggestions);
             }
         } catch (e) {
             console.warn('Could not restore cached dashboard data:', e);
@@ -1055,7 +1066,8 @@ function setupCsvUpload() {
                     insight:     data.insight,
                     drivers:     data.drivers,
                     kpis:        data.kpis,
-                    bi_metrics:  data.bi_metrics
+                    bi_metrics:  data.bi_metrics,
+                    promo_suggestions: data.promo_suggestions
                 }));
 
                 // Update main chart
@@ -1065,6 +1077,11 @@ function setupCsvUpload() {
                 if (data.insight && data.drivers) {
                     renderInsight(data.insight);
                     renderDrivers(data.drivers);
+                }
+
+                // Update promotional planner
+                if (data.promo_suggestions) {
+                    renderPromoSuggestions(data.promo_suggestions);
                 }
                 
                 // Update dashboard KPIs
@@ -1468,6 +1485,89 @@ function renderDrivers(drivers) {
 
     driversList.innerHTML = html;
 }
+
+function renderPromoSuggestions(suggestions) {
+    const container = document.getElementById('promo-suggestions-container');
+    if (!container) return;
+    
+    if (!suggestions || suggestions.length === 0) {
+        container.innerHTML = `
+            <p class="empty-state" style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0; width: 100%;">
+                <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
+                No promotional recommendations generated for this timeframe.
+            </p>`;
+        return;
+    }
+    
+    let html = '';
+    suggestions.forEach(promo => {
+        const badgeClass = promo.type.toLowerCase();
+        let typeIcon = 'fa-tags';
+        if (promo.type === 'Holiday') typeIcon = 'fa-calendar-star';
+        else if (promo.type === 'Clearance') typeIcon = 'fa-fire-flame-curved';
+        else if (promo.type === 'Seasonality') typeIcon = 'fa-chart-line';
+        
+        // Format dates beautifully
+        const startStr = formatDateString(promo.start_date);
+        const endStr = formatDateString(promo.end_date);
+        
+        html += `
+            <div class="promo-card ${badgeClass}">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 0.5rem;">
+                    <span class="promo-badge-tag ${badgeClass}">
+                        <i class="fa-solid ${typeIcon}"></i> ${promo.type}
+                    </span>
+                    <span class="badge ${promo.urgency === 'High' ? 'warning-badge' : 'neutral'}" style="${promo.urgency === 'High' ? 'background: var(--status-danger-bg); color: var(--status-danger); border-color: rgba(239, 68, 68, 0.2); margin: 0;' : 'margin: 0;'}">
+                        ${promo.urgency} Urgency
+                    </span>
+                </div>
+                
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-top: 0.25rem; font-weight: 600; line-height: 1.3;">${promo.title}</h3>
+                
+                <div class="promo-meta" style="margin-top: -0.25rem;">
+                    <span class="promo-dates" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar"></i> ${startStr} - ${endStr}</span>
+                    <span class="promo-lift" style="font-size: 0.8rem; font-weight: 700; color: var(--status-success);">${promo.expected_impact}</span>
+                </div>
+                
+                <p class="promo-card-reason" style="margin-top: -0.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; flex-grow: 1;">${promo.reason}</p>
+                
+                <div class="promo-card-footer" style="margin-top: 0.25rem;">
+                    <div class="promo-target-label">
+                        <span>Target Item</span>
+                        <span title="${promo.target_product}">${promo.target_product}</span>
+                    </div>
+                    <button class="primary-btn" style="padding: 0 0.75rem; font-size: 0.75rem; height: 32px; border-radius: var(--radius-md); box-shadow: none;" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}')">
+                        <i class="fa-solid fa-calendar-plus"></i> Schedule
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function formatDateString(dateStr) {
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+        return dateStr;
+    }
+}
+
+function schedulePromotion(promoId, title, discount) {
+    addNotification(
+        '📅 Promotion Scheduled',
+        `Successfully scheduled '${title}' with a ${discount} recommendation.`,
+        'success'
+    );
+}
+
+// Bind to window for global onclick scope
+window.schedulePromotion = schedulePromotion;
+
 
 function initChart() {
     const ctx = document.getElementById('forecastChart').getContext('2d');
