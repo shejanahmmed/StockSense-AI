@@ -574,6 +574,127 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Privacy Policy View -->
+            <div class="privacy-content" id="privacyView" style="display: none;">
+                <!-- Full-Width Header -->
+                <div class="privacy-header">
+                    <button class="secondary-btn" id="privacyBackBtn" style="width: fit-content; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); transition: var(--transition-smooth);">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 0.5rem; color: var(--accent-primary);"></i> Back to Dashboard
+                    </button>
+                    <div class="privacy-title-wrapper" style="margin-top: 1.5rem;">
+                        <h1 class="gradient-text"><i class="fa-solid fa-shield-halved"></i> Privacy Policy</h1>
+                        <p class="subtitle">Effective Date: May 20, 2026 | StockSense AI Data Sovereignty &amp; Security Commitment</p>
+                    </div>
+                </div>
+
+                <!-- Two-Column Workspace -->
+                <div class="privacy-workspace">
+                    <!-- Left: Table of Contents (Sticky Sidebar) -->
+                    <aside class="privacy-toc-sidebar glass-panel">
+                        <h3 class="toc-title">Sections</h3>
+                        <nav class="toc-nav">
+                            <a href="#privacy-intro" class="toc-link active"><i class="fa-solid fa-file-contract"></i> Scope &amp; Introduction</a>
+                            <a href="#privacy-sovereignty" class="toc-link"><i class="fa-solid fa-server"></i> Local-First Custody</a>
+                            <a href="#privacy-csv" class="toc-link"><i class="fa-solid fa-file-csv"></i> CSV Ingestion Policies</a>
+                            <a href="#privacy-ml" class="toc-link"><i class="fa-solid fa-microchip"></i> Forecasting &amp; ML</a>
+                            <a href="#privacy-llm" class="toc-link"><i class="fa-solid fa-wand-magic-sparkles"></i> LLM Context Processing</a>
+                            <a href="#privacy-auth" class="toc-link"><i class="fa-solid fa-user-lock"></i> Session Security</a>
+                            <a href="#privacy-purge" class="toc-link"><i class="fa-solid fa-trash-can"></i> Right to Erasure</a>
+                            <a href="#privacy-compliance" class="toc-link"><i class="fa-solid fa-circle-info"></i> Inquiries &amp; Compliance</a>
+                        </nav>
+                    </aside>
+
+                    <!-- Right: Main Legal Text (Clean and spacious layout) -->
+                    <article class="privacy-document-body">
+                        <section id="privacy-intro" class="privacy-doc-section">
+                            <div class="privacy-quote-block">
+                                <p>
+                                    At StockSense AI, we treat your business intelligence with enterprise-grade respect. We design our prediction algorithms, storage parameters, and deep-learning endpoints around an absolute dedication to data minimization and client-side control.
+                                </p>
+                            </div>
+                            <p class="privacy-doc-para">
+                                StockSense AI ("we", "us", or "our") is committed to protecting the privacy, confidentiality, and security of your corporate and operational data. This policy details how we treat uploaded multi-product CSV sales data, authentication credentials, and AI inference requests when you use the StockSense AI platform.
+                            </p>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-sovereignty" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">1. Local-First &amp; Client-Side Sovereignty</h2>
+                            <p class="privacy-doc-para">
+                                StockSense AI prioritizes <strong>local data custody</strong>. Your active inventory parameters, transaction records, and historical margins are cached locally in your secure client environment. The primary system store operates on an isolated, containerized <strong>SQLite database</strong>. All credentials required to authorize access are locally compiled and secured using cryptographic <strong>SHA-256 hashing algorithms</strong>.
+                            </p>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-csv" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">2. CSV Sales Dataset Ingestion</h2>
+                            <p class="privacy-doc-para">
+                                When you leverage the bulk upload tool to upload inventory or historic sales CSVs:
+                            </p>
+                            <ul class="privacy-doc-list">
+                                <li><strong>Processing Boundary:</strong> Data parsed from your CSV file (including timestamps, item quantities, prices, and event contexts) is isolated and stored within your private container instance.</li>
+                                <li><strong>No Commercial Exploitation:</strong> StockSense AI does not aggregate, compile, sell, or rent your transactional histories, product names, or pricing strategies to third parties.</li>
+                            </ul>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-ml" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">3. Forecasting Algorithms &amp; ML Engines</h2>
+                            <p class="privacy-doc-para">
+                                Demand forecasting, safety stock thresholds, and replenishment intervals are computed using mathematical models (such as the <strong>Prophet Forecasting Model</strong>) running within isolated python subprocesses. There is no external pooling of prediction weights across client instances, ensuring your competitive trading margins remain entirely proprietary.
+                            </p>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-llm" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">4. Large Language Model (LLM) Processing</h2>
+                            <p class="privacy-doc-para">
+                                For strategic business insight synthesis and natural language chat interactions:
+                            </p>
+                            <ul class="privacy-doc-list">
+                                <li><strong>Contextual Queries:</strong> The platform formats raw metrics (e.g. holiday calendar correlation, promotion cycles) into highly filtered operational prompts.</li>
+                                <li><strong>Zero-Data Retention API:</strong> LLM requests are dispatched using secure HTTPS tunnels to partner API gateways governed under enterprise clauses: no prompts, historical payloads, or forecasting outputs are preserved by the provider or used to train public base models.</li>
+                            </ul>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-auth" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">5. Token Authorization &amp; Session Security</h2>
+                            <p class="privacy-doc-para">
+                                Access to backend routes (FastAPI) is governed by <strong>JSON Web Tokens (JWT)</strong>. Session tokens are cached in temporary local storage (`localStorage`) and expire automatically after a predefined duration. This prevents session hijacking and maintains stateless API integrity.
+                            </p>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-purge" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">6. Absolute Purge &amp; Data Erasure Right</h2>
+                            <p class="privacy-doc-para">
+                                In alignment with data minimization principles (such as GDPR Art. 17 "Right to Erasure"), you maintain absolute control over the data lifecycle. You can execute a complete and irreversible purge of all local storage records, session indicators, trained ML parameters, and SQL data entries by using the <strong>"Danger Zone"</strong> option located in your <a href="#" id="privacyToSettingsBtn" style="color: var(--accent-primary); text-decoration: none; font-weight: 500; transition: var(--transition-smooth); border-bottom: 1px dashed rgba(139, 92, 246, 0.4);" onmouseover="this.style.borderColor='var(--accent-primary)'" onmouseout="this.style.borderColor='rgba(139, 92, 246, 0.4)'">System Settings</a> tab.
+                            </p>
+                        </section>
+
+                        <hr class="privacy-section-divider">
+
+                        <section id="privacy-compliance" class="privacy-doc-section">
+                            <h2 class="privacy-doc-subtitle">7. Enterprise Inquiries &amp; Compliance</h2>
+                            <p class="privacy-doc-para">
+                                If your legal department requires a customized Data Processing Addendum (DPA) or if you have specific regulatory compliance questions, please contact our privacy compliance desk at <a href="mailto:support@stocksense.ai" class="privacy-compliance-link">support@stocksense.ai</a>.
+                            </p>
+                            <div class="privacy-compliance-banner">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>For custom hosting arrangements or on-premises deployment support, please coordinate with your account executive.</span>
+                            </div>
+                        </section>
+                    </article>
+                </div>
+            </div>
             <!-- ===================== FOOTER ===================== -->
             <footer class="app-footer glass-panel">
                 <div class="footer-inner">

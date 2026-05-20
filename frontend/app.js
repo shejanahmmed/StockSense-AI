@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 10. Initialize Footer
     initFooter();
 
+    // 11. Initialize Privacy Scroll-Spy
+    initPrivacyScrollSpy();
+
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
@@ -156,6 +159,7 @@ function setupNavigation() {
     const inventoryView = document.getElementById('inventoryView');
     const insightsView = document.getElementById('insightsView');
     const settingsView = document.getElementById('settingsView');
+    const privacyView = document.getElementById('privacyView');
 
     let currentView = 'dashboard';
 
@@ -164,6 +168,7 @@ function setupNavigation() {
         inventoryView.style.display = 'none';
         insightsView.style.display = 'none';
         settingsView.style.display = 'none';
+        if (privacyView) privacyView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -172,6 +177,13 @@ function setupNavigation() {
         currentView = view;
         localStorage.setItem('stockSense_activeView', view);
         hideAll();
+
+        // Toggle top-bar visibility (hide it on privacy view to clean up layout)
+        const topBar = document.querySelector('.top-bar');
+        if (topBar) {
+            topBar.style.display = (view === 'privacy') ? 'none' : 'flex';
+        }
+
         if (view === 'dashboard') {
             navDashboard.classList.add('active');
             dashboardView.style.display = 'flex';
@@ -186,18 +198,47 @@ function setupNavigation() {
         } else if (view === 'settings') {
             navSettings.classList.add('active');
             settingsView.style.display = 'flex';
+        } else if (view === 'privacy') {
+            if (privacyView) privacyView.style.display = 'flex';
         }
     }
 
     // Restore last active view from localStorage
     const savedView = localStorage.getItem('stockSense_activeView') || 'dashboard';
-    currentView = 'dashboard'; // reset before switching
+    currentView = null; // reset to null to force switchView execution
     switchView(savedView);
 
     navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
     navInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
     navInsights.addEventListener('click',  (e) => { e.preventDefault(); switchView('insights');  });
     navSettings.addEventListener('click',  (e) => { e.preventDefault(); switchView('settings');  });
+
+    // Wire up Privacy View triggers
+    const footerNavPrivacy = document.getElementById('footerNavPrivacy');
+    if (footerNavPrivacy) {
+        footerNavPrivacy.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('privacy');
+            // Scroll back to top
+            document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    const privacyBackBtn = document.getElementById('privacyBackBtn');
+    if (privacyBackBtn) {
+        privacyBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
+    const privacyToSettingsBtn = document.getElementById('privacyToSettingsBtn');
+    if (privacyToSettingsBtn) {
+        privacyToSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('settings');
+        });
+    }
 
     // Auto-hide Top Navbar on scroll
     const mainContent = document.querySelector('.main-content');
@@ -2223,4 +2264,61 @@ function updateFooterCsvStatus(csvFileName = null) {
         dot.className   = 'status-dot warning-dot';
         label.textContent = 'No CSV Uploaded';
     }
+}
+
+// Table of Contents Scroll-Spy for the Privacy Policy view
+function initPrivacyScrollSpy() {
+    const mainContent = document.querySelector('.main-content');
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const sections = document.querySelectorAll('.privacy-doc-section');
+    if (!mainContent || tocLinks.length === 0 || sections.length === 0) return;
+
+    mainContent.addEventListener('scroll', () => {
+        // Only run scroll spy calculation if privacy view is currently active
+        const privacyView = document.getElementById('privacyView');
+        if (!privacyView || privacyView.style.display === 'none') return;
+
+        let currentSectionId = '';
+        const scrollContainerTop = mainContent.getBoundingClientRect().top;
+        
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            // Checking if the top of the section is scrolled within reach of the top-navbar offset
+            if (rect.top - scrollContainerTop <= 150) {
+                currentSectionId = section.getAttribute('id');
+            }
+        });
+
+        if (currentSectionId) {
+            tocLinks.forEach(link => {
+                if (link.getAttribute('href') === `#${currentSectionId}`) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+    });
+
+    // Handle smooth scrolling when TOC links are clicked
+    tocLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+            if (targetSection) {
+                const containerScrollTop = mainContent.scrollTop;
+                const sectionTop = targetSection.getBoundingClientRect().top - mainContent.getBoundingClientRect().top;
+                
+                mainContent.scrollTo({
+                    top: containerScrollTop + sectionTop - 20, // 20px spacer above section
+                    behavior: 'smooth'
+                });
+
+                // Update active link immediately on click
+                tocLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            }
+        });
+    });
 }
