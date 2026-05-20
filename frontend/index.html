@@ -695,6 +695,139 @@
                     </article>
                 </div>
             </div>
+
+            <!-- Terms of Service View -->
+            <div class="legal-content" id="termsView" style="display: none;">
+                <!-- Full-Width Header -->
+                <div class="legal-header">
+                    <button class="secondary-btn" id="termsBackBtn" style="width: fit-content; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); transition: var(--transition-smooth);">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 0.5rem; color: var(--accent-primary);"></i> Back to Dashboard
+                    </button>
+                    <div class="legal-title-wrapper" style="margin-top: 1.5rem;">
+                        <h1 class="gradient-text"><i class="fa-solid fa-file-invoice"></i> Terms of Service</h1>
+                        <p class="subtitle">Effective Date: May 20, 2026 | StockSense AI Service Agreement &amp; Acceptable Use Policy</p>
+                    </div>
+                </div>
+
+                <!-- Two-Column Workspace -->
+                <div class="legal-workspace">
+                    <!-- Left: Table of Contents (Sticky Sidebar) -->
+                    <aside class="legal-toc-sidebar glass-panel">
+                        <h3 class="toc-title">Sections</h3>
+                        <nav class="toc-nav">
+                            <a href="#terms-acceptance" class="toc-link active"><i class="fa-solid fa-circle-check"></i> 1. Acceptance</a>
+                            <a href="#terms-scope" class="toc-link"><i class="fa-solid fa-microchip"></i> 2. Scope &amp; License</a>
+                            <a href="#terms-accounts" class="toc-link"><i class="fa-solid fa-user-shield"></i> 3. Accounts &amp; Custody</a>
+                            <a href="#terms-billing" class="toc-link"><i class="fa-solid fa-credit-card"></i> 4. Subscription &amp; Billing</a>
+                            <a href="#terms-prohibited" class="toc-link"><i class="fa-solid fa-ban"></i> 5. Prohibited Use</a>
+                            <a href="#terms-ip" class="toc-link"><i class="fa-solid fa-copyright"></i> 6. Intellectual Property</a>
+                            <a href="#terms-liability" class="toc-link"><i class="fa-solid fa-triangle-exclamation"></i> 7. Liability Limits</a>
+                            <a href="#terms-termination" class="toc-link"><i class="fa-solid fa-gavel"></i> 8. Governing Law</a>
+                        </nav>
+                    </aside>
+
+                    <!-- Right: Terms of Service Body -->
+                    <article class="legal-document-body">
+                        <section id="terms-acceptance" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">1. Acceptance of Terms</h2>
+                            <p class="legal-doc-para">
+                                By accessing or using the StockSense AI platform ("Service"), provided by StockSense AI, you agree to be bound by these Terms of Service ("Terms"). If you are entering into this agreement on behalf of an enterprise or organization, you represent that you have the legal authority to bind that entity. If you do not agree with any portion of these Terms, you must immediately cease all access and use of the platform.
+                            </p>
+                            <div class="legal-quote-block">
+                                <p>"Use of the platform constitutes legal acceptance of these Terms in full, forming a binding contract between you and StockSense AI."</p>
+                            </div>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-scope" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">2. Service Scope &amp; License</h2>
+                            <p class="legal-doc-para">
+                                StockSense AI grants you a limited, non-exclusive, non-transferable, revocable license to access and use our demand forecasting, inventory management, and supply chain analytics tools. This license is granted strictly for internal business operations and is subject to the terms and restrictions outlined herein.
+                            </p>
+                            <p class="legal-doc-para">
+                                We utilize advanced machine learning algorithms (such as Facebook Prophet) to generate predictive recommendations based on data you import. All predictions are generated local-first or via secure cloud APIs and are intended as business intelligence aids, not guaranteed guarantees of future product performance.
+                            </p>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-accounts" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">3. User Accounts &amp; Data Custody</h2>
+                            <p class="legal-doc-para">
+                                To access specific enterprise features, you must maintain an active user account secured by strong authentication. You are entirely responsible for maintaining the confidentiality of your account credentials (such as JWT tokens or API keys) and all actions performed under your account.
+                            </p>
+                            <p class="legal-doc-para">
+                                Under our strict data custody guidelines, your uploaded inventories, demand curves, and business files remain your proprietary data. StockSense AI does not sell, lease, or distribute your proprietary forecasting models. Data processed through local models resides in your browser memory or localized sandboxed storage.
+                            </p>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-billing" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">4. Subscription &amp; Billing</h2>
+                            <p class="legal-doc-para">
+                                Access to high-capacity forecasting pipelines, enterprise integrations, and concurrent team access requires a valid paid subscription. Billing is managed securely through authorized payment gateways, structured on recurring monthly or annual billing cycles.
+                            </p>
+                            <p class="legal-doc-para">
+                                All fees are exclusive of applicable taxes. You may cancel your subscription at any time; however, unless explicitly provided by local laws, payments are non-refundable and service will continue until the end of the current billing cycle.
+                            </p>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-prohibited" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">5. Prohibited Activities</h2>
+                            <p class="legal-doc-para">
+                                When using StockSense AI, you agree not to engage in or facilitate any of the following prohibited behaviors:
+                            </p>
+                            <ul class="legal-doc-list">
+                                <li><strong>Reverse Engineering:</strong> Attempting to reverse engineer, decompile, or extract the source code or proprietary model parameters of the Forecasting Engine.</li>
+                                <li><strong>API Abuse:</strong> Initiating automated denial of service (DoS) attacks or bypassing rate limits set on our forecasting endpoints.</li>
+                                <li><strong>Data Poisoning:</strong> Intentionally uploading corrupted, spoofed, or malicious datasets designed to disrupt the prediction metrics of the system.</li>
+                                <li><strong>Unauthorized Sharing:</strong> Redistributing access to the API or frontend user panels to unauthorized third-party operators.</li>
+                            </ul>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-ip" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">6. Intellectual Property</h2>
+                            <p class="legal-doc-para">
+                                The StockSense AI logo, application interface designs, analytical pipeline software, database schemas, and proprietary machine learning integrations are the exclusive intellectual property of StockSense AI and its licensors. You may not copy, replicate, or mirror any UI design or core code block without express written authorization.
+                            </p>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-liability" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">7. Limitation of Liability</h2>
+                            <p class="legal-doc-para">
+                                StockSense AI is provided "as is" and "as available," without warranty of any kind, express or implied. Due to the probabilistic nature of predictive analytics, StockSense AI does not guarantee absolute forecasting accuracy or specific business outcomes.
+                            </p>
+                            <p class="legal-doc-para">
+                                To the maximum extent permitted by law, StockSense AI, its directors, and employees will not be liable for any indirect, incidental, special, or consequential damages—including loss of profits, inventory spoilage, supply chain interruptions, or business disruptions—arising out of or in connection with the use of the platform.
+                            </p>
+                        </section>
+
+                        <hr class="legal-section-divider">
+
+                        <section id="terms-termination" class="legal-doc-section">
+                            <h2 class="legal-doc-subtitle">8. Termination &amp; Governing Law</h2>
+                            <p class="legal-doc-para">
+                                We reserve the right to suspend or terminate your access to the Service at our sole discretion, without prior notice, if you breach any provisions of these Terms or engage in conduct that harms other users or the integrity of the platform.
+                            </p>
+                            <p class="legal-doc-para">
+                                These Terms and any disputes arising under them shall be governed by and construed in accordance with the laws of the jurisdiction in which StockSense AI resides, without regard to conflict of law principles.
+                            </p>
+                            <div class="legal-compliance-banner">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>For legal notifications, compliance requests, or inquiries regarding these Terms of Service, please contact our legal desk at <a href="mailto:legal@stocksense.ai" class="legal-compliance-link">legal@stocksense.ai</a>.</span>
+                            </div>
+                        </section>
+                    </article>
+                </div>
+            </div>
             <!-- ===================== FOOTER ===================== -->
             <footer class="app-footer glass-panel">
                 <div class="footer-inner">

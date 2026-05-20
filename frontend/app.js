@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 10. Initialize Footer
     initFooter();
 
-    // 11. Initialize Privacy Scroll-Spy
-    initPrivacyScrollSpy();
+    // 11. Initialize Legal Pages Scroll-Spy (Privacy + Terms of Service)
+    initLegalScrollSpy();
 
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
@@ -160,6 +160,7 @@ function setupNavigation() {
     const insightsView = document.getElementById('insightsView');
     const settingsView = document.getElementById('settingsView');
     const privacyView = document.getElementById('privacyView');
+    const termsView  = document.getElementById('termsView');
 
     let currentView = 'dashboard';
 
@@ -169,6 +170,7 @@ function setupNavigation() {
         insightsView.style.display = 'none';
         settingsView.style.display = 'none';
         if (privacyView) privacyView.style.display = 'none';
+        if (termsView)  termsView.style.display  = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -178,10 +180,10 @@ function setupNavigation() {
         localStorage.setItem('stockSense_activeView', view);
         hideAll();
 
-        // Toggle top-bar visibility (hide it on privacy view to clean up layout)
+        // Toggle top-bar visibility (hide it on legal pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -200,6 +202,8 @@ function setupNavigation() {
             settingsView.style.display = 'flex';
         } else if (view === 'privacy') {
             if (privacyView) privacyView.style.display = 'flex';
+        } else if (view === 'terms') {
+            if (termsView) termsView.style.display = 'flex';
         }
     }
 
@@ -237,6 +241,24 @@ function setupNavigation() {
         privacyToSettingsBtn.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('settings');
+        });
+    }
+
+    // Wire up Terms of Service view triggers
+    const footerNavTerms = document.getElementById('footerNavTerms');
+    if (footerNavTerms) {
+        footerNavTerms.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('terms');
+            document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    const termsBackBtn = document.getElementById('termsBackBtn');
+    if (termsBackBtn) {
+        termsBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
         });
     }
 
@@ -2266,58 +2288,77 @@ function updateFooterCsvStatus(csvFileName = null) {
     }
 }
 
-// Table of Contents Scroll-Spy for the Privacy Policy view
-function initPrivacyScrollSpy() {
+// Table of Contents Scroll-Spy for Privacy Policy and Terms of Service views
+function initLegalScrollSpy() {
     const mainContent = document.querySelector('.main-content');
-    const tocLinks = document.querySelectorAll('.toc-link');
-    const sections = document.querySelectorAll('.privacy-doc-section');
-    if (!mainContent || tocLinks.length === 0 || sections.length === 0) return;
+    if (!mainContent) return;
 
-    mainContent.addEventListener('scroll', () => {
-        // Only run scroll spy calculation if privacy view is currently active
-        const privacyView = document.getElementById('privacyView');
-        if (!privacyView || privacyView.style.display === 'none') return;
+    // Build a combined map: viewId -> { sections, tocLinks }
+    const legalPages = [
+        {
+            viewId: 'privacyView',
+            sectionSelector: '.privacy-doc-section',
+            tocSelector: '#privacyView .toc-link'
+        },
+        {
+            viewId: 'termsView',
+            sectionSelector: '.legal-doc-section',
+            tocSelector: '#termsView .toc-link'
+        }
+    ];
 
-        let currentSectionId = '';
-        const scrollContainerTop = mainContent.getBoundingClientRect().top;
-        
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            // Checking if the top of the section is scrolled within reach of the top-navbar offset
-            if (rect.top - scrollContainerTop <= 150) {
-                currentSectionId = section.getAttribute('id');
-            }
-        });
-
-        if (currentSectionId) {
-            tocLinks.forEach(link => {
-                if (link.getAttribute('href') === `#${currentSectionId}`) {
+    // Attach smooth-scroll click handlers for every TOC link on both pages
+    legalPages.forEach(({ tocSelector }) => {
+        const tocLinks = document.querySelectorAll(tocSelector);
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    const containerScrollTop = mainContent.scrollTop;
+                    const sectionTop = targetSection.getBoundingClientRect().top
+                                     - mainContent.getBoundingClientRect().top;
+                    mainContent.scrollTo({
+                        top: containerScrollTop + sectionTop - 20,
+                        behavior: 'smooth'
+                    });
+                    // Highlight clicked link immediately
+                    tocLinks.forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
                 }
             });
-        }
+        });
     });
 
-    // Handle smooth scrolling when TOC links are clicked
-    tocLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-            if (targetSection) {
-                const containerScrollTop = mainContent.scrollTop;
-                const sectionTop = targetSection.getBoundingClientRect().top - mainContent.getBoundingClientRect().top;
-                
-                mainContent.scrollTo({
-                    top: containerScrollTop + sectionTop - 20, // 20px spacer above section
-                    behavior: 'smooth'
-                });
+    // Attach a single scroll listener; only the active legal view is processed
+    mainContent.addEventListener('scroll', () => {
+        legalPages.forEach(({ viewId, sectionSelector, tocSelector }) => {
+            const view = document.getElementById(viewId);
+            if (!view || view.style.display === 'none') return;
 
-                // Update active link immediately on click
-                tocLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+            const sections = document.querySelectorAll(sectionSelector);
+            const tocLinks = document.querySelectorAll(tocSelector);
+            if (sections.length === 0 || tocLinks.length === 0) return;
+
+            const scrollContainerTop = mainContent.getBoundingClientRect().top;
+            let currentSectionId = '';
+
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top - scrollContainerTop <= 150) {
+                    currentSectionId = section.getAttribute('id');
+                }
+            });
+
+            if (currentSectionId) {
+                tocLinks.forEach(link => {
+                    if (link.getAttribute('href') === `#${currentSectionId}`) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
             }
         });
     });
