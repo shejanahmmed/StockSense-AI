@@ -161,6 +161,7 @@ function setupNavigation() {
     const settingsView = document.getElementById('settingsView');
     const privacyView = document.getElementById('privacyView');
     const termsView  = document.getElementById('termsView');
+    const featuresView = document.getElementById('featuresView');
 
     let currentView = 'dashboard';
 
@@ -171,6 +172,7 @@ function setupNavigation() {
         settingsView.style.display = 'none';
         if (privacyView) privacyView.style.display = 'none';
         if (termsView)  termsView.style.display  = 'none';
+        if (featuresView) featuresView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -180,10 +182,10 @@ function setupNavigation() {
         localStorage.setItem('stockSense_activeView', view);
         hideAll();
 
-        // Toggle top-bar visibility (hide it on legal pages to clean up layout)
+        // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -204,6 +206,20 @@ function setupNavigation() {
             if (privacyView) privacyView.style.display = 'flex';
         } else if (view === 'terms') {
             if (termsView) termsView.style.display = 'flex';
+        } else if (view === 'features') {
+            if (featuresView) featuresView.style.display = 'flex';
+        }
+
+        // Reset scroll position to top of main content immediately on any page/view switch
+        const mainContainer = document.querySelector('.main-content');
+        if (mainContainer) {
+            mainContainer.scrollTop = 0;
+            mainContainer.scrollTo({ top: 0, behavior: 'auto' });
+            // Re-verify after a layout cycle to catch asynchronous dynamic shifts
+            setTimeout(() => {
+                mainContainer.scrollTop = 0;
+                mainContainer.scrollTo({ top: 0, behavior: 'auto' });
+            }, 0);
         }
     }
 
@@ -223,8 +239,6 @@ function setupNavigation() {
         footerNavPrivacy.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('privacy');
-            // Scroll back to top
-            document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
@@ -250,7 +264,6 @@ function setupNavigation() {
         footerNavTerms.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('terms');
-            document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
@@ -259,6 +272,32 @@ function setupNavigation() {
         termsBackBtn.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('dashboard');
+        });
+    }
+
+    // Wire up Features View triggers
+    const footerNavFeatures = document.getElementById('footerNavFeatures');
+    if (footerNavFeatures) {
+        footerNavFeatures.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('features');
+        });
+    }
+
+    const featuresBackBtn = document.getElementById('featuresBackBtn');
+    if (featuresBackBtn) {
+        featuresBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
+    const featuresPromoBtn = document.getElementById('featuresPromoBtn');
+    if (featuresPromoBtn) {
+        featuresPromoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+            document.getElementById('csvFileInput')?.click();
         });
     }
 
@@ -2263,8 +2302,6 @@ function initFooter() {
             footerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 navBtn.click();
-                // Scroll back to top
-                document.querySelector('.main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
     });
