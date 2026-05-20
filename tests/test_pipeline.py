@@ -11,7 +11,9 @@ def test_data_loader_schema_validation():
         'store_id': [1, 1],
         'item_id': [101, 101],
         'sales': [50, 60],
-        'price': [10.5, 10.5]
+        'price': [10.5, 10.5],
+        'promo': [0, 0],
+        'holiday': [0, 0]
     })
     try:
         validate_schema(df_valid)
@@ -34,16 +36,27 @@ def test_feature_engineering_dates():
         'sales': [10, 20, 30]
     })
     
-    df_engineered = create_date_features(df.copy())
+    # 1. Test US Region (Saturday & Sunday weekend)
+    df_us = create_date_features(df.copy(), region="US")
+    assert 'day_of_week' in df_us.columns
+    assert 'is_weekend' in df_us.columns
+    assert 'month' in df_us.columns
     
-    assert 'day_of_week' in df_engineered.columns
-    assert 'is_weekend' in df_engineered.columns
-    assert 'month' in df_engineered.columns
-    
-    # 2023-01-06 is Friday (not weekend)
-    assert df_engineered.iloc[0]['is_weekend'] == 0
-    # 2023-01-07 is Saturday (weekend)
-    assert df_engineered.iloc[1]['is_weekend'] == 1
+    # 2023-01-06 is Friday (not weekend in US)
+    assert df_us.iloc[0]['is_weekend'] == 0
+    # 2023-01-07 is Saturday (weekend in US)
+    assert df_us.iloc[1]['is_weekend'] == 1
+    # 2023-01-08 is Sunday (weekend in US)
+    assert df_us.iloc[2]['is_weekend'] == 1
+
+    # 2. Test Bangladesh Region (Friday & Saturday weekend)
+    df_bd = create_date_features(df.copy(), region="BD")
+    # 2023-01-06 is Friday (weekend in BD)
+    assert df_bd.iloc[0]['is_weekend'] == 1
+    # 2023-01-07 is Saturday (weekend in BD)
+    assert df_bd.iloc[1]['is_weekend'] == 1
+    # 2023-01-08 is Sunday (not weekend in BD)
+    assert df_bd.iloc[2]['is_weekend'] == 0
 
 def test_feature_engineering_lags():
     """Test lag feature generation for time series models."""
@@ -71,6 +84,6 @@ def test_feature_engineering_rolling():
     df_roll = create_rolling_stats(df.copy(), windows=[3])
     
     assert 'sales_rolling_mean_3' in df_roll.columns
-    # Rolling mean for the first 3 elements (10, 20, 30) should be 20
-    assert pd.isna(df_roll['sales_rolling_mean_3'].iloc[1]) # Min periods is usually window size
+    # Since min_periods=1, the first element (10) mean is 10.0, the second (10, 20) mean is 15.0
+    assert df_roll['sales_rolling_mean_3'].iloc[1] == 15.0
     assert df_roll['sales_rolling_mean_3'].iloc[2] == 20.0

@@ -36,7 +36,7 @@ def _compute_product_status(stock: int, reorder_point: int) -> str:
     return "In Stock"
 
 
-def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7) -> dict:
+def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD") -> dict:
     """Run the full feature-engineering + Prophet pipeline for a single product's time series."""
     product_df = product_df.sort_values('date')
 
@@ -51,11 +51,13 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
         ignore_index=True
     )
 
-    combined_df = create_date_features(combined_df)
+    combined_df = create_date_features(combined_df, region=region)
     future_mask = combined_df['sales'].isna()
 
     combined_df['holiday'] = combined_df['date'].apply(lambda d: 1 if d in local_holidays else 0)
-    combined_df.loc[future_mask, 'promo'] = (combined_df.loc[future_mask, 'day_of_week'] == 4).astype(int)
+    # Assume promotions in future run on the primary off-day (Friday (4) for BD, Sunday (6) for other regions)
+    primary_off_day = 4 if region == "BD" else 6
+    combined_df.loc[future_mask, 'promo'] = (combined_df.loc[future_mask, 'day_of_week'] == primary_off_day).astype(int)
     combined_df.loc[~future_mask, 'promo'] = combined_df.loc[~future_mask, 'promo'].fillna(0)
 
     combined_df = create_lag_features(combined_df, lags=[7, 30])
@@ -207,26 +209,29 @@ async def predict_demand(
             forecast_horizon = 7
             forecast_label   = "7-Day Forecast"
 
-        # â”€â”€ Holiday calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── Holiday calendar ─────────────────────────────────────────────────────────
         import datetime
-        today = datetime.date.today()
-        current_year = today.year
+        import calendar
+        # Use the CSV's max date as the reference point, NOT today.
+        # This ensures "upcoming event" is relative to the end of the uploaded data range,
+        # so Jan-March CSVs won't surface holidays from August or later.
+        csv_end_date = date_max.date() if hasattr(date_max, 'date') else date_max
+        ref_year = csv_end_date.year
         try:
-            local_holidays = holidays.country_holidays(region, years=[current_year, current_year + 1])
+            local_holidays = holidays.country_holidays(region, years=[ref_year, ref_year + 1])
         except Exception:
-            local_holidays = holidays.BD(years=[current_year, current_year + 1])
+            local_holidays = holidays.BD(years=[ref_year, ref_year + 1])
             
-        future_holidays = {d: n for d, n in local_holidays.items() if getattr(d, 'year', 0) >= current_year and d >= today}
+        # Only consider holidays that come AFTER the last date in the CSV
+        future_holidays = {d: n for d, n in local_holidays.items() if d > csv_end_date}
         if future_holidays:
             next_date = min(future_holidays.keys())
             upcoming_event_name = future_holidays[next_date]
             upcoming_event_date = next_date.strftime("%b %d, %Y")
         else:
-            upcoming_event_name = "End of Month Sale"
-            # Last day of current month as a fallback
-            import calendar
-            last_day = calendar.monthrange(today.year, today.month)[1]
-            upcoming_event_date = today.replace(day=last_day).strftime("%b %d, %Y")
+            upcoming_event_name = "End of Period"
+            last_day = calendar.monthrange(csv_end_date.year, csv_end_date.month)[1]
+            upcoming_event_date = csv_end_date.replace(day=last_day).strftime("%b %d, %Y")
 
         # â”€â”€ Per-product loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         # org_name already resolved above
@@ -254,7 +259,7 @@ async def predict_demand(
 
             # Run forecast
             try:
-                result = _forecast_for_product(product_df.copy(), local_holidays, strategy, forecast_horizon)
+                result = _forecast_for_product(product_df.copy(), local_holidays, strategy, forecast_horizon, region)
             except Exception:
                 # Skip products with insufficient data
                 result = {

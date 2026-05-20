@@ -81,6 +81,7 @@ async def add_inventory(item: dict, user: dict = Depends(get_current_user)):
         avg_daily_sales  = int(item.get("avg_daily_sales", 0))
         history_days     = max(1, int(item.get("history_days", 14)))
         promo            = int(item.get("promo", 0))
+        region           = item.get("region", "BD")
 
         # Derive status from stock vs reorder_point
         if stock <= 0:
@@ -138,7 +139,8 @@ async def add_inventory(item: dict, user: dict = Depends(get_current_user)):
                         daily_qty   = max(0, avg_daily_sales + variation)
                         cur_stock   = max(0, cur_stock - daily_qty)
                         # Mark weekend days as promo if promo flag is set
-                        day_promo   = promo if row_date.weekday() in (5, 6) and promo else promo
+                        weekend_days = (4, 5) if region == "BD" else (5, 6)
+                        day_promo   = promo if row_date.weekday() in weekend_days and promo else promo
                         new_rows.append({
                             "date":              row_date.strftime("%Y-%m-%d"),
                             "product_id":        sku,

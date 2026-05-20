@@ -1,6 +1,6 @@
 import pandas as pd
 
-def create_date_features(df: pd.DataFrame, date_col: str = 'date') -> pd.DataFrame:
+def create_date_features(df: pd.DataFrame, date_col: str = 'date', region: str = "US") -> pd.DataFrame:
     """
     Extract date-based features like day of week, month, etc.
     """
@@ -9,7 +9,10 @@ def create_date_features(df: pd.DataFrame, date_col: str = 'date') -> pd.DataFra
     
     df['day_of_week'] = df[date_col].dt.dayofweek
     df['month'] = df[date_col].dt.month
-    df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
+    
+    # Regional weekend mapping: BD is Friday (4) & Saturday (5). Others are Saturday (5) & Sunday (6).
+    weekend_days = [4, 5] if region == "BD" else [5, 6]
+    df['is_weekend'] = df['day_of_week'].isin(weekend_days).astype(int)
     
     return df
 

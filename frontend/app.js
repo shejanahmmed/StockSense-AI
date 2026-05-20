@@ -621,6 +621,7 @@ function showModalAddItem() {
                     avg_daily_sales:     avgSales,
                     history_days:        histDays,
                     promo,
+                    region: localStorage.getItem('stockSense_cfgRegion') || 'BD',
                 })
             });
             const data = await res.json();
