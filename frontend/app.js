@@ -5,12 +5,23 @@
 
 let forecastChartInstance = null;
 
+// Chart data cache for filtering
+let _chartDataCache = {
+    historical: [],
+    forecast: []
+};
+let _chartFilter = {
+    range: 'all',     // 'all' | number (days)
+    forecastOnly: false
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // 0. Initialize Authentication
     initAuth();
 
     // 2. Initialize the Forecast Chart
     initChart();
+    initChartControls();
 
     // 3. Setup CSV Upload Listener (also restores cached data if CSV was uploaded before)
     setupCsvUpload();
@@ -1703,54 +1714,115 @@ function addNotification(title, message, type = 'info') {
 
 function updateChartWithData(historical, forecast) {
     if (!forecastChartInstance) return;
-    
-    // Process Data
-    const histDates = historical.map(d => d.date);
-    const histSales = historical.map(d => Math.round(d.sales));
-    
-    const foreDates = forecast.map(d => d.date);
+
+    // Cache full data for filtering
+    _chartDataCache.historical = historical;
+    _chartDataCache.forecast = forecast;
+
+    // Apply current filter state
+    _applyChartFilter();
+}
+
+/**
+ * Internal: build chart arrays from cached data, applying date-range and forecastOnly filters.
+ */
+function _applyChartFilter() {
+    if (!forecastChartInstance) return;
+
+    const historical = _chartDataCache.historical;
+    const forecast   = _chartDataCache.forecast;
+
+    // --- Date range filter ---
+    let filteredHist = historical;
+    if (_chartFilter.range !== 'all' && _chartFilter.range > 0) {
+        // Anchor to the LAST date in the dataset (not today).
+        // This ensures "Last 1yr" shows 365 days before the data ends,
+        // even if the CSV was uploaded months ago.
+        const lastHistDate = historical.length > 0
+            ? new Date(historical[historical.length - 1].date)
+            : new Date();
+        const cutoff = new Date(lastHistDate);
+        cutoff.setDate(cutoff.getDate() - _chartFilter.range);
+        filteredHist = historical.filter(d => new Date(d.date) >= cutoff);
+        // Fallback: if filter is too aggressive, show at least the last 30 points
+        if (filteredHist.length === 0) filteredHist = historical.slice(-30);
+    }
+
+    // --- Process filtered historical ---
+    const histDates = filteredHist.map(d => d.date);
+    const histSales = filteredHist.map(d => Math.round(d.sales));
+
+    // --- Forecast always included (it's the future) ---
+    const foreDates      = forecast.map(d => d.date);
     const predictedSales = forecast.map(d => Math.round(d.predicted_sales));
-    const upper = forecast.map(d => Math.round(d.upper_bound));
-    const lower = forecast.map(d => Math.round(d.lower_bound));
-    
-    // Combine labels
-    const labels = [...histDates, ...foreDates];
-    
-    // Construct arrays to match the labels length
-    const historicalData = new Array(labels.length).fill(null);
-    const forecastData = new Array(labels.length).fill(null);
-    const confidenceUpper = new Array(labels.length).fill(null);
-    const confidenceLower = new Array(labels.length).fill(null);
-    
-    // Fill historical
-    for (let i = 0; i < histDates.length; i++) {
-        historicalData[i] = histSales[i];
+    const upper          = forecast.map(d => Math.round(d.upper_bound));
+    const lower          = forecast.map(d => Math.round(d.lower_bound));
+
+    // --- Forecast-only: hide historical ---
+    const showHistorical = !_chartFilter.forecastOnly;
+
+    const labels = showHistorical ? [...histDates, ...foreDates] : [...foreDates];
+
+    const historicalData   = new Array(labels.length).fill(null);
+    const forecastData     = new Array(labels.length).fill(null);
+    const confidenceUpper  = new Array(labels.length).fill(null);
+    const confidenceLower  = new Array(labels.length).fill(null);
+
+    if (showHistorical) {
+        // Fill historical portion
+        for (let i = 0; i < histDates.length; i++) {
+            historicalData[i] = histSales[i];
+        }
+        // Connect lines at the seam
+        const connectIndex = histDates.length - 1;
+        if (connectIndex >= 0) {
+            forecastData[connectIndex]    = histSales[connectIndex];
+            confidenceUpper[connectIndex] = histSales[connectIndex];
+            confidenceLower[connectIndex] = histSales[connectIndex];
+        }
+        // Fill forecast portion
+        for (let i = 0; i < foreDates.length; i++) {
+            const idx = histDates.length + i;
+            forecastData[idx]    = predictedSales[i];
+            confidenceUpper[idx] = upper[i];
+            confidenceLower[idx] = lower[i];
+        }
+    } else {
+        // Forecast-only mode: fill from index 0
+        for (let i = 0; i < foreDates.length; i++) {
+            forecastData[i]    = predictedSales[i];
+            confidenceUpper[i] = upper[i];
+            confidenceLower[i] = lower[i];
+        }
     }
-    
-    // Connect the lines by putting the last historical point as the start of the forecast line
-    const connectIndex = histDates.length - 1;
-    if (connectIndex >= 0) {
-        forecastData[connectIndex] = histSales[connectIndex];
-        confidenceUpper[connectIndex] = histSales[connectIndex];
-        confidenceLower[connectIndex] = histSales[connectIndex];
-    }
-    
-    // Fill forecast
-    for (let i = 0; i < foreDates.length; i++) {
-        const idx = histDates.length + i;
-        forecastData[idx] = predictedSales[i];
-        confidenceUpper[idx] = upper[i];
-        confidenceLower[idx] = lower[i];
-    }
-    
-    // Update Chart
-    forecastChartInstance.data.labels = labels;
-    forecastChartInstance.data.datasets[0].data = historicalData;
-    forecastChartInstance.data.datasets[1].data = forecastData;
-    forecastChartInstance.data.datasets[2].data = confidenceUpper;
-    forecastChartInstance.data.datasets[3].data = confidenceLower;
-    
-    forecastChartInstance.update();
+
+    // --- Compute dynamic canvas width based on data density ---
+    const PX_PER_POINT  = 22; // px per label — enough to keep x-axis labels readable
+    const CHART_HEIGHT  = 300;
+    const wrapperWidth  = document.getElementById('chartScrollWrapper')?.clientWidth || 600;
+    const totalPoints   = labels.length;
+    const dynamicWidth  = Math.max(wrapperWidth, totalPoints * PX_PER_POINT);
+
+    // Size the inner container so the wrapper knows it can scroll
+    const chartInner = document.getElementById('chartInner');
+    if (chartInner) chartInner.style.width = dynamicWidth + 'px';
+
+    // Show/hide scroll hint
+    const scrollHint = document.getElementById('chartScrollHint');
+    if (scrollHint) scrollHint.style.display = dynamicWidth > wrapperWidth ? 'block' : 'none';
+
+    // --- Update chart data ---
+    forecastChartInstance.data.labels                  = labels;
+    forecastChartInstance.data.datasets[0].data        = historicalData;
+    forecastChartInstance.data.datasets[1].data        = forecastData;
+    forecastChartInstance.data.datasets[2].data        = confidenceUpper;
+    forecastChartInstance.data.datasets[3].data        = confidenceLower;
+    forecastChartInstance.data.datasets[0].borderColor = showHistorical ? '#64748b' : 'transparent';
+
+    // Resize the canvas BEFORE update() so Chart.js draws into the correct pixel dimensions.
+    // This is required when responsive:false — it replaces the auto-resize behavior.
+    forecastChartInstance.resize(dynamicWidth, CHART_HEIGHT);
+    forecastChartInstance.update('none'); // 'none' = skip animation on filter changes for snappiness
 }
 
 async function fetchDefaultInsight() {
@@ -1981,7 +2053,7 @@ function initChart() {
             ]
         },
         options: {
-            responsive: true,
+            responsive: false,
             maintainAspectRatio: false,
             interaction: {
                 mode: 'index',
@@ -2032,6 +2104,130 @@ function initChart() {
                 }
             }
         }
+    });
+}
+
+// ==========================================
+// Chart Controls: Drag-to-Scroll + Filter Panel
+// ==========================================
+function initChartControls() {
+    const wrapper    = document.getElementById('chartScrollWrapper');
+    const filterBtn  = document.getElementById('chartFilterBtn');
+    const filterPanel= document.getElementById('chartFilterPanel');
+    const resetBtn   = document.getElementById('chartFilterReset');
+    const applyBtn   = document.getElementById('chartFilterApply');
+    const rangeGroup = document.getElementById('filterRangeGroup');
+    const forecastOnlyChk = document.getElementById('filterForecastOnly');
+    const badge      = document.getElementById('chartFilterBadge');
+
+    if (!wrapper || !filterBtn) return;
+
+    // --- Click-and-drag to scroll (mouse) ---
+    let isDragging  = false;
+    let dragStartX  = 0;
+    let scrollStart = 0;
+
+    wrapper.addEventListener('mousedown', (e) => {
+        // Ignore clicks on the canvas tooltip area — let Chart.js handle those
+        isDragging  = true;
+        dragStartX  = e.clientX;
+        scrollStart = wrapper.scrollLeft;
+        wrapper.classList.add('is-dragging');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const delta = e.clientX - dragStartX;
+        wrapper.scrollLeft = scrollStart - delta;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        wrapper.classList.remove('is-dragging');
+    });
+
+    // --- Touch drag (mobile/trackpad tap-drag) ---
+    let touchStartX  = 0;
+    let touchScrollStart = 0;
+
+    wrapper.addEventListener('touchstart', (e) => {
+        touchStartX      = e.touches[0].clientX;
+        touchScrollStart = wrapper.scrollLeft;
+    }, { passive: true });
+
+    wrapper.addEventListener('touchmove', (e) => {
+        const delta = e.touches[0].clientX - touchStartX;
+        wrapper.scrollLeft = touchScrollStart - delta;
+    }, { passive: true });
+
+    // --- Filter panel toggle ---
+    filterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = filterPanel.style.display !== 'none';
+        filterPanel.style.display = isOpen ? 'none' : 'flex';
+        filterBtn.classList.toggle('is-active', !isOpen);
+    });
+
+    // Close panel on outside click
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('chartFilterWrapper')?.contains(e.target)) {
+            filterPanel.style.display = 'none';
+            filterBtn.classList.remove('is-active');
+        }
+    });
+
+    // --- Range pill selection ---
+    rangeGroup?.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            rangeGroup.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+        });
+    });
+
+    // --- Reset ---
+    resetBtn?.addEventListener('click', () => {
+        rangeGroup?.querySelectorAll('.filter-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.range === 'all');
+        });
+        if (forecastOnlyChk) forecastOnlyChk.checked = false;
+
+        _chartFilter.range = 'all';
+        _chartFilter.forecastOnly = false;
+        _applyChartFilter();
+
+        if (badge) badge.style.display = 'none';
+        filterBtn.classList.remove('is-active');
+        filterPanel.style.display = 'none';
+    });
+
+    // --- Apply ---
+    applyBtn?.addEventListener('click', () => {
+        const activePill = rangeGroup?.querySelector('.filter-pill.active');
+        const rangeVal   = activePill?.dataset.range || 'all';
+        _chartFilter.range        = rangeVal === 'all' ? 'all' : parseInt(rangeVal, 10);
+        _chartFilter.forecastOnly = forecastOnlyChk?.checked ?? false;
+
+        const isFiltered = _chartFilter.range !== 'all' || _chartFilter.forecastOnly;
+        if (badge) badge.style.display = isFiltered ? 'block' : 'none';
+
+        _applyChartFilter();
+
+        filterPanel.style.display = 'none';
+        filterBtn.classList.remove('is-active');
+    });
+
+    // When the browser window resizes, recalculate chart width
+    // (needed since responsive:false disables Chart.js's own resize listener)
+    let _resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => {
+            if (_chartDataCache.historical.length > 0 || _chartDataCache.forecast.length > 0) {
+                _applyChartFilter();
+            }
+        }, 150);
     });
 }
 

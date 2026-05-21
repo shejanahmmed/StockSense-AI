@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -231,14 +231,60 @@
                     <section class="chart-section glass-panel">
                         <div class="section-header">
                             <h2 id="forecastChartTitle">Demand Forecast</h2>
-                            <div class="chart-legend-custom">
-                                <span><span class="legend-dot historical"></span> Historical</span>
-                                <span><span class="legend-dot forecast"></span> Predicted</span>
+                            <div class="chart-header-controls">
+                                <div class="chart-legend-custom">
+                                    <span><span class="legend-dot historical"></span> Historical</span>
+                                    <span><span class="legend-dot forecast"></span> Predicted</span>
+                                </div>
+                                <!-- Filter Button -->
+                                <div class="chart-filter-wrapper" id="chartFilterWrapper">
+                                    <button class="chart-filter-btn" id="chartFilterBtn" title="Filter chart data">
+                                        <i class="fa-solid fa-sliders"></i>
+                                        <span id="chartFilterBadge" class="filter-active-badge" style="display:none;"></span>
+                                    </button>
+                                    <!-- Filter Dropdown Panel -->
+                                    <div class="chart-filter-panel glass-panel" id="chartFilterPanel" style="display:none;">
+                                        <div class="filter-panel-header">
+                                            <span><i class="fa-solid fa-sliders"></i> Chart Filters</span>
+                                            <button class="filter-reset-btn" id="chartFilterReset">Reset</button>
+                                        </div>
+                                        <div class="filter-section-group">
+                                            <label class="filter-group-label">Time Range</label>
+                                            <div class="filter-pill-group" id="filterRangeGroup">
+                                                <button class="filter-pill active" data-range="all">All Data</button>
+                                                <button class="filter-pill" data-range="30">Last 30d</button>
+                                                <button class="filter-pill" data-range="90">Last 90d</button>
+                                                <button class="filter-pill" data-range="180">Last 6mo</button>
+                                                <button class="filter-pill" data-range="365">Last 1yr</button>
+                                            </div>
+                                        </div>
+                                        <div class="filter-section-group">
+                                            <label class="filter-group-label">Data Series</label>
+                                            <div class="filter-toggle-row">
+                                                <span>Show Forecast Only</span>
+                                                <label class="filter-toggle-switch">
+                                                    <input type="checkbox" id="filterForecastOnly">
+                                                    <span class="filter-toggle-track"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button class="primary-btn filter-apply-btn" id="chartFilterApply" style="justify-content:center; width:100%; padding:0.6rem 1rem; font-size:0.85rem; box-shadow:none;">
+                                            <i class="fa-solid fa-check"></i> Apply Filter
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="forecastChart"></canvas>
+                        <!-- Chart Scroll Area -->
+                        <div class="chart-scroll-wrapper" id="chartScrollWrapper">
+                            <div class="chart-inner" id="chartInner">
+                                <canvas id="forecastChart"></canvas>
+                            </div>
                         </div>
+                        <!-- Scroll Hint -->
+                        <p class="chart-scroll-hint" id="chartScrollHint" style="display:none;">
+                            <i class="fa-solid fa-hand-pointer"></i> Click &amp; drag or use trackpad to scroll
+                        </p>
                     </section>
 
                     <!-- SHAP Drivers -->
