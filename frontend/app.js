@@ -4174,7 +4174,7 @@ async function showModalDailyVsForecastList() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'dailyVsForecastModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1000px; max-width: 95vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1150px; max-width: 95vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
@@ -4191,20 +4191,20 @@ async function showModalDailyVsForecastList() {
             <!-- Scrollable Body Wrapper -->
             <div class="bi-modal-body">
                 <!-- Summary Cards Block -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.5rem;">
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 0.5rem; align-items: stretch;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">HISTORICAL SALES</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: var(--text-primary); font-weight: 700;">
                             ${totalActualDaily.toLocaleString()} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">units/day avg</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">AI FORECAST</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: var(--accent-primary); font-weight: 700;">
                             ${totalForecastDaily.toLocaleString()} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-secondary);">units/day avg</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">VELOCITY SHIFT</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: ${isIncrease ? 'var(--status-success)' : 'var(--status-danger)'}; font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
                             <i class="fa-solid ${isIncrease ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i>
@@ -4212,7 +4212,7 @@ async function showModalDailyVsForecastList() {
                             <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">(${isIncrease ? '+' : ''}${delta} units/day)</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">TOP GROWTH DRIVER</span>
                         <h3 style="margin: 0; font-size: 1.02rem; color: var(--text-primary); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${topAccelerator ? topAccelerator.name : 'N/A'}">
                             ${topAccelerator ? `${topAccelerator.name} (+${topAccelerator.variance}/day)` : 'N/A'}
