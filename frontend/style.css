@@ -5581,19 +5581,13 @@ input:checked + .slider:before {
 /* Daily vs. Forecast Professional BI Hub Custom Styles */
 .bi-tabs-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding-top: 0.4rem; /* Safe padding for active box shadows */
     padding-bottom: 0.8rem;
     margin-bottom: 0.5rem;
-    overflow-x: auto;
-    /* Hide horizontal scrollbar to prevent it from overlaying and cutting off the bottom of buttons */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
-
-.bi-tabs-container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    flex-shrink: 0; /* Prevent flex container from shrinking */
 }
 
 .bi-tab-btn {
@@ -5604,6 +5598,7 @@ input:checked + .slider:before {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
     font-weight: 600;
+    line-height: 1.2;
     cursor: pointer;
     white-space: nowrap;
     display: flex;
@@ -5737,3 +5732,135 @@ input:checked + .slider:before {
 }
 
 
+/* =====================================================
+   Holiday Calendar Modal Styles
+   ===================================================== */
+
+/* Stat chips row */
+.holiday-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Table wrapper height cap */
+.holiday-table-wrapper {
+    max-height: 52vh;
+    overflow-y: auto;
+}
+
+/* Month group separator row */
+.holiday-month-group td {
+    padding: 0.55rem 0.9rem 0.3rem;
+    background: transparent;
+    border-bottom: none !important;
+}
+.holiday-month-group span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--accent-primary);
+    opacity: 0.75;
+}
+
+/* Base row */
+.holiday-row td {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.86rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+    color: var(--text-primary);
+    transition: background 0.15s ease;
+}
+.holiday-row:hover td {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+/* Past rows — dimmed */
+.holiday-row-past td {
+    color: var(--text-muted) !important;
+    opacity: 0.6;
+}
+
+/* Next upcoming row — golden highlight */
+.holiday-row-next td {
+    background: rgba(245, 158, 11, 0.06) !important;
+    border-top: 1px solid rgba(245, 158, 11, 0.18) !important;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.18) !important;
+}
+.holiday-row-next td:first-child {
+    border-left: 3px solid var(--status-warning);
+}
+.holiday-row-next:hover td {
+    background: rgba(245, 158, 11, 0.1) !important;
+}
+
+/* "Next" ribbon badge */
+.holiday-next-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--status-warning);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+}
+
+/* Countdown badges */
+.holiday-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.holiday-badge.past {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.holiday-badge.today {
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--status-success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.holiday-badge.upcoming {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(139, 92, 246, 0.22);
+}
+
+/* Sticky table head */
+.holiday-calendar-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(25, 28, 41, 0.97);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}

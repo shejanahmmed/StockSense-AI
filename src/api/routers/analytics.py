@@ -404,6 +404,117 @@ async def get_insight(
     return {"status": "success", "insight": insight_text, "drivers": drivers}
 
 
+@router.get("/api/holidays")
+async def get_holidays(
+    region: str = "BD",
+    years: str = ""
+):
+    """Return a sorted list of public holidays for the given region and years.
+    No auth required - data is publicly available.
+    Falls back to python-holidays library if the online ICS feed is unavailable.
+    """
+    import datetime
+    import urllib.request
+    import re as _re
+
+    current_year = datetime.date.today().year
+    if years.strip():
+        try:
+            year_list = [int(y.strip()) for y in years.split(",") if y.strip()]
+        except ValueError:
+            year_list = [current_year, current_year + 1]
+    else:
+        year_list = [current_year, current_year + 1]
+
+    region_map = {
+        "BD": "bangladesh",
+        "US": "usa",
+        "UK": "united-kingdom",
+        "GB": "united-kingdom",
+        "IN": "india",
+    }
+    country_name = region_map.get(region.upper(), "bangladesh")
+    url = f"https://www.officeholidays.com/ics-clean/{country_name}"
+
+    online_holidays = {}
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            ical_data = resp.read().decode("utf-8")
+        events = ical_data.split("BEGIN:VEVENT")
+        for event in events[1:]:
+            date_match = _re.search(r"DTSTART(?:;VALUE=DATE)?:(\d{8})", event)
+            summary_match = _re.search(r"SUMMARY(?:;[^:]+)?:([^\r\n]+)", event)
+            if date_match and summary_match:
+                try:
+                    h_date = datetime.datetime.strptime(date_match.group(1), "%Y%m%d").date()
+                    if h_date.year in year_list:
+                        online_holidays[h_date] = summary_match.group(1).strip()
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    fallback = {}
+    try:
+        h_obj = holidays.country_holidays(region.upper(), years=year_list)
+        fallback = dict(h_obj)
+    except Exception:
+        try:
+            h_obj = holidays.BD(years=year_list)
+            fallback = dict(h_obj)
+        except Exception:
+            pass
+
+    result = {}
+    for y in year_list:
+        year_online = {d: n for d, n in online_holidays.items() if d.year == y}
+        if year_online:
+            result.update(year_online)
+        else:
+            result.update({d: n for d, n in fallback.items() if d.year == y})
+
+    def clean(raw):
+        lo = raw.lower()
+        if "eid-ul-azha" in lo or "eid al-adha" in lo or "eid-ul-adha" in lo:
+            return "Eid ul-Adha"
+        if "eid al-fitr" in lo or "eid-ul-fitr" in lo:
+            return "Eid ul-Fitr"
+        if "shab e-barat" in lo or "shab-e-barat" in lo:
+            return "Shab-e-Barat"
+        if "miladunnabi" in lo or "milad un nabi" in lo:
+            return "Eid-e-Miladunnabi"
+        if "durga puja" in lo:
+            return "Durga Puja"
+        if "ashura" in lo:
+            return "Ashura"
+        if "language martyrs" in lo or "mother language" in lo:
+            return "International Mother Language Day"
+        if "independence" in lo:
+            return "Independence Day"
+        if "victory day" in lo:
+            return "Victory Day"
+        if "bengali new year" in lo or "pohela boishakh" in lo:
+            return "Bengali New Year"
+        if "labour day" in lo or "may day" in lo:
+            return "May Day"
+        if "buddha purnima" in lo or "buddha" in lo:
+            return "Buddha Purnima"
+        if "christmas" in lo:
+            return "Christmas Day"
+        return raw
+
+    cleaned = {d: clean(n) for d, n in result.items()}
+    holiday_list = [
+        {"date": d.strftime("%Y-%m-%d"), "name": n}
+        for d, n in sorted(cleaned.items())
+    ]
+    return {"status": "success", "holidays": holiday_list, "years": year_list, "region": region.upper()}
+
+
+
 @router.post("/api/predict")
 async def predict_demand(
     file: UploadFile = File(...),
@@ -826,6 +937,7 @@ async def predict_demand(
             "forecast_label": forecast_label,
             "data_span_days": data_span_days,
             "promo_suggestions": promo_suggestions,
+            "holidays": [{"date": d.strftime("%Y-%m-%d"), "name": n} for d, n in sorted(local_holidays.items())],
             "kpis": {
                 "total_skus": len(all_product_results),
                 "current_stock": aggregate_current_stock,

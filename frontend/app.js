@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKpiCashFlowTrigger();
     setupKpiDemandTrendTrigger();
     setupKpiMarginTrigger();
+    setupKpiNextEventTrigger();
 
     // 13. Setup View All Toggles for BI boxes
     setupBIMetricsToggles();
@@ -1530,7 +1531,8 @@ function setupCsvUpload() {
                     drivers:     data.drivers,
                     kpis:        data.kpis,
                     bi_metrics:  data.bi_metrics,
-                    promo_suggestions: data.promo_suggestions
+                    promo_suggestions: data.promo_suggestions,
+                    holidays:    data.holidays
                 }));
 
                 // Update main chart
@@ -5860,3 +5862,287 @@ function renderMarginModalRows(items) {
 }
 
 
+// ==========================================
+// KPI: Next Event – Interactive Holiday Calendar Modal
+// ==========================================
+function setupKpiNextEventTrigger() {
+    const kpiCard = document.getElementById('kpiNextEventCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => showModalHolidays());
+    }
+}
+
+function showModalHolidays() {
+    // 1. Remove any existing instance
+    const old = document.getElementById('holidayCalendarModal');
+    if (old) old.remove();
+
+    // Determine region and years
+    const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+    let years = [];
+    let cachedHolidays = [];
+    try {
+        const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+        if (cachedData) {
+            if (Array.isArray(cachedData.holidays)) {
+                cachedHolidays = cachedData.holidays;
+            }
+            const allItems = [...(cachedData.historical || []), ...(cachedData.forecast || [])];
+            years = [...new Set(allItems.map(item => {
+                const d = item.date || item.Date;
+                return d ? d.split('-')[0] : null;
+            }).filter(Boolean))];
+        }
+    } catch (e) {
+        console.warn('Could not parse cached result:', e);
+    }
+    if (years.length === 0) {
+        const currentYear = new Date().getFullYear();
+        years = [currentYear, currentYear + 1];
+    }
+
+    const yearLabel = years.length > 0 ? years.join(' – ') : 'Your Dataset';
+
+    // 2. Build overlay with loading state initially
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'holidayCalendarModal';
+    overlay.innerHTML = `
+        <div class="sku-modal-container" style="width:820px;max-width:95vw;max-height:90vh;">
+            <div class="sku-modal-header">
+                <div>
+                    <h2 style="margin:0;font-size:1.3rem;display:flex;align-items:center;gap:0.6rem;color:var(--text-primary);">
+                        <i class="fa-solid fa-calendar-star" style="color:var(--status-warning);"></i>
+                        Holiday &amp; Event Calendar
+                    </h2>
+                    <p style="margin:0.3rem 0 0;font-size:0.8rem;color:var(--text-secondary);" id="holidayModalSubtitle">
+                        Syncing regional holidays...
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeHolidayModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="holidayModalContent" style="display:flex; flex-direction:column; gap:1.5rem; flex:1; min-height:0;">
+                <div style="text-align:center;padding:4rem 2rem;color:var(--text-secondary);">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2.5rem;color:var(--accent-primary);margin-bottom:1rem;"></i>
+                    <p style="font-size:1.05rem;margin:0 0 0.25rem;font-weight:600;">Syncing regional holiday calendar...</p>
+                    <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Fetching public and religious holidays for region: ${region} and years: ${years.join(', ')}</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Open animation
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('open')));
+
+    // Close logic helper
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+    const closeBtn = document.getElementById('closeHolidayModal');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    const escHandler = (e) => {
+        if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Helpers for countdowns and dates
+    const daysUntil = (dateStr) => {
+        const t = new Date(dateStr);
+        const n = new Date();
+        n.setHours(0, 0, 0, 0);
+        return Math.round((t - n) / 86400000);
+    };
+    const fmtDate = (dateStr) => {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    const monthLabel = (dateStr) => {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    };
+
+    // 3. Fetch from backend
+    fetch(`/api/holidays?region=${region}&years=${years.join(',')}`)
+        .then(res => {
+            if (!res.ok) throw new Error('Failed to fetch holidays from server');
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === 'success' && Array.isArray(data.holidays)) {
+                renderHolidays(data.holidays);
+                // Also update the cached data in localStorage so other elements remain synchronized
+                updateHolidaysCache(data.holidays);
+            } else {
+                throw new Error(data.detail || 'Invalid response format');
+            }
+        })
+        .catch(err => {
+            console.error('API holiday fetch failed, checking fallback:', err);
+            // Fall back to cached holidays if available
+            if (cachedHolidays && cachedHolidays.length > 0) {
+                renderHolidays(cachedHolidays);
+            } else {
+                // Render error state
+                const contentDiv = document.getElementById('holidayModalContent');
+                if (contentDiv) {
+                    contentDiv.innerHTML = `
+                        <div style="text-align:center;padding:4rem 2rem;color:var(--text-muted);">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size:3rem;color:var(--status-danger);margin-bottom:1rem;display:block;"></i>
+                            <p style="font-size:1rem;margin:0 0 0.5rem;font-weight:600;color:var(--text-primary);">Failed to load holidays</p>
+                            <p style="font-size:0.8rem;margin:0 0 1.5rem;">${err.message || 'The holiday service is currently unavailable.'}</p>
+                            <button id="retryHolidayFetchBtn" class="btn btn-primary" style="padding:0.5rem 1.2rem;font-size:0.8rem;border-radius:6px;background:var(--accent-primary);color:#fff;border:none;cursor:pointer;">
+                                <i class="fa-solid fa-rotate-right"></i> Retry Sync
+                            </button>
+                        </div>
+                    `;
+                    const retryBtn = document.getElementById('retryHolidayFetchBtn');
+                    if (retryBtn) {
+                        retryBtn.addEventListener('click', () => {
+                            contentDiv.innerHTML = `
+                                <div style="text-align:center;padding:4rem 2rem;color:var(--text-secondary);">
+                                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2.5rem;color:var(--accent-primary);margin-bottom:1rem;"></i>
+                                    <p style="font-size:1.05rem;margin:0 0 0.25rem;font-weight:600;">Syncing regional holiday calendar...</p>
+                                    <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Retrying fetch...</p>
+                                </div>
+                            `;
+                            showModalHolidays(); // Re-run
+                        });
+                    }
+                }
+            }
+        });
+
+    function updateHolidaysCache(newHolidays) {
+        try {
+            const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || '{}');
+            cachedData.holidays = newHolidays;
+            localStorage.setItem('stockSense_lastResult', JSON.stringify(cachedData));
+        } catch (e) {
+            console.warn('Could not update holidays cache:', e);
+        }
+    }
+
+    function renderHolidays(holidaysList) {
+        // Sort chronologically (defensive)
+        const sortedHolidays = holidaysList.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+        
+        // Update header subtitle
+        const totalEvents = sortedHolidays.length;
+        const upcomingCount = sortedHolidays.filter(h => daysUntil(h.date) >= 0).length;
+        const pastCount = sortedHolidays.filter(h => daysUntil(h.date) < 0).length;
+        const subtitle = document.getElementById('holidayModalSubtitle');
+        if (subtitle) {
+            subtitle.innerHTML = `
+                <strong>${totalEvents}</strong> events for <strong>${yearLabel}</strong>
+                &nbsp;·&nbsp; <span style="color:var(--status-success);">${upcomingCount} upcoming</span>
+                &nbsp;·&nbsp; <span style="color:var(--text-muted);">${pastCount} past</span>
+            `;
+        }
+
+        // Identify the next upcoming holiday index
+        let nextIdx = sortedHolidays.findIndex(h => daysUntil(h.date) >= 0);
+        if (nextIdx === -1 && sortedHolidays.length > 0) nextIdx = sortedHolidays.length - 1;
+
+        const buildRows = (list) => {
+            if (list.length === 0) {
+                return `<tr><td colspan="3" style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);font-size:0.9rem;">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size:2rem;margin-bottom:0.5rem;display:block;opacity:0.35;"></i>
+                    No events match your search.
+                </td></tr>`;
+            }
+            let lastMonth = '';
+            return list.map((h) => {
+                const origIdx = sortedHolidays.indexOf(h);
+                const isNext  = origIdx === nextIdx;
+                const du      = daysUntil(h.date);
+                const isPast  = du < 0;
+                const month   = monthLabel(h.date);
+                let sep = '';
+                if (month !== lastMonth) {
+                    lastMonth = month;
+                    sep = `<tr class="holiday-month-group"><td colspan="3"><span><i class="fa-solid fa-calendar-days"></i> ${month}</span></td></tr>`;
+                }
+                const duBadge = isPast
+                    ? `<span class="holiday-badge past"><i class="fa-solid fa-rotate-left"></i> ${Math.abs(du)}d ago</span>`
+                    : du === 0
+                        ? `<span class="holiday-badge today"><i class="fa-solid fa-star"></i> Today!</span>`
+                        : `<span class="holiday-badge upcoming"><i class="fa-regular fa-clock"></i> In ${du}d</span>`;
+                const nextRibbon = isNext
+                    ? `<span class="holiday-next-badge"><i class="fa-solid fa-bolt"></i> Next</span> `
+                    : '';
+                const rowClass = isNext ? 'holiday-row holiday-row-next' : (isPast ? 'holiday-row holiday-row-past' : 'holiday-row');
+                return `${sep}<tr class="${rowClass}" id="holiday-row-${origIdx}">
+                    <td>${fmtDate(h.date)}</td>
+                    <td>${nextRibbon}${h.name}</td>
+                    <td style="text-align:right;">${duBadge}</td>
+                </tr>`;
+            }).join('');
+        };
+
+        const nextEventName = nextIdx >= 0 ? sortedHolidays[nextIdx].name : 'N/A';
+
+        const contentDiv = document.getElementById('holidayModalContent');
+        if (!contentDiv) return;
+
+        contentDiv.innerHTML = `
+            ${sortedHolidays.length === 0 ? `
+            <div style="text-align:center;padding:3.5rem 1rem;color:var(--text-muted);">
+                <i class="fa-solid fa-calendar-xmark" style="font-size:3rem;margin-bottom:1rem;display:block;opacity:0.3;"></i>
+                <p style="font-size:0.95rem;margin:0 0 0.5rem;">No holiday data available for region ${region}.</p>
+                <p style="font-size:0.8rem;margin:0;">Upload a sales CSV to see events for your dataset's year range.</p>
+            </div>
+            ` : `
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <div class="holiday-stat-chip"><i class="fa-solid fa-calendar-check" style="color:var(--accent-primary);"></i><span><strong>${totalEvents}</strong> Total Events</span></div>
+                <div class="holiday-stat-chip"><i class="fa-solid fa-arrow-trend-up" style="color:var(--status-success);"></i><span><strong>${upcomingCount}</strong> Upcoming</span></div>
+                <div class="holiday-stat-chip"><i class="fa-solid fa-bolt" style="color:var(--status-warning);"></i><span>Next: <strong>${nextEventName}</strong></span></div>
+            </div>
+
+            <div class="sku-modal-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="holidaySearchInput" placeholder="Search by event name or date (YYYY-MM-DD)..." autocomplete="off">
+            </div>
+
+            <div class="sku-table-wrapper holiday-table-wrapper">
+                <table class="sku-table holiday-calendar-table">
+                    <thead>
+                        <tr>
+                            <th style="width:32%;">Date</th>
+                            <th>Holiday / Event</th>
+                            <th style="width:18%;text-align:right;">Countdown</th>
+                        </tr>
+                    </thead>
+                    <tbody id="holidayTableBody">${buildRows(sortedHolidays)}</tbody>
+                </table>
+            </div>
+            `}
+        `;
+
+        // Scroll next event into view
+        if (nextIdx >= 0 && sortedHolidays.length > 0) {
+            setTimeout(() => {
+                const nextRow = document.getElementById(`holiday-row-${nextIdx}`);
+                if (nextRow) nextRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 350);
+        }
+
+        // Live search
+        const searchInput = document.getElementById('holidaySearchInput');
+        if (searchInput) {
+            searchInput.focus({ preventScroll: true });
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.toLowerCase().trim();
+                const filtered = q
+                    ? sortedHolidays.filter(h => h.name.toLowerCase().includes(q) || h.date.includes(q))
+                    : sortedHolidays;
+                const tbody = document.getElementById('holidayTableBody');
+                if (tbody) tbody.innerHTML = buildRows(filtered);
+            });
+        }
+    }
+}
