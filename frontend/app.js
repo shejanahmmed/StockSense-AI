@@ -200,6 +200,7 @@ function setupNavigation() {
     const featuresView = document.getElementById('featuresView');
     const howItWorksView = document.getElementById('howItWorksView');
     const pricingView = document.getElementById('pricingView');
+    const aboutView = document.getElementById('aboutView');
 
     let currentView = 'dashboard';
 
@@ -213,6 +214,7 @@ function setupNavigation() {
         if (featuresView) featuresView.style.display = 'none';
         if (howItWorksView) howItWorksView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
+        if (aboutView) aboutView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -236,7 +238,7 @@ function setupNavigation() {
         // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -263,6 +265,8 @@ function setupNavigation() {
             if (howItWorksView) howItWorksView.style.display = 'flex';
         } else if (view === 'pricing') {
             if (pricingView) pricingView.style.display = 'flex';
+        } else if (view === 'about') {
+            if (aboutView) aboutView.style.display = 'flex';
         }
 
         // Reset scroll position to top of main content immediately on any page/view switch
@@ -394,6 +398,23 @@ function setupNavigation() {
     const pricingBackBtn = document.getElementById('pricingBackBtn');
     if (pricingBackBtn) {
         pricingBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
+    // Wire up About Us View triggers
+    const footerNavAbout = document.getElementById('footerNavAbout');
+    if (footerNavAbout) {
+        footerNavAbout.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('about');
+        });
+    }
+
+    const aboutBackBtn = document.getElementById('aboutBackBtn');
+    if (aboutBackBtn) {
+        aboutBackBtn.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('dashboard');
         });

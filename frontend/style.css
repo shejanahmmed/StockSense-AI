@@ -4243,3 +4243,240 @@ input:checked + .slider:before {
         font-size: 2.2rem !important;
     }
 }
+
+/* ==========================================
+   About Us Page Styles
+   ========================================== */
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2.5rem 2.5rem 4rem;
+    animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.about-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.about-badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-full);
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    width: fit-content;
+}
+
+.about-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.about-card {
+    transition: var(--transition-smooth);
+    border: var(--border-glass);
+    border-radius: var(--radius-lg);
+    background: var(--bg-glass);
+    box-shadow: var(--shadow-glass);
+}
+
+.about-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12);
+}
+
+.about-card-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.about-team-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+}
+
+.about-team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.about-member-card {
+    background: var(--bg-glass);
+    border: var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: var(--shadow-glass);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.about-member-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+}
+
+.about-member-img {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1.25rem;
+    border: 3px solid rgba(255, 255, 255, 0.08);
+    filter: grayscale(15%);
+    transition: var(--transition-smooth);
+}
+
+.about-member-card:hover .about-member-img {
+    filter: grayscale(0%);
+    transform: scale(1.05);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.about-member-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.about-member-role {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.about-member-bio {
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0 0 1.5rem;
+    flex-grow: 1;
+}
+
+.about-member-socials {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: auto;
+}
+
+.about-member-socials .social-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: var(--transition-smooth);
+    text-decoration: none;
+}
+
+.about-member-socials .social-btn:hover {
+    transform: translateY(-3px);
+    color: var(--text-primary);
+}
+
+.about-member-socials .social-btn.facebook:hover {
+    background: rgba(24, 119, 242, 0.15);
+    border-color: rgba(24, 119, 242, 0.4);
+    color: #1877f2;
+    box-shadow: 0 0 10px rgba(24, 119, 242, 0.2);
+}
+
+.about-member-socials .social-btn.email:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.about-member-socials .social-btn.linkedin:hover {
+    background: rgba(10, 102, 194, 0.15);
+    border-color: rgba(10, 102, 194, 0.4);
+    color: #0a66c2;
+    box-shadow: 0 0 10px rgba(10, 102, 194, 0.2);
+}
+
+/* Responsive Media Queries for About Us Page */
+@media (max-width: 992px) {
+    .about-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .about-team-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-content {
+        padding: 1.5rem 1.5rem 3rem;
+        gap: 1.5rem;
+    }
+    
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .about-team-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-member-card {
+        padding: 2rem 1.25rem;
+    }
+    
+    .about-title-wrapper {
+        align-items: center;
+        text-align: center;
+    }
+    
+    .about-badge-top {
+        align-self: center;
+    }
+}
