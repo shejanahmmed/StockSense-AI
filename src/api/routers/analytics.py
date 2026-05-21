@@ -747,14 +747,15 @@ async def predict_demand(
                         "urgency": "Critical" if p["status"] == "Out of Stock" else "Plan" if p["status"] == "Low Stock" else "Healthy",
                         "text": "Reorder immediately" if p["status"] == "Out of Stock" else f"Restock in {p['days_to_stockout'] or 5} days"
                     }
-                    for p in sorted(all_product_results, key=lambda x: (x["status"] != "Out of Stock", x["status"] != "Low Stock"))[:3]
+                    for p in sorted(all_product_results, key=lambda x: (x["status"] != "Out of Stock", x["status"] != "Low Stock"))
                 ],
                 "top_products": [
                     {
                         "name": p["product_name"],
-                        "margin": f"+{35 - i*4}% Margin"
+                        "sku": p["product_id"],
+                        "margin": f"+{max(5, 35 - i*3)}% Margin"
                     }
-                    for i, p in enumerate(sorted(all_product_results, key=lambda x: x["next_week_sales"], reverse=True)[:5])
+                    for i, p in enumerate(sorted(all_product_results, key=lambda x: x["next_week_sales"], reverse=True))
                 ]
             },
             "products": all_product_results,

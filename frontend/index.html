@@ -322,7 +322,7 @@
                 
                 <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                     <!-- 1. Daily sales vs forecast -->
-                    <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
+                    <div class="kpi-card glass-panel interactive" id="kpiDailyVsForecastCard" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">Compares your recent daily sales average to the AI's predicted daily sales average for next week.</span></div> <i class="fa-solid fa-scale-balanced" style="color: var(--accent-primary);"></i> Daily vs Forecast</span>
                         </div>
@@ -389,7 +389,10 @@
                 <div class="bottom-grid timeline-drivers-grid" style="margin-bottom: 2rem;">
                     <!-- 2 & 8. Low-stock alerts & visual timeline -->
                     <section class="glass-panel" style="padding: 1.5rem;">
-                        <h2 style="font-size: 1.15rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
+                            <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
+                        </div>
                         <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
                             <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
                         </ul>
@@ -397,7 +400,10 @@
 
                     <!-- 3 & 9. Top 5 products & Profit Drivers -->
                     <section class="glass-panel" style="padding: 1.5rem;">
-                        <h2 style="font-size: 1.15rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
+                            <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
+                        </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file to see top profit drivers.</p>
                         </div>
