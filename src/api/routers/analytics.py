@@ -742,6 +742,7 @@ async def predict_demand(
                 "timeline": [
                     {
                         "name": p["product_name"],
+                        "sku": p["product_id"],
                         "stock": p["current_stock"],
                         "urgency": "Critical" if p["status"] == "Out of Stock" else "Plan" if p["status"] == "Low Stock" else "Healthy",
                         "text": "Reorder immediately" if p["status"] == "Out of Stock" else f"Restock in {p['days_to_stockout'] or 5} days"

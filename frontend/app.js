@@ -598,6 +598,14 @@ async function loadInventoryData() {
             // Dynamically populate category filter from real data
             populateCategoryFilter(fullInventoryData);
             enhanceNextStepBannerWithSku();
+            
+            // Re-render timeline if cached data exists to immediately inject SKU IDs
+            try {
+                const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+                if (cachedData && cachedData.bi_metrics) {
+                    updateBIMetrics(cachedData.bi_metrics);
+                }
+            } catch (e) {}
         }
     } catch (error) {
         console.error("Inventory error:", error);
@@ -616,6 +624,16 @@ async function loadInventorySilent() {
             if (result.status === 'success' && result.data) {
                 fullInventoryData = result.data;
                 enhanceNextStepBannerWithSku();
+                
+                // Re-trigger BIMetrics rendering to inject SKU IDs into the timeline
+                try {
+                    const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+                    if (cachedData && cachedData.bi_metrics) {
+                        updateBIMetrics(cachedData.bi_metrics);
+                    }
+                } catch (e) {
+                    console.warn("Timeline re-render failed:", e);
+                }
             }
         }
     } catch (error) {
@@ -1675,11 +1693,24 @@ function updateBIMetrics(metrics) {
                 textHtml = `<span style="font-size: 0.8rem; color: ${colorVar};">${item.text}</span>`;
             }
             
+            // Look up product SKU for high-fidelity identification (handles cached or new metrics)
+            let sku = item.sku || "";
+            if (!sku && fullInventoryData && fullInventoryData.length > 0) {
+                const found = fullInventoryData.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+                if (found && found.sku) {
+                    sku = found.sku;
+                }
+            }
+            const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
+            
             html += `
                 <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorVar}; box-shadow: 0 0 10px ${colorVar};"></div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
-                        <strong style="color: var(--text-primary);">${item.name} <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem;">(${item.stock} left)</span></strong>
+                        <strong style="color: var(--text-primary); display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
+                            ${item.name}${skuSpan}
+                            <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: auto;">(${item.stock} left)</span>
+                        </strong>
                         ${textHtml}
                     </div>
                     ${badgeHtml}

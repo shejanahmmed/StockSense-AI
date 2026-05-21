@@ -1035,6 +1035,10 @@ h1, h2, h3, h4 {
     align-items: start;
 }
 
+.timeline-drivers-grid {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
 
 
 .chart-section {
