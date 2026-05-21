@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
         if (hasUploadedFile) {
             // Data will be restored from localStorage cache inside setupCsvUpload
+            loadInventorySilent();
         } else {
             resetDashboardToEmpty();
         }
@@ -596,10 +597,63 @@ async function loadInventoryData() {
             renderInventoryTable(fullInventoryData);
             // Dynamically populate category filter from real data
             populateCategoryFilter(fullInventoryData);
+            enhanceNextStepBannerWithSku();
         }
     } catch (error) {
         console.error("Inventory error:", error);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
+    }
+}
+
+async function loadInventorySilent() {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const response = await fetch('/api/inventory', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (response.ok) {
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                fullInventoryData = result.data;
+                enhanceNextStepBannerWithSku();
+            }
+        }
+    } catch (error) {
+        console.warn("Silent inventory load failed:", error);
+    }
+}
+
+function enhanceNextStepBannerWithSku() {
+    const nextStepEl = document.getElementById('metric-next-step');
+    if (!nextStepEl || !fullInventoryData || fullInventoryData.length === 0) return;
+    
+    let html = nextStepEl.innerHTML;
+    // Strip HTML tags to inspect the plain text
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    if (plainText.startsWith("Approve purchase order for ") && !plainText.includes("(")) {
+        const match = plainText.match(/Approve purchase order for (.+?) before Friday/);
+        if (match && match[1]) {
+            const prodName = match[1].replace(/'/g, "").trim();
+            const product = fullInventoryData.find(p => p.name.toLowerCase() === prodName.toLowerCase());
+            if (product && product.sku) {
+                const newText = `Approve purchase order for '${product.name}' (${product.sku}) before Friday to avoid stockout.`;
+                const bolded = newText.replace(/'([^']+)'/g, '<strong>$1</strong>');
+                nextStepEl.innerHTML = bolded;
+                
+                try {
+                    const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+                    if (cachedData && cachedData.bi_metrics) {
+                        cachedData.bi_metrics.next_step = newText;
+                        localStorage.setItem('stockSense_lastResult', JSON.stringify(cachedData));
+                    }
+                } catch (e) {
+                    console.warn("Failed to update cached next_step:", e);
+                }
+            }
+        }
     }
 }
 
@@ -1589,8 +1643,15 @@ function updateBIMetrics(metrics) {
     // Priority Next Step
     const nextStepEl = document.getElementById('metric-next-step');
     if (nextStepEl) {
-        // Find if it mentions a product and bold it if so
-        const text = metrics.next_step;
+        let text = metrics.next_step || "";
+        // If there are no single quotes and no brackets, format it with single quotes so bolding regex works
+        if (text.startsWith("Approve purchase order for ") && !text.includes("'") && !text.includes("(")) {
+            const match = text.match(/Approve purchase order for (.+?) before Friday/);
+            if (match && match[1]) {
+                const prodName = match[1].trim();
+                text = `Approve purchase order for '${prodName}' before Friday to avoid stockout.`;
+            }
+        }
         const bolded = text.replace(/'([^']+)'/g, '<strong>$1</strong>');
         nextStepEl.innerHTML = bolded;
     }

@@ -738,7 +738,7 @@ async def predict_demand(
                 "upcoming_event_date": upcoming_event_date,
                 "event_impact": "+15% expected",
                 "avg_margin": "24.5%",
-                "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",
+                "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' ({at_risk[0]['product_id']}) before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",
                 "timeline": [
                     {
                         "name": p["product_name"],
