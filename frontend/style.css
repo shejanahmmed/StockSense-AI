@@ -4480,3 +4480,124 @@ input:checked + .slider:before {
         align-self: center;
     }
 }
+
+/* ==========================================
+   Contact Us Page Styles
+   ========================================== */
+.contact-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2.5rem 2.5rem 4rem;
+    animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contact-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.contact-badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-full);
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    width: fit-content;
+}
+
+.contact-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.contact-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+}
+
+.contact-info-container,
+.contact-form-card {
+    border: var(--border-glass);
+    border-radius: var(--radius-lg);
+    background: var(--bg-glass);
+    box-shadow: var(--shadow-glass);
+    transition: var(--transition-smooth);
+}
+
+.contact-info-container:hover,
+.contact-form-card:hover {
+    border-color: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.05);
+}
+
+.contact-detail-icon {
+    transition: var(--transition-smooth);
+}
+
+.contact-detail-item:hover .contact-detail-icon {
+    transform: scale(1.08);
+}
+
+.contact-form-card input,
+.contact-form-card textarea {
+    outline: none;
+    border: var(--border-glass);
+    transition: var(--transition-smooth);
+}
+
+.contact-form-card input:focus,
+.contact-form-card textarea:focus {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Success alert micro animation */
+.contact-success-alert {
+    animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive Media Queries for Contact Us Page */
+@media (max-width: 992px) {
+    .contact-workspace {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-content {
+        padding: 1.5rem 1.5rem 3rem;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .contact-form-row {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem;
+    }
+    
+    .contact-title-wrapper {
+        align-items: center;
+        text-align: center;
+    }
+    
+    .contact-badge-top {
+        align-self: center;
+    }
+}
+

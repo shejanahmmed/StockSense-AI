@@ -201,6 +201,7 @@ function setupNavigation() {
     const howItWorksView = document.getElementById('howItWorksView');
     const pricingView = document.getElementById('pricingView');
     const aboutView = document.getElementById('aboutView');
+    const contactView = document.getElementById('contactView');
 
     let currentView = 'dashboard';
 
@@ -215,6 +216,7 @@ function setupNavigation() {
         if (howItWorksView) howItWorksView.style.display = 'none';
         if (pricingView) pricingView.style.display = 'none';
         if (aboutView) aboutView.style.display = 'none';
+        if (contactView) contactView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -238,7 +240,7 @@ function setupNavigation() {
         // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about' || view === 'contact') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -267,6 +269,8 @@ function setupNavigation() {
             if (pricingView) pricingView.style.display = 'flex';
         } else if (view === 'about') {
             if (aboutView) aboutView.style.display = 'flex';
+        } else if (view === 'contact') {
+            if (contactView) contactView.style.display = 'flex';
         }
 
         // Reset scroll position to top of main content immediately on any page/view switch
@@ -417,6 +421,88 @@ function setupNavigation() {
         aboutBackBtn.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('dashboard');
+        });
+    }
+
+    // Wire up Contact View triggers
+    const footerNavContact = document.getElementById('footerNavContact');
+    if (footerNavContact) {
+        footerNavContact.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('contact');
+        });
+    }
+
+    const contactBackBtn = document.getElementById('contactBackBtn');
+    if (contactBackBtn) {
+        contactBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
+    // Contact Form Submission logic
+    const contactForm = document.getElementById('contactForm');
+    const contactSuccessAlert = document.getElementById('contactSuccessAlert');
+    const contactSubmitBtn = document.getElementById('contactSubmitBtn');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (contactSubmitBtn) {
+                contactSubmitBtn.disabled = true;
+                contactSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+            }
+
+            // Simulate form submission delay
+            setTimeout(() => {
+                // Clear the form
+                contactForm.reset();
+
+                // Show success alert
+                if (contactSuccessAlert) {
+                    contactSuccessAlert.style.display = 'flex';
+                    contactSuccessAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
+                // Restore button state
+                if (contactSubmitBtn) {
+                    contactSubmitBtn.disabled = false;
+                    contactSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Message';
+                }
+
+                // Trigger in-app notification if showNotification exists, otherwise append to local system notifications dropdown
+                if (typeof showNotification === 'function') {
+                    showNotification('Inquiry sent! Our team will contact you shortly.', 'success');
+                } else {
+                    const notificationList = document.getElementById('notificationList');
+                    const notificationDot = document.getElementById('notificationDot');
+                    if (notificationList) {
+                        const newNotif = document.createElement('div');
+                        newNotif.className = 'notification-item success';
+                        newNotif.innerHTML = `
+                            <div class="notif-icon"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="notif-content">
+                                <h5>Support Inquiry Logged</h5>
+                                <p>Message from contact form sent successfully.</p>
+                            </div>
+                        `;
+                        const emptyState = notificationList.querySelector('.empty-state');
+                        if (emptyState) emptyState.remove();
+                        notificationList.insertBefore(newNotif, notificationList.firstChild);
+                        if (notificationDot) notificationDot.style.display = 'block';
+                    }
+                }
+                
+                // Hide alert after 8 seconds
+                setTimeout(() => {
+                    if (contactSuccessAlert) {
+                        contactSuccessAlert.style.display = 'none';
+                    }
+                }, 8000);
+
+            }, 1000);
         });
     }
 
