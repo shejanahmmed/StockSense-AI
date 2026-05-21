@@ -5138,7 +5138,9 @@ input:checked + .slider:before {
 }
 
 /* Enable scrolling on the entire modal container instead of just the inner product list table wrapper */
-#dailyVsForecastModal .sku-modal-container {
+#dailyVsForecastModal .sku-modal-container,
+#cashFlowModal .sku-modal-container,
+#demandTrendModal .sku-modal-container {
     max-height: 90vh;
     overflow: hidden; /* Do not scroll container itself */
     display: flex;
@@ -5168,14 +5170,18 @@ input:checked + .slider:before {
     background: transparent;
 }
 
-#dailyVsForecastModal .sku-table-wrapper {
+#dailyVsForecastModal .sku-table-wrapper,
+#cashFlowModal .sku-table-wrapper,
+#demandTrendModal .sku-table-wrapper {
     max-height: none !important;
     overflow: visible !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
     background: rgba(0, 0, 0, 0.15);
 }
 
-#dailyVsForecastModal .sku-table thead th {
+#dailyVsForecastModal .sku-table thead th,
+#cashFlowModal .sku-table thead th,
+#demandTrendModal .sku-table thead th {
     position: sticky;
     top: 0; /* Align perfectly to the top of the scroll container (.bi-modal-body) */
     z-index: 10;

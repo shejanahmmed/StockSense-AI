@@ -65,6 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKpiInventoryHealthTrigger();
     setupKpiForecastDemandTrigger();
     setupKpiDailyVsForecastTrigger();
+    setupKpiCashFlowTrigger();
+    setupKpiDemandTrendTrigger();
 
     // 13. Setup View All Toggles for BI boxes
     setupBIMetricsToggles();
@@ -4464,6 +4466,903 @@ function renderDailyVsForecastRows(items, maxVelocity) {
                             </div>
                         </div>
                     </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
+// ==========================================
+// Cash Flow & Capital Optimization Trigger
+// ==========================================
+function setupKpiCashFlowTrigger() {
+    const kpiCard = document.getElementById('kpiCashFlowCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalCashFlow();
+        });
+    }
+}
+
+async function showModalCashFlow() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('cashFlowModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let items = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        items = fullInventoryData;
+    } else {
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    items = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch Inventory data for Cash Flow:", e);
+        }
+    }
+
+    // 3. Calculate advanced BI stats
+    const computedItems = items.map(p => {
+        const price = p.price || 0;
+        const stock = p.stock || 0;
+        const forecasted_demand = p.forecasted_demand || 0;
+        
+        // Scale 7d forecast demand to 30d
+        const forecastedDemand30d = Math.round(forecasted_demand * (30 / 7));
+        
+        // Current sales capability: limited by current stock unless restocked
+        const projectedUnitsSold = Math.min(stock, forecastedDemand30d);
+        const projectedInflow = projectedUnitsSold * price;
+        const tiedUpCapital = stock * price;
+        const potentialRevenue = forecastedDemand30d * price;
+        const cashAtRisk = Math.max(0, forecastedDemand30d - stock) * price;
+        const restockOutflow = Math.max(0, forecastedDemand30d - stock) * price * 0.70;
+
+        return {
+            ...p,
+            forecastedDemand30d,
+            projectedUnitsSold,
+            projectedInflow,
+            tiedUpCapital,
+            potentialRevenue,
+            cashAtRisk,
+            restockOutflow
+        };
+    });
+
+    let totalProjectedInflow = 0;
+    let totalTiedUpCapital = 0;
+    let totalCashAtRisk = 0;
+    let totalRestockOutflow = 0;
+
+    computedItems.forEach(item => {
+        totalProjectedInflow += item.projectedInflow;
+        totalTiedUpCapital += item.tiedUpCapital;
+        totalCashAtRisk += item.cashAtRisk;
+        totalRestockOutflow += item.restockOutflow;
+    });
+
+    // Dynamic threshold for "Inflow Leaders" - top 15%
+    const sortedInflows = [...computedItems].map(i => i.projectedInflow).sort((a, b) => b - a);
+    const thresholdIdx = Math.max(4, Math.floor(sortedInflows.length * 0.15));
+    const leaderThreshold = sortedInflows[thresholdIdx] || 0;
+
+    const maxInflow = Math.max(...computedItems.map(item => item.projectedInflow), 1);
+
+    // Tab state
+    let activeTab = 'all'; // 'all', 'leaders', 'risk', 'sinks'
+    let searchQuery = '';
+    let currentSortCol = 'inflow';
+    let currentSortDir = 'desc';
+
+    // 4. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'cashFlowModal';
+    overlay.innerHTML = `
+        <div class="sku-modal-container" style="width: 1000px; max-width: 95vw; max-height: 90vh;">
+            <div class="sku-modal-header">
+                <div>
+                    <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-money-bill-wave" style="color:var(--status-success);"></i>
+                        Cash Flow & Capital Optimization Hub
+                    </h2>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="cashFlowModalSub">
+                        Analyze projected gross cash inflow (30-day) against warehouse working capital efficiency.
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeCashFlowModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Scrollable Body Wrapper -->
+            <div class="bi-modal-body">
+                <!-- Summary Cards Block -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">PROJECTED INFLOW</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-success); font-weight: 700;">
+                            ${formatCurrency(totalProjectedInflow)} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">achievable</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">TIED-UP CAPITAL</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--accent-primary); font-weight: 700;">
+                            ${formatCurrency(totalTiedUpCapital)} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-secondary);">in warehouse</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">CASH FLOW AT RISK</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-danger); font-weight: 700;">
+                            ${formatCurrency(totalCashAtRisk)} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">stockout loss</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">RESTOCK OUTFLOW (EST)</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-warning); font-weight: 700;">
+                            ${formatCurrency(totalRestockOutflow)} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">to unlock risk</span>
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Interactive Tab Container -->
+                <div class="bi-tabs-container">
+                    <button class="bi-tab-btn active" id="tab-cf-all" data-tab="all">
+                        <i class="fa-solid fa-border-all"></i> All Products (${computedItems.length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-cf-leaders" data-tab="leaders">
+                        <i class="fa-solid fa-star" style="color:var(--status-success);"></i> Inflow Leaders (${computedItems.filter(i => i.projectedInflow >= leaderThreshold && i.projectedInflow > 0).length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-cf-risk" data-tab="risk">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:var(--status-danger);"></i> Lost Cash Risk (${computedItems.filter(i => i.cashAtRisk > 0).length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-cf-sinks" data-tab="sinks">
+                        <i class="fa-solid fa-lock" style="color:var(--status-warning);"></i> Slow Sinks (${computedItems.filter(i => i.stock > 0 && (i.forecastedDemand30d === 0 || i.stock > i.forecastedDemand30d * 3)).length})
+                    </button>
+                </div>
+
+                <!-- Dynamic AI Actionable Advice Banner -->
+                <div class="glass-panel" id="cfRecommendationBanner" style="padding: 0.75rem 1rem; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; gap: 0.75rem; align-items: center;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--status-success); font-size: 1.1rem;"></i>
+                    <div style="flex: 1; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;" id="cfRecommendationText">
+                        Loading cash flow advice...
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="sku-modal-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="cashFlowSearchInput" placeholder="Search products by SKU, Name, or Category..." autocomplete="off">
+                </div>
+
+                <!-- Scrollable Table Wrapper -->
+                <div class="sku-table-wrapper">
+                    <table class="sku-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header" data-col="sku" style="width: 15%;">SKU <span class="sort-indicator" id="sort-cf-sku"></span></th>
+                                <th class="sortable-header" data-col="name" style="width: 28%;">Product Details <span class="sort-indicator" id="sort-cf-name"></span></th>
+                                <th class="sortable-header" data-col="inflow" style="width: 25%; text-align: center;">Projected Inflow (30d) <span class="sort-indicator" id="sort-cf-inflow"></span></th>
+                                <th class="sortable-header" data-col="capital" style="width: 16%; text-align: center;">Tied-Up Capital <span class="sort-indicator" id="sort-cf-capital"></span></th>
+                                <th class="sortable-header" data-col="status" style="width: 16%; text-align: center;">Status <span class="sort-indicator" id="sort-cf-status"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cashFlowTableBody">
+                            <!-- Dynamic rows loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS animations
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    const searchInput = document.getElementById('cashFlowSearchInput');
+    if (searchInput) {
+        searchInput.focus({ preventScroll: true });
+    }
+
+    // Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeCashFlowModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // Sort column headers handler
+    const headers = overlay.querySelectorAll('.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const col = header.getAttribute('data-col');
+            if (currentSortCol === col) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortCol = col;
+                currentSortDir = 'desc'; // Default to desc for new sort
+            }
+            updateTable();
+        });
+    });
+
+    // Tab buttons event listeners
+    const tabButtons = overlay.querySelectorAll('.bi-tab-btn');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTab = btn.getAttribute('data-tab');
+            updateTable();
+        });
+    });
+
+    // Search input listener
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            updateTable();
+        });
+    }
+
+    // Define the core refresh/update function
+    function updateTable() {
+        // 1. Filter items by Tab
+        let filtered = [...computedItems];
+        if (activeTab === 'leaders') {
+            filtered = filtered.filter(i => i.projectedInflow >= leaderThreshold && i.projectedInflow > 0);
+        } else if (activeTab === 'risk') {
+            filtered = filtered.filter(i => i.cashAtRisk > 0);
+        } else if (activeTab === 'sinks') {
+            filtered = filtered.filter(i => i.stock > 0 && (i.forecastedDemand30d === 0 || i.stock > i.forecastedDemand30d * 3));
+        }
+
+        // 2. Filter items by Search Query
+        if (searchQuery.length > 0) {
+            filtered = filtered.filter(item => {
+                return (item.sku && item.sku.toLowerCase().includes(searchQuery)) ||
+                       (item.name && item.name.toLowerCase().includes(searchQuery)) ||
+                       (item.category && item.category.toLowerCase().includes(searchQuery));
+            });
+        }
+
+        // 3. Sort items
+        filtered.sort((a, b) => {
+            let valA, valB;
+            if (currentSortCol === 'sku') {
+                valA = a.sku || '';
+                valB = b.sku || '';
+            } else if (currentSortCol === 'name') {
+                valA = a.name || '';
+                valB = b.name || '';
+            } else if (currentSortCol === 'inflow') {
+                valA = a.projectedInflow || 0;
+                valB = b.projectedInflow || 0;
+            } else if (currentSortCol === 'capital') {
+                valA = a.tiedUpCapital || 0;
+                valB = b.tiedUpCapital || 0;
+            } else {
+                // Status sort based on severity hierarchy
+                const getStatusWeight = (item) => {
+                    if (item.projectedInflow >= leaderThreshold && item.projectedInflow > 0) return 3;
+                    if (item.cashAtRisk > 0) return 2;
+                    if (item.stock > 0 && (item.forecastedDemand30d === 0 || item.stock > item.forecastedDemand30d * 3)) return 1;
+                    return 0;
+                };
+                valA = getStatusWeight(a);
+                valB = getStatusWeight(b);
+            }
+
+            if (typeof valA === 'string') {
+                return currentSortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            } else {
+                return currentSortDir === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+
+        // 4. Render Table rows
+        const tbody = document.getElementById('cashFlowTableBody');
+        if (tbody) {
+            tbody.innerHTML = renderCashFlowModalRows(filtered, maxInflow, leaderThreshold);
+        }
+
+        // 5. Update Sort Indicator Icons
+        headers.forEach(h => {
+            const col = h.getAttribute('data-col');
+            const ind = h.querySelector('.sort-indicator');
+            if (ind) {
+                if (col === currentSortCol) {
+                    ind.innerHTML = currentSortDir === 'asc' ? '<i class="fa-solid fa-chevron-up"></i>' : '<i class="fa-solid fa-chevron-down"></i>';
+                    ind.style.opacity = '1';
+                } else {
+                    ind.innerHTML = '';
+                    ind.style.opacity = '0.3';
+                }
+            }
+        });
+
+        // 6. Update subtext count
+        const sub = document.getElementById('cashFlowModalSub');
+        if (sub) {
+            if (searchQuery.length > 0) {
+                sub.textContent = `Showing ${filtered.length} of ${computedItems.length} matched products.`;
+            } else {
+                sub.textContent = `Analyze projected gross cash inflow (30-day) against warehouse working capital efficiency.`;
+            }
+        }
+
+        // 7. Update AI Recommendation Guidance Banner text
+        const recText = document.getElementById('cfRecommendationText');
+        if (recText) {
+            if (activeTab === 'all') {
+                recText.innerHTML = `Your inventory is projected to generate <strong>${formatCurrency(totalProjectedInflow)}</strong> in gross cash inflow over the next 30 days. You have <strong>${formatCurrency(totalTiedUpCapital)}</strong> tied up in warehouse assets. However, supply deficits put <strong>${formatCurrency(totalCashAtRisk)}</strong> at immediate risk of stockout loss. Restocking top items immediately can capture this lost revenue.`;
+            } else if (activeTab === 'leaders') {
+                const leaderCount = computedItems.filter(i => i.projectedInflow >= leaderThreshold && i.projectedInflow > 0).length;
+                const leaderSum = computedItems.filter(i => i.projectedInflow >= leaderThreshold && i.projectedInflow > 0).reduce((sum, i) => sum + i.projectedInflow, 0);
+                const percentLeaders = totalProjectedInflow > 0 ? ((leaderSum / totalProjectedInflow) * 100).toFixed(1) : '0.0';
+                recText.innerHTML = `These <strong>${leaderCount} top products</strong> account for <strong>${percentLeaders}%</strong> of your projected 30-day cash inflow (<strong>${formatCurrency(leaderSum)}</strong>). Prioritize supplier agreements and logistics guarantees for these high-volume champions to keep the cash flowing.`;
+            } else if (activeTab === 'risk') {
+                const riskCount = computedItems.filter(i => i.cashAtRisk > 0).length;
+                recText.innerHTML = `Alert: You have <strong>${riskCount} products</strong> with active supply deficits, risking <strong>${formatCurrency(totalCashAtRisk)}</strong> in lost monthly sales. Restocking these products will cost an estimated <strong>${formatCurrency(totalRestockOutflow)}</strong> (based on standard 70% COGS), unlocking significant high-margin revenue!`;
+            } else if (activeTab === 'sinks') {
+                const sinkCount = computedItems.filter(i => i.stock > 0 && (i.forecastedDemand30d === 0 || i.stock > i.forecastedDemand30d * 3)).length;
+                const sinkSum = computedItems.filter(i => i.stock > 0 && (i.forecastedDemand30d === 0 || i.stock > i.forecastedDemand30d * 3)).reduce((sum, i) => sum + i.tiedUpCapital, 0);
+                recText.innerHTML = `Warning: You have <strong>${sinkCount} products</strong> identified as slow-turnover warehouse sinks, locking up <strong>${formatCurrency(sinkSum)}</strong> in illiquid capital. Consider executing promotional campaigns, bundle discounts, or clearance events to free up vital cash.`;
+            }
+        }
+    }
+
+    // Initial table refresh
+    updateTable();
+}
+
+function renderCashFlowModalRows(items, maxInflow, leaderThreshold) {
+    if (!items || items.length === 0) {
+        return `
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-box-open" style="font-size: 1.8rem; display: block; margin-bottom: 0.75rem; color: var(--text-muted);"></i>
+                    No products matching these criteria.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const price = item.price || 0;
+        const stock = item.stock || 0;
+        const inflow = item.projectedInflow || 0;
+        const capital = item.tiedUpCapital || 0;
+        const risk = item.cashAtRisk || 0;
+
+        let statusBadge = '';
+        if (inflow >= leaderThreshold && inflow > 0) {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-star"></i> Inflow Leader</span>`;
+        } else if (risk > 0) {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Risk</span>`;
+        } else if (stock > 0 && (item.forecastedDemand30d === 0 || stock > item.forecastedDemand30d * 3)) {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fa-solid fa-lock"></i> Locked Capital</span>`;
+        } else {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-check"></i> Healthy</span>`;
+        }
+
+        // Relative width for the progress contribution bar (minimum 3%)
+        const flowPct = Math.max(3, (inflow / maxInflow) * 100);
+
+        let riskIndicatorText = '';
+        if (risk > 0) {
+            riskIndicatorText = `
+                <div style="margin-top: 0.2rem; display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.72rem; color: var(--status-danger); font-weight: 600; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.15); padding: 1px 6px; border-radius: 3px;" title="Potential revenue lost due to insufficient stock">
+                    <i class="fa-solid fa-circle-exclamation"></i> Risk: ${formatCurrency(risk)}
+                </div>
+            `;
+        } else {
+            riskIndicatorText = `
+                <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; display: inline-block;">
+                    Unfulfilled demand: 0
+                </span>
+            `;
+        }
+
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                        <span style="font-weight: 650; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--status-success);">${formatCurrency(inflow)}</span>
+                            ${riskIndicatorText}
+                        </div>
+                        <!-- Contribution Sparkline -->
+                        <div class="bi-spark-track" style="height: 5px; background: rgba(255,255,255,0.02);" title="Projected Inflow Contribution">
+                            <div class="bi-spark-bar" style="width: ${flowPct}%; background: linear-gradient(90deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.55)); border-right: 1px solid rgba(16, 185, 129, 0.8);"></div>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
+                    ${formatCurrency(capital)}
+                    <span style="display:block; font-size:0.72rem; font-weight:normal; color:var(--text-muted); margin-top:0.2rem;">
+                        ${stock.toLocaleString()} units
+                    </span>
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${statusBadge}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
+// ==========================================
+// Demand Trend Interactive Dialog
+// ==========================================
+function setupKpiDemandTrendTrigger() {
+    const kpiCard = document.getElementById('kpiDemandTrendCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalDemandTrend();
+        });
+    }
+}
+
+async function showModalDemandTrend() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('demandTrendModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let items = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        items = fullInventoryData;
+    } else {
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    items = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch Inventory data for Demand Trend:", e);
+        }
+    }
+
+    // 3. Compute detailed metrics for each item
+    const computedItems = items.map(p => {
+        const histDaily = Math.max(0, Math.round((p.units_sold || 0) / 14));
+        const foreDaily = Math.max(0, Math.round((p.forecasted_demand || 0) / 7));
+        
+        // Calculate growth rate percentage
+        let growthRate = 0;
+        if (histDaily > 0) {
+            growthRate = ((foreDaily - histDaily) / histDaily) * 100;
+        } else if (foreDaily > 0) {
+            growthRate = 100; // 100% growth if historical is 0 and forecasted is positive
+        }
+
+        // Categorize Trajectory
+        let trajectory = 'Stable';
+        if (growthRate > 15) {
+            trajectory = 'Surging';
+        } else if (growthRate < -15) {
+            trajectory = 'Cooling';
+        }
+
+        return {
+            ...p,
+            histDaily,
+            foreDaily,
+            growthRate,
+            trajectory
+        };
+    });
+
+    // Calculate Portfolio aggregate stats
+    const totalSKUs = computedItems.length;
+    const surgingItems = computedItems.filter(i => i.trajectory === 'Surging');
+    const stableItems = computedItems.filter(i => i.trajectory === 'Stable');
+    const coolingItems = computedItems.filter(i => i.trajectory === 'Cooling');
+
+    // Portfolio aggregate shift
+    const totalHistDaily = computedItems.reduce((sum, i) => sum + i.histDaily, 0);
+    const totalForeDaily = computedItems.reduce((sum, i) => sum + i.foreDaily, 0);
+    const overallShift = totalHistDaily > 0 ? ((totalForeDaily - totalHistDaily) / totalHistDaily) * 100 : 0;
+    const overallShiftText = (overallShift >= 0 ? '+' : '') + overallShift.toFixed(1) + '%';
+
+    const maxVelocity = Math.max(...computedItems.map(item => Math.max(item.histDaily, item.foreDaily)), 1);
+
+    // Tab state
+    let activeTab = 'all'; // 'all', 'surging', 'stable', 'cooling'
+    let searchQuery = '';
+    let currentSortCol = 'growth';
+    let currentSortDir = 'desc';
+
+    // 4. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'demandTrendModal';
+    overlay.innerHTML = `
+        <div class="sku-modal-container" style="width: 1000px; max-width: 95vw; max-height: 90vh;">
+            <div class="sku-modal-header">
+                <div>
+                    <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-arrow-trend-up" style="color:var(--status-info);"></i>
+                        Demand Trajectory & Trend Analysis Hub
+                    </h2>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="demandTrendModalSub">
+                        Analyze directional changes in customer demand comparing historical daily sales (14-day) to AI forecasts (7-day).
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeDemandTrendModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Scrollable Body Wrapper -->
+            <div class="bi-modal-body">
+                <!-- Summary Cards Block -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">PORTFOLIO DEMAND SHIFT</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: ${overallShift >= 0 ? 'var(--status-success)' : 'var(--status-danger)'}; font-weight: 700;">
+                            ${overallShiftText} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">overall momentum</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">🚀 SURGING DEMAND</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-success); font-weight: 700;">
+                            ${surgingItems.length} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">SKUs accelerating</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">⚖️ STABLE CORE</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-info); font-weight: 700;">
+                            ${stableItems.length} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">SKUs predictable</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">📉 COOLING DEMAND</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-danger); font-weight: 700;">
+                            ${coolingItems.length} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">SKUs cooling down</span>
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Interactive Tab Container -->
+                <div class="bi-tabs-container">
+                    <button class="bi-tab-btn active" id="tab-dt-all" data-tab="all">
+                        <i class="fa-solid fa-border-all"></i> All Products (${computedItems.length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-dt-surging" data-tab="surging">
+                        <i class="fa-solid fa-arrow-trend-up" style="color:var(--status-success);"></i> Surging Demand (${surgingItems.length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-dt-stable" data-tab="stable">
+                        <i class="fa-solid fa-scale-balanced" style="color:var(--status-info);"></i> Stable Performance (${stableItems.length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-dt-cooling" data-tab="cooling">
+                        <i class="fa-solid fa-arrow-trend-down" style="color:var(--status-danger);"></i> Cooling Demand (${coolingItems.length})
+                    </button>
+                </div>
+
+                <!-- Dynamic AI Actionable Advice Banner -->
+                <div class="glass-panel" id="dtRecommendationBanner" style="padding: 0.75rem 1rem; background: rgba(59, 130, 246, 0.04); border: 1px solid rgba(59, 130, 246, 0.1); border-radius: 8px; display: flex; gap: 0.75rem; align-items: center;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--status-info); font-size: 1.1rem;"></i>
+                    <div style="flex: 1; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;" id="dtRecommendationText">
+                        Analyzing portfolio demand dynamics...
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="sku-modal-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="demandTrendSearchInput" placeholder="Search products by SKU, Name, or Category..." autocomplete="off">
+                </div>
+
+                <!-- Scrollable Table Wrapper -->
+                <div class="sku-table-wrapper">
+                    <table class="sku-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header" data-col="sku" style="width: 15%;">SKU <span class="sort-indicator" id="sort-dt-sku"></span></th>
+                                <th class="sortable-header" data-col="name" style="width: 30%;">Product Details <span class="sort-indicator" id="sort-dt-name"></span></th>
+                                <th class="sortable-header" data-col="growth" style="width: 18%; text-align: center;">Growth Rate <span class="sort-indicator" id="sort-dt-growth"></span></th>
+                                <th class="sortable-header" data-col="velocity" style="width: 22%; text-align: center;">Velocity Shift & Sparkline <span class="sort-indicator" id="sort-dt-velocity"></span></th>
+                                <th class="sortable-header" data-col="status" style="width: 15%; text-align: center;">Status <span class="sort-indicator" id="sort-dt-status"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="demandTrendTableBody">
+                            <!-- Dynamic rows loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS animations
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    const searchInput = document.getElementById('demandTrendSearchInput');
+    if (searchInput) {
+        searchInput.focus({ preventScroll: true });
+    }
+
+    // Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeDemandTrendModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // Sort column headers handler
+    const headers = overlay.querySelectorAll('.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const col = header.getAttribute('data-col');
+            if (currentSortCol === col) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortCol = col;
+                currentSortDir = 'desc'; // Default to desc for new sort
+            }
+            updateTable();
+        });
+    });
+
+    // Tab buttons event listeners
+    const tabButtons = overlay.querySelectorAll('.bi-tab-btn');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTab = btn.getAttribute('data-tab');
+            updateTable();
+        });
+    });
+
+    // Search input listener
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            updateTable();
+        });
+    }
+
+    // Define the core refresh/update function
+    function updateTable() {
+        // 1. Filter items by Tab
+        let filtered = [...computedItems];
+        if (activeTab === 'surging') {
+            filtered = filtered.filter(i => i.trajectory === 'Surging');
+        } else if (activeTab === 'stable') {
+            filtered = filtered.filter(i => i.trajectory === 'Stable');
+        } else if (activeTab === 'cooling') {
+            filtered = filtered.filter(i => i.trajectory === 'Cooling');
+        }
+
+        // 2. Filter items by Search Query
+        if (searchQuery.length > 0) {
+            filtered = filtered.filter(item => {
+                return (item.sku && item.sku.toLowerCase().includes(searchQuery)) ||
+                       (item.name && item.name.toLowerCase().includes(searchQuery)) ||
+                       (item.category && item.category.toLowerCase().includes(searchQuery));
+            });
+        }
+
+        // 3. Sort items
+        filtered.sort((a, b) => {
+            let valA, valB;
+            if (currentSortCol === 'sku') {
+                valA = a.sku || '';
+                valB = b.sku || '';
+            } else if (currentSortCol === 'name') {
+                valA = a.name || '';
+                valB = b.name || '';
+            } else if (currentSortCol === 'growth') {
+                valA = a.growthRate || 0;
+                valB = b.growthRate || 0;
+            } else if (currentSortCol === 'velocity') {
+                valA = a.foreDaily || 0;
+                valB = b.foreDaily || 0;
+            } else {
+                // Status sort based on trajectory priority
+                const getStatusWeight = (item) => {
+                    if (item.trajectory === 'Surging') return 2;
+                    if (item.trajectory === 'Stable') return 1;
+                    return 0;
+                };
+                valA = getStatusWeight(a);
+                valB = getStatusWeight(b);
+            }
+
+            if (typeof valA === 'string') {
+                return currentSortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            } else {
+                return currentSortDir === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+
+        // 4. Render Table rows
+        const tbody = document.getElementById('demandTrendTableBody');
+        if (tbody) {
+            tbody.innerHTML = renderDemandTrendModalRows(filtered, maxVelocity);
+        }
+
+        // 5. Update Sort Indicator Icons
+        headers.forEach(h => {
+            const col = h.getAttribute('data-col');
+            const ind = h.querySelector('.sort-indicator');
+            if (ind) {
+                if (col === currentSortCol) {
+                    ind.innerHTML = currentSortDir === 'asc' ? '<i class="fa-solid fa-chevron-up"></i>' : '<i class="fa-solid fa-chevron-down"></i>';
+                    ind.style.opacity = '1';
+                } else {
+                    ind.innerHTML = '';
+                    ind.style.opacity = '0.3';
+                }
+            }
+        });
+
+        // 6. Update subtext count
+        const sub = document.getElementById('demandTrendModalSub');
+        if (sub) {
+            if (searchQuery.length > 0) {
+                sub.textContent = `Showing ${filtered.length} of ${computedItems.length} matched products.`;
+            } else {
+                sub.textContent = `Analyze directional changes in customer demand comparing historical daily sales (14-day) to AI forecasts (7-day).`;
+            }
+        }
+
+        // 7. Update AI Recommendation Guidance Banner text
+        const recText = document.getElementById('dtRecommendationText');
+        if (recText) {
+            if (activeTab === 'all') {
+                recText.innerHTML = `Portfolio Analysis: Overall demand is <strong>${overallShiftText}</strong> this period. Out of <strong>${totalSKUs}</strong> active products, <strong>${surgingItems.length}</strong> show high demand surge velocity, while <strong>${coolingItems.length}</strong> are cooling down. Optimize stocking budgets and marketing promotions accordingly.`;
+            } else if (activeTab === 'surging') {
+                recText.innerHTML = `Action Required: These <strong>${surgingItems.length} accelerating products</strong> require urgent logistical guarantees and safety stock buffers (+15-20%) to capture the rising customer demand and avoid stockout losses.`;
+            } else if (activeTab === 'stable') {
+                recText.innerHTML = `Strategy: These <strong>${stableItems.length} consistent products</strong> show highly predictable demand velocity. Maintain normal automatic replenishment schedules to save working capital.`;
+            } else if (activeTab === 'cooling') {
+                recText.innerHTML = `Risk Warning: These <strong>${coolingItems.length} cooling products</strong> face warehouse deadstock risk. We recommend slower reordering cycles or launching targeted cross-selling campaigns to clear inventory efficiently.`;
+            }
+        }
+    }
+
+    // Initial table refresh
+    updateTable();
+}
+
+function renderDemandTrendModalRows(items, maxVelocity) {
+    if (!items || items.length === 0) {
+        return `
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-arrow-trend-up" style="font-size: 1.8rem; display: block; margin-bottom: 0.75rem; color: var(--text-muted);"></i>
+                    No products matching these criteria.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const histDaily = item.histDaily || 0;
+        const foreDaily = item.foreDaily || 0;
+        const growth = item.growthRate || 0;
+        const traj = item.trajectory || 'Stable';
+
+        let growthBadge = '';
+        if (growth > 0) {
+            growthBadge = `<span style="color: var(--status-success); font-weight: 700; display: inline-flex; align-items: center; gap: 0.2rem;"><i class="fa-solid fa-arrow-up-long"></i> +${growth.toFixed(1)}%</span>`;
+        } else if (growth < 0) {
+            growthBadge = `<span style="color: var(--status-danger); font-weight: 700; display: inline-flex; align-items: center; gap: 0.2rem;"><i class="fa-solid fa-arrow-down-long"></i> ${growth.toFixed(1)}%</span>`;
+        } else {
+            growthBadge = `<span style="color: var(--text-muted); font-weight: 500;">Flat (0.0%)</span>`;
+        }
+
+        let statusBadge = '';
+        if (traj === 'Surging') {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-bolt"></i> Surging</span>`;
+        } else if (traj === 'Cooling') {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-snowflake"></i> Cooling</span>`;
+        } else {
+            statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-circle-nodes"></i> Stable</span>`;
+        }
+
+        // Relative widths for comparative sparklines
+        const histPct = Math.max(3, (histDaily / maxVelocity) * 100);
+        const forePct = Math.max(3, (foreDaily / maxVelocity) * 100);
+
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                        <span style="font-weight: 650; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
+                    </div>
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${growthBadge}
+                </td>
+                <td>
+                    <div style="display: flex; flex-direction: column; gap: 0.35rem; width: 100%;">
+                        <!-- Comparison numerical values -->
+                        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary);">
+                            <span>Hist: <strong style="color: var(--text-primary);">${histDaily}</strong>/day</span>
+                            <span>FC: <strong style="color: var(--accent-primary);">${foreDaily}</strong>/day</span>
+                        </div>
+                        
+                        <!-- Combined Velocity Sparkline Bars -->
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div class="bi-spark-track" style="height: 4px; background: rgba(255,255,255,0.02);" title="Historical Daily Velocity">
+                                <div class="bi-spark-bar-actual" style="width: ${histPct}%; height: 100%; border-radius: 2px;"></div>
+                            </div>
+                            <div class="bi-spark-track" style="height: 4px; background: rgba(255,255,255,0.02);" title="AI Forecast Daily Velocity">
+                                <div class="bi-spark-bar-forecast" style="width: ${forePct}%; height: 100%; border-radius: 2px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${statusBadge}
                 </td>
             </tr>
         `;
