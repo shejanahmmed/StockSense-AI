@@ -829,6 +829,376 @@
                 </div>
             </div>
 
+            <!-- ===================== HOW IT WORKS ===================== -->
+            <div class="hiw-content" id="howItWorksView" style="display: none;">
+
+                <!-- Header -->
+                <div class="hiw-header">
+                    <button class="secondary-btn" id="hiwBackBtn" style="width: fit-content; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); transition: var(--transition-smooth);">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 0.5rem; color: var(--accent-primary);"></i> Back to Dashboard
+                    </button>
+                    <div class="hiw-title-wrapper" style="margin-top: 1.5rem;">
+                        <h1 class="gradient-text hiw-main-title">How StockSense AI Works</h1>
+                        <div class="hiw-hero-badge"><i class="fa-solid fa-gears"></i> Step-by-Step Guide</div>
+                        <p class="subtitle hiw-subtitle">Everything you need to know to go from zero to AI-powered inventory intelligence — in under 5 minutes.</p>
+                    </div>
+                </div>
+
+                <!-- ── STEP-BY-STEP TIMELINE ── -->
+                <div class="hiw-steps-section">
+                    <h2 class="hiw-section-label"><i class="fa-solid fa-list-ol"></i> Getting Started in 5 Steps</h2>
+
+                    <div class="hiw-timeline">
+
+                        <!-- Step 1 -->
+                        <div class="hiw-step-card glass-panel">
+                            <div class="hiw-step-left">
+                                <div class="hiw-step-number">01</div>
+                                <div class="hiw-step-connector"></div>
+                            </div>
+                            <div class="hiw-step-body">
+                                <div class="hiw-step-icon-wrap hiw-icon-blue">
+                                    <i class="fa-solid fa-user-lock"></i>
+                                </div>
+                                <div class="hiw-step-content">
+                                    <h3>Create Your Account</h3>
+                                    <p>On the login screen, click <strong>"Need an account? Sign Up"</strong> and enter your <em>Organization Name</em>, a secure <em>password</em>, and your <em>Industry Vertical</em> (e.g. Electronics, Apparel). This creates an isolated, SHA-256 hashed profile stored locally — no external server receives your credentials.</p>
+                                    <div class="hiw-step-tip">
+                                        <i class="fa-solid fa-lightbulb"></i>
+                                        <span>Already have an account? Just type your organization name and password on the login screen and click <strong>Access Dashboard</strong>.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="hiw-step-card glass-panel">
+                            <div class="hiw-step-left">
+                                <div class="hiw-step-number">02</div>
+                                <div class="hiw-step-connector"></div>
+                            </div>
+                            <div class="hiw-step-body">
+                                <div class="hiw-step-icon-wrap hiw-icon-green">
+                                    <i class="fa-solid fa-file-csv"></i>
+                                </div>
+                                <div class="hiw-step-content">
+                                    <h3>Upload Your Sales CSV</h3>
+                                    <p>On the <strong>Dashboard</strong>, click the <strong>"Upload CSV Data"</strong> button in the top-right corner. Select a CSV file containing your historical transactions. For fully optimized AI forecasts and replenishment models, your file should include the following 10 fields: <em>date</em>, <em>product_id</em>, <em>product_name</em>, <em>category</em>, <em>sales_qty</em>, <em>unit_price</em>, <em>stock_on_hand</em>, <em>reorder_point</em>, <em>promo</em>, and <em>supplier_lead_days</em>.</p>
+                                    <div class="hiw-csv-format glass-panel">
+                                        <div class="hiw-csv-label"><i class="fa-solid fa-table"></i> Complete CSV Schema & Sample Data</div>
+                                        <div class="hiw-csv-table-wrapper" style="overflow-x: auto; width: 100%; border-radius: var(--radius-sm);">
+                                            <table class="hiw-csv-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>date</th>
+                                                        <th>product_id</th>
+                                                        <th>product_name</th>
+                                                        <th>category</th>
+                                                        <th>sales_qty</th>
+                                                        <th>unit_price</th>
+                                                        <th>stock_on_hand</th>
+                                                        <th>reorder_point</th>
+                                                        <th>promo</th>
+                                                        <th>supplier_lead_days</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>2025-05-20</td>
+                                                        <td>SKU-008</td>
+                                                        <td>Laptop Cooling Pad RGB</td>
+                                                        <td>Accessories</td>
+                                                        <td>33</td>
+                                                        <td>1899</td>
+                                                        <td>167</td>
+                                                        <td>50</td>
+                                                        <td>0</td>
+                                                        <td>10</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2025-05-20</td>
+                                                        <td>SKU-001-P</td>
+                                                        <td>iPhone 15 Ultra Slim Case</td>
+                                                        <td>Electronics</td>
+                                                        <td>30</td>
+                                                        <td>799</td>
+                                                        <td>570</td>
+                                                        <td>100</td>
+                                                        <td>1</td>
+                                                        <td>7</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2025-05-20</td>
+                                                        <td>SKU-005</td>
+                                                        <td>Bluetooth Earbuds Pro</td>
+                                                        <td>Electronics</td>
+                                                        <td>38</td>
+                                                        <td>3499</td>
+                                                        <td>212</td>
+                                                        <td>60</td>
+                                                        <td>0</td>
+                                                        <td>12</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2025-05-20</td>
+                                                        <td>SKU-001</td>
+                                                        <td>iPhone 15 Pro Max Case</td>
+                                                        <td>Electronics</td>
+                                                        <td>16</td>
+                                                        <td>899</td>
+                                                        <td>484</td>
+                                                        <td>100</td>
+                                                        <td>0</td>
+                                                        <td>7</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2025-05-21</td>
+                                                        <td>SKU-008</td>
+                                                        <td>Laptop Cooling Pad RGB</td>
+                                                        <td>Accessories</td>
+                                                        <td>58</td>
+                                                        <td>1899</td>
+                                                        <td>109</td>
+                                                        <td>50</td>
+                                                        <td>0</td>
+                                                        <td>10</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="hiw-step-tip">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span>For best results, upload a file containing at least <strong>30 days</strong> of history. If some metrics like promo or supplier lead days are missing, you can set them to 0 or leave them blank.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="hiw-step-card glass-panel">
+                            <div class="hiw-step-left">
+                                <div class="hiw-step-number">03</div>
+                                <div class="hiw-step-connector"></div>
+                            </div>
+                            <div class="hiw-step-body">
+                                <div class="hiw-step-icon-wrap hiw-icon-purple">
+                                    <i class="fa-solid fa-brain"></i>
+                                </div>
+                                <div class="hiw-step-content">
+                                    <h3>Review AI Dashboard Insights</h3>
+                                    <p>Once the CSV is processed, the <strong>Dashboard</strong> populates with live intelligence. Here is what each section tells you:</p>
+                                    <div class="hiw-features-grid">
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-layer-group" style="color: var(--accent-primary);"></i>
+                                            <div>
+                                                <strong>Total SKUs</strong>
+                                                <span>Number of unique products tracked</span>
+                                            </div>
+                                        </div>
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-arrow-trend-up" style="color: var(--status-success);"></i>
+                                            <div>
+                                                <strong>Forecasted Demand</strong>
+                                                <span>AI-predicted units sold in the next 7 days</span>
+                                            </div>
+                                        </div>
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-cart-plus" style="color: var(--status-warning);"></i>
+                                            <div>
+                                                <strong>At-Risk Products</strong>
+                                                <span>Items projected to run out before restock</span>
+                                            </div>
+                                        </div>
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-clock" style="color: var(--accent-secondary);"></i>
+                                            <div>
+                                                <strong>Inventory Health</strong>
+                                                <span>Overall stock reliability score</span>
+                                            </div>
+                                        </div>
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-circle-nodes" style="color: var(--accent-primary);"></i>
+                                            <div>
+                                                <strong>SHAP Demand Drivers</strong>
+                                                <span>Which factors most influence your demand</span>
+                                            </div>
+                                        </div>
+                                        <div class="hiw-feature-chip">
+                                            <i class="fa-solid fa-chart-line" style="color: var(--status-info);"></i>
+                                            <div>
+                                                <strong>Forecast Chart</strong>
+                                                <span>Historical vs. AI-predicted sales over time</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="hiw-step-card glass-panel">
+                            <div class="hiw-step-left">
+                                <div class="hiw-step-number">04</div>
+                                <div class="hiw-step-connector"></div>
+                            </div>
+                            <div class="hiw-step-body">
+                                <div class="hiw-step-icon-wrap hiw-icon-orange">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>
+                                <div class="hiw-step-content">
+                                    <h3>Manage Your Inventory</h3>
+                                    <p>Navigate to the <strong>Inventory</strong> tab to see a full live table of all your SKUs. You can:</p>
+                                    <ul class="hiw-bullet-list">
+                                        <li><i class="fa-solid fa-plus"></i> <strong>Add new products</strong> manually via the "Add Item" button</li>
+                                        <li><i class="fa-solid fa-filter"></i> <strong>Filter by category or status</strong> (In Stock / Low Stock / Out of Stock)</li>
+                                        <li><i class="fa-solid fa-download"></i> <strong>Export to CSV</strong> for offline reporting or sharing</li>
+                                        <li><i class="fa-solid fa-trash-can"></i> <strong>Delete SKUs</strong> that are no longer stocked</li>
+                                    </ul>
+                                    <div class="hiw-step-tip">
+                                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--status-warning);"></i>
+                                        <span>The <strong>7-Day Forecast</strong> column in the inventory table shows how many units the AI predicts each product will sell — helping you prioritize restocking orders.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5 -->
+                        <div class="hiw-step-card glass-panel">
+                            <div class="hiw-step-left">
+                                <div class="hiw-step-number">05</div>
+                            </div>
+                            <div class="hiw-step-body">
+                                <div class="hiw-step-icon-wrap hiw-icon-teal">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </div>
+                                <div class="hiw-step-content">
+                                    <h3>Chat with the AI Assistant &amp; Plan Promotions</h3>
+                                    <p>Head to the <strong>AI Insights</strong> tab to chat directly with the StockSense AI co-pilot. Ask it questions like:</p>
+                                    <div class="hiw-chat-examples">
+                                        <div class="hiw-chat-bubble">"Which products are at risk of stockout this week?"</div>
+                                        <div class="hiw-chat-bubble">"What should I reorder first given my lead times?"</div>
+                                        <div class="hiw-chat-bubble">"How will the upcoming holiday affect my top 5 SKUs?"</div>
+                                    </div>
+                                    <p style="margin-top: 1rem;">Back on the Dashboard, the <strong>AI Promotional Planner</strong> automatically generates campaign cards — pairing slow-moving stock with upcoming local holidays to suggest optimal discount brackets and promo timings.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ── HOW THE AI WORKS (ARCHITECTURE) ── -->
+                <div class="hiw-arch-section">
+                    <h2 class="hiw-section-label"><i class="fa-solid fa-microchip"></i> Under the Hood — How the AI Works</h2>
+                    <div class="hiw-arch-grid">
+                        <div class="hiw-arch-card glass-panel">
+                            <div class="hiw-arch-icon"><i class="fa-solid fa-file-csv"></i></div>
+                            <h4>1. CSV Ingestion</h4>
+                            <p>Your sales CSV is parsed by the FastAPI backend. Dates, SKUs, and quantities are auto-detected, cleaned, and stored in a local SQLite database — no cloud upload required.</p>
+                        </div>
+                        <div class="hiw-arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="hiw-arch-card glass-panel">
+                            <div class="hiw-arch-icon"><i class="fa-solid fa-chart-line"></i></div>
+                            <h4>2. Prophet Forecasting</h4>
+                            <p>Facebook's Prophet ML model trains on your per-SKU time-series data, learning weekly seasonality, public holiday impacts, and long-term trend shifts to forecast the next 7–30 days of demand.</p>
+                        </div>
+                        <div class="hiw-arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="hiw-arch-card glass-panel">
+                            <div class="hiw-arch-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+                            <h4>3. SHAP Explanations</h4>
+                            <p>Shapley Additive Explanations reveal <em>why</em> a forecast went up or down — ranking the contribution of holidays, day-of-week, and trend factors so you always understand the AI's reasoning.</p>
+                        </div>
+                        <div class="hiw-arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="hiw-arch-card glass-panel">
+                            <div class="hiw-arch-icon"><i class="fa-solid fa-brain"></i></div>
+                            <h4>4. LLaMA 3.3 Insights</h4>
+                            <p>A local LLaMA 3.3 language model receives a safe, anonymized snapshot of your inventory context. It writes human-readable strategic summaries and responds to your chat questions in real-time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── FAQ ACCORDION ── -->
+                <div class="hiw-faq-section">
+                    <h2 class="hiw-section-label"><i class="fa-solid fa-circle-question"></i> Frequently Asked Questions</h2>
+                    <div class="hiw-faq-list">
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>What CSV format does StockSense AI accept?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>Any CSV with columns containing <strong>date</strong>, <strong>SKU / product ID</strong>, and <strong>quantity sold</strong> will work. Column names are auto-detected. Optionally include <em>price</em>, <em>category</em>, and <em>product name</em> for richer insights. There is no strict header naming requirement.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>Is my data stored in the cloud or sent to any third-party?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p><strong>No.</strong> StockSense AI is a local-first platform. All data — your CSV, inventory records, and authentication credentials — are stored in a local SQLite database on the machine running the app. No data is sent to any external server. The LLaMA 3.3 model also runs locally.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>How much historical data do I need for accurate forecasts?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>The minimum is <strong>14 days</strong> of sales history per SKU. For reliable seasonality detection, we recommend at least <strong>30–60 days</strong>. Products with fewer than 14 data points will display an "Insufficient History" warning and be excluded from AI forecasting until more data is available.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>Can I add products that are not in my CSV?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>Yes. Go to the <strong>Inventory</strong> tab and click <strong>"Add Item"</strong>. You can manually enter all product details. If a CSV has already been uploaded, you can also provide the product's average daily sales and the system will generate synthetic historical rows to append to the CSV, enabling AI forecasting for that product on the next run.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>What does the AI Promotional Planner actually suggest?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>The Promotional Planner identifies <strong>slow-moving or overstocked products</strong> and pairs them with <strong>upcoming public holidays or high-demand periods</strong> in your selected region. It then generates campaign cards with a recommended discount bracket and suggested campaign window — helping you clear excess stock at the most profitable time.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>How do I reset or clear all data?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>Go to <strong>Settings → Danger Zone → Purge Historical Data</strong>. This will permanently delete all uploaded CSVs, inventory records, and retrain baseline models. Your account credentials will remain intact. This action cannot be undone, so use it carefully.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ── CTA BANNER ── -->
+                <div class="hiw-cta-banner glass-panel premium-glow">
+                    <div class="hiw-cta-text">
+                        <h3>Ready to generate your first AI forecast?</h3>
+                        <p>Upload a CSV file with at least 14 days of sales data to instantly populate your dashboard with demand forecasts, stock alerts, and promotional recommendations.</p>
+                    </div>
+                    <button class="primary-btn" id="hiwUploadBtn" style="padding: 0.85rem 1.8rem; font-size: 0.95rem; font-weight: 600; white-space: nowrap;">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload CSV Now
+                    </button>
+                </div>
+
+            </div>
+
             <!-- ===================== FEATURES SHOWCASE ===================== -->
             <div class="features-content" id="featuresView" style="display: none;">
                 <!-- Full-Width Header -->

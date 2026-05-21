@@ -162,6 +162,7 @@ function setupNavigation() {
     const privacyView = document.getElementById('privacyView');
     const termsView  = document.getElementById('termsView');
     const featuresView = document.getElementById('featuresView');
+    const howItWorksView = document.getElementById('howItWorksView');
 
     let currentView = 'dashboard';
 
@@ -173,6 +174,7 @@ function setupNavigation() {
         if (privacyView) privacyView.style.display = 'none';
         if (termsView)  termsView.style.display  = 'none';
         if (featuresView) featuresView.style.display = 'none';
+        if (howItWorksView) howItWorksView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -185,7 +187,7 @@ function setupNavigation() {
         // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -208,6 +210,8 @@ function setupNavigation() {
             if (termsView) termsView.style.display = 'flex';
         } else if (view === 'features') {
             if (featuresView) featuresView.style.display = 'flex';
+        } else if (view === 'howItWorks') {
+            if (howItWorksView) howItWorksView.style.display = 'flex';
         }
 
         // Reset scroll position to top of main content immediately on any page/view switch
@@ -295,6 +299,32 @@ function setupNavigation() {
     const featuresPromoBtn = document.getElementById('featuresPromoBtn');
     if (featuresPromoBtn) {
         featuresPromoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+            document.getElementById('csvFileInput')?.click();
+        });
+    }
+
+    // Wire up How It Works view triggers
+    const footerNavHowItWorks = document.getElementById('footerNavHowItWorks');
+    if (footerNavHowItWorks) {
+        footerNavHowItWorks.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('howItWorks');
+        });
+    }
+
+    const hiwBackBtn = document.getElementById('hiwBackBtn');
+    if (hiwBackBtn) {
+        hiwBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
+    const hiwUploadBtn = document.getElementById('hiwUploadBtn');
+    if (hiwUploadBtn) {
+        hiwUploadBtn.addEventListener('click', (e) => {
             e.preventDefault();
             switchView('dashboard');
             document.getElementById('csvFileInput')?.click();
@@ -2399,4 +2429,33 @@ function initLegalScrollSpy() {
             }
         });
     });
+}
+
+// ==========================================
+// How It Works — FAQ Accordion
+// ==========================================
+function toggleFaq(btn) {
+    const item = btn.closest('.hiw-faq-item');
+    const answer = item.querySelector('.hiw-faq-answer');
+    const chevron = btn.querySelector('.hiw-faq-chevron');
+    const isOpen = item.classList.contains('hiw-faq-open');
+
+    // Close all other open items
+    document.querySelectorAll('.hiw-faq-item.hiw-faq-open').forEach(openItem => {
+        if (openItem !== item) {
+            openItem.classList.remove('hiw-faq-open');
+            openItem.querySelector('.hiw-faq-answer').style.maxHeight = '0';
+            openItem.querySelector('.hiw-faq-chevron').style.transform = 'rotate(0deg)';
+        }
+    });
+
+    if (isOpen) {
+        item.classList.remove('hiw-faq-open');
+        answer.style.maxHeight = '0';
+        chevron.style.transform = 'rotate(0deg)';
+    } else {
+        item.classList.add('hiw-faq-open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+    }
 }
