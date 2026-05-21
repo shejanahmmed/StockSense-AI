@@ -2207,307 +2207,762 @@ h1, h2, h3, h4 {
 
 
 
-/* Settings Page Styles */
+/* ============================================================
+   SETTINGS PAGE — MODERN PROFESSIONAL REDESIGN
+   ============================================================ */
 
+/* Settings content wrapper override (already set in base, extend here) */
 .settings-content {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 1.5rem;
-
-    padding-bottom: 3rem;
-
     animation: slideInUp 0.4s ease-out forwards;
-
+    padding-bottom: 4rem;
 }
 
-
-
-.settings-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-
-    gap: 1.5rem;
-
-}
-
-
-
-.settings-card {
-
-    padding: 2rem;
-
+/* ── Hero Header ── */
+.settings-hero {
     display: flex;
-
-    flex-direction: column;
-
-    gap: 1.5rem;
-
-}
-
-
-
-.settings-card h3 {
-
-    font-size: 1.1rem;
-
-    color: var(--text-primary);
-
-    display: flex;
-
     align-items: center;
-
-    gap: 0.75rem;
-
-    padding-bottom: 1rem;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-}
-
-
-
-.settings-group {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 0.5rem;
-
-}
-
-
-
-.settings-group.toggle-group {
-
-    flex-direction: row;
-
     justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(59,130,246,0.05) 100%);
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+}
 
+.settings-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.settings-hero-left {
+    display: flex;
     align-items: center;
-
-    gap: 1rem;
-
+    gap: 1.25rem;
 }
 
+.settings-hero-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(139,92,246,0.35);
+    flex-shrink: 0;
+}
 
+.settings-hero h1 {
+    font-size: 1.7rem;
+    margin-bottom: 0.15rem;
+    letter-spacing: -0.025em;
+}
 
-.settings-group label {
+/* ── Tab Navigation ── */
+.settings-tabs-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem;
+    border-radius: var(--radius-full);
+    width: fit-content;
+}
 
+.settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-full);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
     font-weight: 500;
-
-    font-size: 0.95rem;
-
-    color: var(--text-primary);
-
-}
-
-
-
-.settings-desc {
-
-    font-size: 0.8rem;
-
-    color: var(--text-muted);
-
-    line-height: 1.4;
-
-}
-
-
-
-.settings-input {
-
-    background: rgba(0, 0, 0, 0.2);
-
-    border: 1px solid rgba(255, 255, 255, 0.1);
-
-    border-radius: var(--radius-md);
-
-    padding: 0.8rem 1rem;
-
-    color: var(--text-primary);
-
-    font-family: inherit;
-
+    cursor: pointer;
     transition: var(--transition-smooth);
-
+    white-space: nowrap;
 }
 
+.settings-tab i {
+    font-size: 0.82rem;
+    transition: transform 0.2s ease;
+}
 
+.settings-tab:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary);
+}
+
+.settings-tab:hover i {
+    transform: scale(1.15);
+}
+
+.settings-tab.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+}
+
+/* Tab that's the Danger Zone — make it subtly red when active */
+.settings-tab[data-tab="danger"].active {
+    background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(220,38,38,0.8));
+    box-shadow: 0 4px 16px rgba(239,68,68,0.35);
+}
+
+/* ── Tab Panels ── */
+.settings-panels {
+    position: relative;
+}
+
+.settings-panel {
+    display: none;
+    animation: fadeInSettings 0.3s ease-out forwards;
+}
+
+.settings-panel.active {
+    display: block;
+}
+
+@keyframes fadeInSettings {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Panel Grid ── */
+.settings-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ── Section Card ── */
+.settings-section-card {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-smooth);
+}
+
+.settings-section-card:hover {
+    border-color: rgba(139,92,246,0.2);
+}
+
+/* ── Section Header ── */
+.settings-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.settings-section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+}
+
+.settings-section-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    letter-spacing: -0.01em;
+}
+
+.settings-section-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+/* ── Field Stack ── */
+.settings-field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.settings-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+}
+
+.settings-label i {
+    font-size: 0.78rem;
+    color: var(--accent-primary);
+    opacity: 0.8;
+}
+
+.settings-field-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 0.2rem;
+}
+
+/* ── Settings Input ── */
+.settings-input {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.92rem;
+    transition: var(--transition-smooth);
+    width: 100%;
+}
 
 .settings-input:focus {
-
     border-color: var(--accent-primary);
-
     outline: none;
-
-    background: rgba(255, 255, 255, 0.05);
-
+    background: rgba(139,92,246,0.05);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
 }
-
-
 
 .settings-input option {
-
-    background: #ffffff;
-
-    color: #1a1a2e; /* Dark text for visibility against native white background */
-
+    background: #1e2035;
+    color: var(--text-primary);
 }
 
-
-
-.settings-actions {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    margin-top: 1rem;
-
+/* ── Select Wrapper (custom chevron) ── */
+.settings-select-wrapper {
+    position: relative;
 }
 
-
-
-.danger-btn {
-
-    background: rgba(239, 68, 68, 0.1);
-
-    color: var(--status-danger);
-
-    border: 1px solid rgba(239, 68, 68, 0.3);
-
-    padding: 0.6rem 1.2rem;
-
-    border-radius: var(--radius-md);
-
+.settings-select-wrapper .settings-input {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.5rem;
     cursor: pointer;
-
-    font-weight: 600;
-
-    transition: var(--transition-smooth);
-
 }
 
+.settings-select-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
 
+.settings-select-wrapper:focus-within .settings-select-icon {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--accent-primary);
+}
+
+/* ── Avatar Upload Area ── */
+.avatar-upload-area {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: var(--radius-md);
+    background: rgba(0,0,0,0.1);
+    transition: var(--transition-smooth);
+}
+
+.avatar-upload-area:hover {
+    border-color: rgba(139,92,246,0.4);
+    background: rgba(139,92,246,0.03);
+}
+
+.settings-avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid rgba(255,255,255,0.12);
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(139,92,246,0.25);
+}
+
+.avatar-upload-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.avatar-upload-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.avatar-upload-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-bottom: 0.35rem;
+}
+
+.settings-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(139,92,246,0.3);
+    background: rgba(139,92,246,0.1);
+    color: var(--accent-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.settings-upload-btn:hover {
+    background: rgba(139,92,246,0.2);
+    border-color: rgba(139,92,246,0.5);
+    transform: translateY(-1px);
+}
+
+/* ── Strategy Selection Cards ── */
+.settings-strategy-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.strategy-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.strategy-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.strategy-card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(139,92,246,0.25);
+}
+
+.strategy-card.active {
+    border-color: rgba(139,92,246,0.45);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 1px rgba(139,92,246,0.2) inset;
+}
+
+.strategy-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.strategy-card-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.strategy-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.strategy-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+.strategy-recommended-badge {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+    background: rgba(139,92,246,0.2);
+    color: var(--accent-primary);
+    border: 1px solid rgba(139,92,246,0.3);
+}
+
+.strategy-check {
+    font-size: 1.1rem;
+    color: var(--accent-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.strategy-card.active .strategy-check {
+    opacity: 1;
+}
+
+/* ── Toggle Row ── */
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    background: rgba(0,0,0,0.12);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: var(--transition-smooth);
+}
+
+.settings-toggle-row:hover {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.settings-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+}
+
+.settings-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── Modern Toggle Switch ── */
+.settings-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.settings-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.settings-toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-full);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-toggle-switch input:checked + .settings-toggle-track {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-color: rgba(139,92,246,0.4);
+    box-shadow: 0 0 16px rgba(139,92,246,0.3);
+}
+
+.settings-toggle-switch input:checked + .settings-toggle-track .settings-toggle-thumb {
+    transform: translateX(22px);
+    box-shadow: 0 2px 12px rgba(139,92,246,0.4);
+}
+
+/* ── Action Button inside toggle row ── */
+.settings-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.08);
+    color: var(--status-success);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.settings-action-btn:hover {
+    background: rgba(16,185,129,0.18);
+    border-color: rgba(16,185,129,0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(16,185,129,0.2);
+}
+
+/* ── Danger Zone Panel ── */
+.settings-danger-zone-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 780px;
+}
+
+.settings-danger-banner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(239,68,68,0.3) !important;
+    background: rgba(239,68,68,0.04) !important;
+    box-shadow: 0 0 20px rgba(239,68,68,0.08) !important;
+}
+
+.danger-banner-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--status-danger);
+    flex-shrink: 0;
+    animation: dangerPulse 3s ease-in-out infinite;
+}
+
+@keyframes dangerPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+    50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0.1); }
+}
+
+.danger-banner-content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--status-danger);
+    margin-bottom: 0.35rem;
+}
+
+.danger-banner-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.danger-banner-content strong {
+    color: var(--status-danger);
+}
+
+/* Danger Zone card */
+.danger-zone {
+    border-color: rgba(239,68,68,0.2) !important;
+    background: rgba(239,68,68,0.03) !important;
+}
+
+.settings-danger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.settings-danger-info {
+    flex: 1;
+}
+
+.danger-action-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--status-danger);
+    margin-bottom: 0.5rem;
+}
+
+.danger-action-title i {
+    font-size: 0.9rem;
+}
+
+/* ── Danger Button (enhanced) ── */
+.danger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--status-danger);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    padding: 0.65rem 1.3rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 
 .danger-btn:hover {
-
     background: rgba(239, 68, 68, 0.2);
-
+    border-color: rgba(239, 68, 68, 0.55);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
 }
 
-
-
-/* Custom Toggle Switch */
-
+/* Legacy switch — kept for backwards compat if referenced anywhere */
 .switch {
-
     position: relative;
-
     display: inline-block;
-
     width: 46px;
-
     height: 24px;
-
     flex-shrink: 0;
-
 }
-
-
 
 .switch input { 
-
     opacity: 0;
-
     width: 0;
-
     height: 0;
-
 }
-
-
 
 .slider {
-
     position: absolute;
-
     cursor: pointer;
-
     top: 0;
-
     left: 0;
-
     right: 0;
-
     bottom: 0;
-
     background-color: rgba(255, 255, 255, 0.1);
-
     transition: .4s;
-
 }
-
-
 
 .slider:before {
-
     position: absolute;
-
     content: "";
-
     height: 18px;
-
     width: 18px;
-
     left: 3px;
-
     bottom: 3px;
-
     background-color: white;
-
     transition: .4s;
-
 }
-
-
 
 input:checked + .slider {
-
     background-color: var(--accent-primary);
-
 }
-
-
 
 input:checked + .slider:before {
-
     transform: translateX(22px);
-
 }
-
-
 
 .slider.round {
-
     border-radius: 34px;
-
 }
-
-
 
 .slider.round:before {
-
     border-radius: 50%;
-
 }
+
+/* Settings responsive */
+@media (max-width: 900px) {
+    .settings-tabs-nav {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+    }
+    .settings-panel-grid {
+        grid-template-columns: 1fr;
+    }
+    .settings-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .settings-hero .primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .settings-danger-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .settings-tab span {
+        display: none;
+    }
+    .settings-tab {
+        padding: 0.6rem 0.9rem;
+    }
+}
+
 
 /* Info Tooltip */
 .info-tooltip {

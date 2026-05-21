@@ -2682,6 +2682,55 @@ function initUserProfile() {
     if (regionInput) regionInput.value = localStorage.getItem('stockSense_cfgRegion') || 'BD';
     if (currencyInput) currencyInput.value = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
     
+    // Tab switching logic for settings panels
+    const settingsTabs = document.querySelectorAll('.settings-tab');
+    const settingsPanels = document.querySelectorAll('.settings-panel');
+    if (settingsTabs.length > 0 && settingsPanels.length > 0) {
+        settingsTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Toggle active classes on tabs
+                settingsTabs.forEach(t => t.classList.toggle('active', t === tab));
+                
+                // Toggle active classes on panels
+                settingsPanels.forEach(panel => {
+                    panel.classList.toggle('active', panel.id === `settings-panel-${targetTab}`);
+                });
+            });
+        });
+    }
+
+    // Strategy Card Selection Logic
+    const strategyCards = document.querySelectorAll('.strategy-card');
+    if (strategyCards.length > 0) {
+        const selectStrategyCard = (value) => {
+            strategyCards.forEach(card => {
+                if (card.dataset.value === value) {
+                    card.classList.add('active');
+                    const radio = card.querySelector('input[type="radio"]');
+                    if (radio) radio.checked = true;
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            if (strategyInput) {
+                strategyInput.value = value;
+            }
+        };
+
+        strategyCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const val = card.dataset.value;
+                selectStrategyCard(val);
+            });
+        });
+
+        // Initialize UI strategy card from saved strategy value
+        const currentStrategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+        selectStrategyCard(currentStrategy);
+    }
+    
     // PDF Generation Logic
     const generatePdfBtn = document.getElementById('generatePdfBtn');
     if (generatePdfBtn) {

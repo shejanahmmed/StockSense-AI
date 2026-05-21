@@ -1338,3 +1338,7 @@
 2026-05-21 17:16:50,802 - cmdstanpy - INFO - Chain [1] start processing
 2026-05-21 17:16:50,845 - cmdstanpy - INFO - Chain [1] done processing
 2026-05-21 17:16:51,930 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-21 18:07:02,335 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-21 18:09:05,909 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-21 19:45:23,983 - src.api.main - INFO - Initializing database...
+2026-05-21 19:45:23,994 - src.api.main - INFO - Database initialized successfully.

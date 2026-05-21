@@ -518,129 +518,335 @@
 
             <!-- Settings View -->
             <div class="settings-content" id="settingsView" style="display: none;">
-                <header class="page-header">
-                    <h1>System Settings</h1>
-                    <p class="subtitle">Configure your StockSense AI preferences and data integrations.</p>
-                </header>
 
-                <div class="settings-grid">
-                    <!-- Profile Settings -->
-                    <section class="settings-card glass-panel">
-                        <h3><i class="fa-solid fa-building"></i> Organization Profile</h3>
-                        <div class="settings-group">
-                            <label>Store Name</label>
-                            <input type="text" id="settingStoreName" class="settings-input" value="Store 12" />
+                <!-- Settings Hero Header -->
+                <div class="settings-hero">
+                    <div class="settings-hero-left">
+                        <div class="settings-hero-icon">
+                            <i class="fa-solid fa-sliders"></i>
                         </div>
-                        <div class="settings-group">
-                            <label>Industry / Vertical</label>
-                            <select id="settingIndustry" class="settings-input">
-                                <option value="Electronics">Electronics</option>
-                                <option value="Apparel">Apparel</option>
-                                <option value="Groceries">Groceries</option>
-                                <option value="Hardware">Hardware</option>
-                            </select>
+                        <div>
+                            <h1>System Settings</h1>
+                            <p class="subtitle">Manage your organization profile, AI configuration, and preferences.</p>
                         </div>
-                        <div class="settings-group">
-                            <label>Geographic Region</label>
-                            <p class="settings-desc">Used to sync local public holidays for accurate demand forecasting.</p>
-                            <select id="settingRegion" class="settings-input">
-                                <option value="BD" selected>Bangladesh</option>
-                                <option value="US">USA</option>
-                                <option value="CA">Canada</option>
-                                <option value="GB">UK</option>
-                            </select>
-                        </div>
-                        <div class="settings-group">
-                            <label>Dashboard Currency</label>
-                            <p class="settings-desc">Choose the default currency symbol for financial metrics.</p>
-                            <select id="settingCurrency" class="settings-input">
-                                <option value="BDT" selected>BDT (৳)</option>
-                                <option value="USD">USD ($)</option>
-                                <option value="CAD">CAD ($)</option>
-                                <option value="CNY">CNY (¥)</option>
-                            </select>
-                        </div>
-                        <div class="settings-group">
-                            <label>Organization Logo / Avatar</label>
-                            <div class="avatar-upload-container" style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem;">
-                                <div id="settingsAvatarPreview" style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.1);">
-                                    <i class="fa-solid fa-building" id="settingsAvatarIcon"></i>
-                                </div>
-                                <div class="upload-actions">
-                                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                                    <button class="secondary-btn" id="uploadAvatarBtn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-                                        <i class="fa-solid fa-upload"></i> Upload New Logo
-                                    </button>
-                                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">JPG, PNG or GIF. Max 2MB.</p>
-                                </div>
-                            </div>
-                            <input type="hidden" id="settingAvatarUrl" value="" />
-                        </div>
-                    </section>
-
-                    <!-- AI Configuration -->
-                    <section class="settings-card glass-panel">
-                        <h3><i class="fa-solid fa-microchip"></i> AI Engine Configuration</h3>
-                        <div class="settings-group">
-                            <label>Forecasting Strategy</label>
-                            <p class="settings-desc">Determines how aggressively the AI recommends reordering stock.</p>
-                            <select id="settingStrategy" class="settings-input">
-                                <option value="conservative">Conservative (Minimize Risk)</option>
-                                <option value="balanced" selected>Balanced (Recommended)</option>
-                                <option value="aggressive">Aggressive (Maximize Sales)</option>
-                            </select>
-                        </div>
-                        <div class="settings-group toggle-group">
-                            <div>
-                                <label>Deep-Learning Insights</label>
-                                <p class="settings-desc">Uses LLaMA 3.3 for advanced strategic analysis.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="settingDeepLearning" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </section>
-
-                    <!-- Notifications -->
-                    <section class="settings-card glass-panel">
-                        <h3><i class="fa-solid fa-bell"></i> Alert Preferences</h3>
-                        <div class="settings-group toggle-group">
-                            <div>
-                                <label>Critical Stockout Alerts</label>
-                                <p class="settings-desc">Receive dashboard warnings when items fall below 5 days of stock.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="settingStockoutAlerts" checked>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="settings-group toggle-group">
-                            <div>
-                                <label>Weekly Summary Report</label>
-                                <p class="settings-desc">Compile AI forecasts into a weekly downloadable PDF.</p>
-                            </div>
-                            <button class="secondary-btn" id="generatePdfBtn" style="padding: 0.5rem 1rem;"><i class="fa-solid fa-file-pdf"></i> Generate PDF</button>
-                        </div>
-                    </section>
-
-                    <!-- Danger Zone -->
-                    <section class="settings-card glass-panel danger-zone">
-                        <h3 style="color: var(--status-danger)"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h3>
-                        <div class="settings-group toggle-group">
-                            <div>
-                                <label>Purge Historical Data</label>
-                                <p class="settings-desc">Permanently delete all uploaded CSVs and retrain baseline models.</p>
-                            </div>
-                            <button class="danger-btn" id="purgeDataBtn">Delete Data</button>
-                        </div>
-                    </section>
-                </div>
-                
-                <div class="settings-actions">
+                    </div>
                     <button class="primary-btn" id="saveSettingsBtn">
-                        <i class="fa-solid fa-check"></i> Save Changes
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
                     </button>
+                </div>
+
+                <!-- Settings Tab Navigation -->
+                <nav class="settings-tabs-nav glass-panel" id="settingsTabNav">
+                    <button class="settings-tab active" data-tab="profile">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Organization</span>
+                    </button>
+                    <button class="settings-tab" data-tab="ai">
+                        <i class="fa-solid fa-microchip"></i>
+                        <span>AI Engine</span>
+                    </button>
+                    <button class="settings-tab" data-tab="alerts">
+                        <i class="fa-solid fa-bell"></i>
+                        <span>Alerts</span>
+                    </button>
+                    <button class="settings-tab" data-tab="danger">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Danger Zone</span>
+                    </button>
+                </nav>
+
+                <!-- Tab Panels -->
+                <div class="settings-panels">
+
+                    <!-- === PROFILE TAB === -->
+                    <div class="settings-panel active" id="settings-panel-profile">
+                        <div class="settings-panel-grid">
+
+                            <!-- Avatar Card -->
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.2)); border-color: rgba(139,92,246,0.3);">
+                                        <i class="fa-solid fa-image" style="color: var(--accent-primary);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Organization Logo</h3>
+                                        <p class="settings-section-desc">Your brand identity across the platform.</p>
+                                    </div>
+                                </div>
+                                <div class="avatar-upload-area">
+                                    <div id="settingsAvatarPreview" class="settings-avatar-preview">
+                                        <i class="fa-solid fa-building" id="settingsAvatarIcon"></i>
+                                    </div>
+                                    <div class="avatar-upload-info">
+                                        <p class="avatar-upload-title">Upload Organization Logo</p>
+                                        <p class="avatar-upload-hint">JPG, PNG or GIF &bull; Max 2MB &bull; Recommended 256×256px</p>
+                                        <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                                        <button class="settings-upload-btn" id="uploadAvatarBtn">
+                                            <i class="fa-solid fa-upload"></i> Choose File
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="settingAvatarUrl" value="" />
+                            </div>
+
+                            <!-- Core Details Card -->
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2)); border-color: rgba(59,130,246,0.3);">
+                                        <i class="fa-solid fa-id-card" style="color: var(--accent-secondary);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Business Identity</h3>
+                                        <p class="settings-section-desc">Core organizational details used across insights.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-field-stack">
+                                    <div class="settings-field">
+                                        <label class="settings-label" for="settingStoreName">
+                                            <i class="fa-solid fa-store"></i> Store Name
+                                        </label>
+                                        <input type="text" id="settingStoreName" class="settings-input" value="Store 12" placeholder="e.g. Acme Electronics" />
+                                    </div>
+                                    <div class="settings-field">
+                                        <label class="settings-label" for="settingIndustry">
+                                            <i class="fa-solid fa-industry"></i> Industry / Vertical
+                                        </label>
+                                        <div class="settings-select-wrapper">
+                                            <select id="settingIndustry" class="settings-input">
+                                                <option value="Electronics">Electronics</option>
+                                                <option value="Apparel">Apparel</option>
+                                                <option value="Groceries">Groceries</option>
+                                                <option value="Hardware">Hardware</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down settings-select-icon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Regional Settings Card -->
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2)); border-color: rgba(16,185,129,0.3);">
+                                        <i class="fa-solid fa-earth-asia" style="color: var(--status-success);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Regional Preferences</h3>
+                                        <p class="settings-section-desc">Localizes holidays, currency & financial reporting.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-field-stack">
+                                    <div class="settings-field">
+                                        <label class="settings-label" for="settingRegion">
+                                            <i class="fa-solid fa-location-dot"></i> Geographic Region
+                                        </label>
+                                        <p class="settings-field-hint">Syncs local public holidays for accurate demand forecasting.</p>
+                                        <div class="settings-select-wrapper">
+                                            <select id="settingRegion" class="settings-input">
+                                                <option value="BD" selected>Bangladesh</option>
+                                                <option value="US">USA</option>
+                                                <option value="CA">Canada</option>
+                                                <option value="GB">UK</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down settings-select-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="settings-field">
+                                        <label class="settings-label" for="settingCurrency">
+                                            <i class="fa-solid fa-coins"></i> Dashboard Currency
+                                        </label>
+                                        <p class="settings-field-hint">Default currency symbol shown on all financial metrics.</p>
+                                        <div class="settings-select-wrapper">
+                                            <select id="settingCurrency" class="settings-input">
+                                                <option value="BDT" selected>BDT (৳)</option>
+                                                <option value="USD">USD ($)</option>
+                                                <option value="CAD">CAD ($)</option>
+                                                <option value="CNY">CNY (¥)</option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down settings-select-icon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- === AI ENGINE TAB === -->
+                    <div class="settings-panel" id="settings-panel-ai">
+                        <div class="settings-panel-grid">
+
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(59,130,246,0.15)); border-color: rgba(139,92,246,0.35);">
+                                        <i class="fa-solid fa-brain" style="color: var(--accent-primary);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Forecasting Strategy</h3>
+                                        <p class="settings-section-desc">Controls how aggressively the AI recommends reordering stock.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-strategy-cards" id="strategyCards">
+                                    <label class="strategy-card active" data-value="conservative">
+                                        <input type="radio" name="settingStrategy" id="strategyConservative" value="conservative">
+                                        <div class="strategy-card-icon" style="background: rgba(16,185,129,0.15); color: var(--status-success);">
+                                            <i class="fa-solid fa-shield-halved"></i>
+                                        </div>
+                                        <div class="strategy-card-text">
+                                            <span class="strategy-name">Conservative</span>
+                                            <span class="strategy-desc">Minimize stockout risk. Higher safety stock buffers.</span>
+                                        </div>
+                                        <div class="strategy-check"><i class="fa-solid fa-circle-check"></i></div>
+                                    </label>
+                                    <label class="strategy-card" data-value="balanced">
+                                        <input type="radio" name="settingStrategy" id="strategyBalanced" value="balanced" checked>
+                                        <div class="strategy-card-icon" style="background: rgba(139,92,246,0.15); color: var(--accent-primary);">
+                                            <i class="fa-solid fa-scale-balanced"></i>
+                                        </div>
+                                        <div class="strategy-card-text">
+                                            <span class="strategy-name">Balanced <span class="strategy-recommended-badge">Recommended</span></span>
+                                            <span class="strategy-desc">Optimal trade-off between cash flow and availability.</span>
+                                        </div>
+                                        <div class="strategy-check"><i class="fa-solid fa-circle-check"></i></div>
+                                    </label>
+                                    <label class="strategy-card" data-value="aggressive">
+                                        <input type="radio" name="settingStrategy" id="strategyAggressive" value="aggressive">
+                                        <div class="strategy-card-icon" style="background: rgba(245,158,11,0.15); color: var(--status-warning);">
+                                            <i class="fa-solid fa-rocket"></i>
+                                        </div>
+                                        <div class="strategy-card-text">
+                                            <span class="strategy-name">Aggressive</span>
+                                            <span class="strategy-desc">Maximize sales velocity. Accepts higher stockout risk.</span>
+                                        </div>
+                                        <div class="strategy-check"><i class="fa-solid fa-circle-check"></i></div>
+                                    </label>
+                                </div>
+                                <!-- Hidden select for backwards compatibility with JS -->
+                                <select id="settingStrategy" class="settings-input" style="display:none;">
+                                    <option value="conservative">Conservative (Minimize Risk)</option>
+                                    <option value="balanced" selected>Balanced (Recommended)</option>
+                                    <option value="aggressive">Aggressive (Maximize Sales)</option>
+                                </select>
+                            </div>
+
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2)); border-color: rgba(59,130,246,0.3);">
+                                        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-secondary);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>LLM Capabilities</h3>
+                                        <p class="settings-section-desc">Advanced language model features for strategic analysis.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">
+                                            <i class="fa-solid fa-microchip" style="color: var(--accent-primary); font-size:0.85rem;"></i>
+                                            Deep-Learning Insights
+                                        </div>
+                                        <p class="settings-field-hint">Uses LLaMA 3.3 70B for advanced inventory and demand strategy synthesis.</p>
+                                    </div>
+                                    <label class="settings-toggle-switch">
+                                        <input type="checkbox" id="settingDeepLearning" checked>
+                                        <span class="settings-toggle-track">
+                                            <span class="settings-toggle-thumb"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- === ALERTS TAB === -->
+                    <div class="settings-panel" id="settings-panel-alerts">
+                        <div class="settings-panel-grid">
+
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.1)); border-color: rgba(245,158,11,0.3);">
+                                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--status-warning);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Dashboard Alerts</h3>
+                                        <p class="settings-section-desc">Configure how the system warns you about critical stock events.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">
+                                            <i class="fa-solid fa-box-open" style="color: var(--status-danger); font-size:0.85rem;"></i>
+                                            Critical Stockout Alerts
+                                        </div>
+                                        <p class="settings-field-hint">Show dashboard warnings when items fall below 5 days of available stock.</p>
+                                    </div>
+                                    <label class="settings-toggle-switch">
+                                        <input type="checkbox" id="settingStockoutAlerts" checked>
+                                        <span class="settings-toggle-track">
+                                            <span class="settings-toggle-thumb"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section-card glass-panel">
+                                <div class="settings-section-header">
+                                    <div class="settings-section-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.1)); border-color: rgba(16,185,129,0.3);">
+                                        <i class="fa-solid fa-file-pdf" style="color: var(--status-success);"></i>
+                                    </div>
+                                    <div>
+                                        <h3>Weekly Report</h3>
+                                        <p class="settings-section-desc">Generate a comprehensive AI forecast summary in PDF format.</p>
+                                    </div>
+                                </div>
+                                <div class="settings-toggle-row">
+                                    <div class="settings-toggle-info">
+                                        <div class="settings-toggle-label">
+                                            <i class="fa-solid fa-calendar-week" style="color: var(--accent-primary); font-size:0.85rem;"></i>
+                                            Weekly Summary Report
+                                        </div>
+                                        <p class="settings-field-hint">Compile AI forecasts, stock health metrics, and demand drivers into a downloadable PDF report.</p>
+                                    </div>
+                                    <button class="settings-action-btn" id="generatePdfBtn">
+                                        <i class="fa-solid fa-download"></i> Generate PDF
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- === DANGER ZONE TAB === -->
+                    <div class="settings-panel" id="settings-panel-danger">
+                        <div class="settings-danger-zone-wrapper">
+                            <div class="settings-danger-banner glass-panel">
+                                <div class="danger-banner-icon">
+                                    <i class="fa-solid fa-skull-crossbones"></i>
+                                </div>
+                                <div class="danger-banner-content">
+                                    <h3>Danger Zone</h3>
+                                    <p>Actions here are <strong>irreversible</strong>. Please proceed with extreme caution. All operations below will permanently affect your data and model state.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-section-card glass-panel danger-zone">
+                                <div class="settings-danger-row">
+                                    <div class="settings-danger-info">
+                                        <div class="danger-action-title">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            Purge Historical Data
+                                        </div>
+                                        <p class="settings-field-hint">Permanently deletes all uploaded CSV files, clears the historical sales database, and resets all trained ML baseline parameters. This cannot be undone.</p>
+                                    </div>
+                                    <button class="danger-btn" id="purgeDataBtn">
+                                        <i class="fa-solid fa-fire"></i> Delete All Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
