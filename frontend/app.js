@@ -5551,7 +5551,7 @@ async function showModalMargin() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'avgMarginModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1050px; max-width: 95vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1200px; max-width: 95vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
@@ -5630,11 +5630,12 @@ async function showModalMargin() {
                     <table class="sku-table">
                         <thead>
                             <tr>
-                                <th class="sortable-header" data-col="sku" style="width: 14%;">SKU <span class="sort-indicator" id="sort-margin-sku"></span></th>
-                                <th class="sortable-header" data-col="name" style="width: 26%;">Product Details <span class="sort-indicator" id="sort-margin-name"></span></th>
-                                <th class="sortable-header" data-col="price" style="width: 15%; text-align: right;">Unit Price <span class="sort-indicator" id="sort-margin-price"></span></th>
-                                <th class="sortable-header" data-col="marginPct" style="width: 25%; text-align: center;">Margin Breakdown <span class="sort-indicator" id="sort-margin-marginPct"></span></th>
-                                <th class="sortable-header" data-col="profit" style="width: 20%; text-align: center;">Projected Profit (30d) <span class="sort-indicator" id="sort-margin-profit"></span></th>
+                                <th class="sortable-header" data-col="sku" style="width: 12%;">SKU <span class="sort-indicator" id="sort-margin-sku"></span></th>
+                                <th class="sortable-header" data-col="name" style="width: 24%;">Product Details <span class="sort-indicator" id="sort-margin-name"></span></th>
+                                <th class="sortable-header" data-col="price" style="width: 12%; text-align: right;">Unit Price <span class="sort-indicator" id="sort-margin-price"></span></th>
+                                <th class="sortable-header" data-col="marginPct" style="width: 24%; text-align: center;">Margin Breakdown <span class="sort-indicator" id="sort-margin-marginPct"></span></th>
+                                <th class="sortable-header" data-col="profit" style="width: 16%; text-align: right;">Projected Profit (30d) <span class="sort-indicator" id="sort-margin-profit"></span></th>
+                                <th style="width: 12%; text-align: center;">Health</th>
                             </tr>
                         </thead>
                         <tbody id="marginTableBody">
@@ -5820,7 +5821,7 @@ function renderMarginModalRows(items) {
     if (items.length === 0) {
         return `
             <tr>
-                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem;">
                     <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
                     No products found matching the criteria.
                 </td>
@@ -5879,13 +5880,13 @@ function renderMarginModalRows(items) {
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                            <strong style="color: var(--status-success); font-size: 1rem;">${formatCurrency(profit30d)}</strong>
-                            <span style="font-size: 0.68rem; color: var(--text-muted);">Unit profit: ${formatCurrency(profitPerUnit)}</span>
-                        </div>
-                        ${classBadge}
+                    <div style="display: flex; flex-direction: column; gap: 0.1rem; align-items: flex-end;">
+                        <strong style="color: var(--status-success); font-size: 1rem;">${formatCurrency(profit30d)}</strong>
+                        <span style="font-size: 0.68rem; color: var(--text-muted);">Unit profit: ${formatCurrency(profitPerUnit)}</span>
                     </div>
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${classBadge}
                 </td>
             </tr>
         `;
