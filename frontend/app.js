@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 11. Initialize Legal Pages Scroll-Spy (Privacy + Terms of Service)
     initLegalScrollSpy();
 
+    // Initialize Pricing Currency based on saved settings
+    updatePricingCurrency();
+
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
@@ -146,6 +149,39 @@ function getCurrencySymbol() {
     return '৳';
 }
 
+function updatePricingCurrency() {
+    const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+    let symbol = '৳';
+    let attr = 'bdt';
+
+    if (region === 'US') {
+        symbol = '$';
+        attr = 'usd';
+    } else if (region === 'CA') {
+        symbol = 'C$';
+        attr = 'cad';
+    } else if (region === 'GB') {
+        symbol = '£';
+        attr = 'gbp';
+    } else {
+        symbol = '৳';
+        attr = 'bdt';
+    }
+
+    // Update pricing view symbols
+    document.querySelectorAll('#pricingView .currency-symbol').forEach(el => {
+        el.textContent = symbol;
+    });
+
+    // Update pricing view prices
+    document.querySelectorAll('#pricingView .price-value').forEach(el => {
+        const val = el.getAttribute(`data-${attr}`);
+        if (val) {
+            el.textContent = val;
+        }
+    });
+}
+
 // ==========================================
 // Navigation & Views
 // ==========================================
@@ -163,6 +199,7 @@ function setupNavigation() {
     const termsView  = document.getElementById('termsView');
     const featuresView = document.getElementById('featuresView');
     const howItWorksView = document.getElementById('howItWorksView');
+    const pricingView = document.getElementById('pricingView');
 
     let currentView = 'dashboard';
 
@@ -175,6 +212,7 @@ function setupNavigation() {
         if (termsView)  termsView.style.display  = 'none';
         if (featuresView) featuresView.style.display = 'none';
         if (howItWorksView) howItWorksView.style.display = 'none';
+        if (pricingView) pricingView.style.display = 'none';
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     }
 
@@ -187,7 +225,7 @@ function setupNavigation() {
         // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks') ? 'none' : 'flex';
+            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -212,6 +250,8 @@ function setupNavigation() {
             if (featuresView) featuresView.style.display = 'flex';
         } else if (view === 'howItWorks') {
             if (howItWorksView) howItWorksView.style.display = 'flex';
+        } else if (view === 'pricing') {
+            if (pricingView) pricingView.style.display = 'flex';
         }
 
         // Reset scroll position to top of main content immediately on any page/view switch
@@ -328,6 +368,23 @@ function setupNavigation() {
             e.preventDefault();
             switchView('dashboard');
             document.getElementById('csvFileInput')?.click();
+        });
+    }
+
+    // Wire up Pricing View triggers
+    const footerNavPricing = document.getElementById('footerNavPricing');
+    if (footerNavPricing) {
+        footerNavPricing.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('pricing');
+        });
+    }
+
+    const pricingBackBtn = document.getElementById('pricingBackBtn');
+    if (pricingBackBtn) {
+        pricingBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
         });
     }
 
@@ -2200,6 +2257,9 @@ function initUserProfile() {
                 if (stockoutInput) localStorage.setItem('stockSense_cfgStockout', stockoutInput.checked);
                 if (regionInput) localStorage.setItem('stockSense_cfgRegion', regionInput.value);
                 if (currencyInput) localStorage.setItem('stockSense_cfgCurrency', currencyInput.value);
+                
+                // Update pricing currency based on saved settings
+                updatePricingCurrency();
                 
                 if (typeof currentFilteredData !== 'undefined' && currentFilteredData.length > 0) {
                     renderInventoryTable(currentFilteredData, currentInventoryPage);
