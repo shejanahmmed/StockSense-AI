@@ -284,6 +284,12 @@ function setupNavigation() {
             topBar.style.display = (view === 'insights' || view === 'settings' || view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about' || view === 'contact') ? 'none' : 'flex';
         }
 
+        // Hide footer specifically on AI Insights chat view to maximize chat viewport space and prevent main scrollbars
+        const footer = document.querySelector('.app-footer');
+        if (footer) {
+            footer.style.display = (view === 'insights') ? 'none' : 'block';
+        }
+
         if (view === 'dashboard') {
             navDashboard.classList.add('active');
             dashboardView.style.display = 'flex';
