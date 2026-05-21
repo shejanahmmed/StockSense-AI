@@ -222,6 +222,17 @@ function setupNavigation() {
         localStorage.setItem('stockSense_activeView', view);
         hideAll();
 
+        // Close mobile nav drawer if open
+        const navMenu = document.querySelector('.nav-menu');
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        if (navMenu && navMenu.classList.contains('open')) {
+            navMenu.classList.remove('open');
+            if (mobileToggle) {
+                const icon = mobileToggle.querySelector('i');
+                if (icon) icon.className = 'fa-solid fa-bars';
+            }
+        }
+
         // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
@@ -410,6 +421,31 @@ function setupNavigation() {
                 topNavbar.classList.remove('navbar-hidden');
             }
             lastScrollTop = scrollTop;
+        });
+    }
+
+    // Mobile Hamburger Menu Setup
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navMenu = document.querySelector('.nav-menu');
+    if (mobileMenuToggle && navMenu) {
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navMenu.classList.toggle('open');
+            const icon = mobileMenuToggle.querySelector('i');
+            if (navMenu.classList.contains('open')) {
+                icon.className = 'fa-solid fa-xmark';
+            } else {
+                icon.className = 'fa-solid fa-bars';
+            }
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (navMenu.classList.contains('open') && !navMenu.contains(e.target) && e.target !== mobileMenuToggle && !mobileMenuToggle.contains(e.target)) {
+                navMenu.classList.remove('open');
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) icon.className = 'fa-solid fa-bars';
+            }
         });
     }
 }

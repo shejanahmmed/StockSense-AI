@@ -3989,3 +3989,257 @@ input:checked + .slider:before {
         transform: translateY(-5px);
     }
 }
+
+/* =====================================================
+   MOBILE & TABLET RESPONSIVENESS OVERRIDES
+   ===================================================== */
+
+@media (max-width: 992px) {
+    /* Top Navbar Glassmorphic mobile drawer */
+    .top-navbar {
+        width: calc(100% - 1.5rem);
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.5rem 1.0rem;
+        height: 60px;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: 0.75rem;
+        right: 0.75rem;
+        background: rgba(15, 17, 26, 0.95);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: var(--border-glass);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem 1.25rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        transform: translateY(-150%);
+        opacity: 0;
+        transition: var(--transition-smooth);
+        z-index: 999;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        height: auto;
+    }
+    
+    .nav-menu.open {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .nav-item {
+        justify-content: flex-start;
+        padding: 0.85rem 1.25rem;
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    /* Hamburger menu toggle button style */
+    .hamburger-btn {
+        display: flex !important;
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Toggle visibility on mobile drawer active state */
+    .top-navbar .nav-menu:not(.open) {
+        display: none !important;
+    }
+    
+    .top-navbar .nav-menu.open {
+        display: flex !important;
+    }
+    
+    /* Main Content spacing adjusting */
+    .main-content {
+        padding-top: calc(60px + 1.5rem);
+    }
+    
+    /* KPI grids */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    /* Bottom grid (chart vs SHAP drivers) */
+    .bottom-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    /* Footer elements stacking */
+    .footer-inner {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 2rem !important;
+    }
+    
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+    
+    /* Legal TOC Sidebar adjust */
+    .privacy-workspace,
+    .legal-workspace {
+        flex-direction: column !important;
+        gap: 2rem !important;
+    }
+    
+    .privacy-toc-sidebar,
+    .legal-toc-sidebar {
+        width: 100% !important;
+        position: static !important;
+        max-height: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Stacking top actions & search */
+    .top-bar {
+        flex-direction: column !important;
+        height: auto !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+    }
+    
+    .search-container {
+        width: 100% !important;
+    }
+    
+    .header-actions {
+        width: 100% !important;
+        justify-content: flex-end !important;
+    }
+    
+    .header-actions button {
+        width: 100% !important;
+    }
+    
+    /* Hide profile user info on mobile, keeping just bell and avatar */
+    .user-info, 
+    .user-profile-container i.fa-chevron-down {
+        display: none !important;
+    }
+    
+    .user-profile {
+        padding: 0.25rem !important;
+    }
+    
+    /* Responsive details */
+    .page-header h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .page-header {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .section-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .section-header span.badge {
+        align-self: flex-start !important;
+    }
+    
+    /* Settings layout - prevent horizontal 400px min-width overflow */
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Chat page styling */
+    .chat-container {
+        height: 60vh !important;
+    }
+    
+    .chat-input-area {
+        gap: 0.5rem !important;
+    }
+    
+    .chat-input-area button span {
+        display: none !important;
+    }
+    
+    .chat-input-area button {
+        padding: 0.75rem !important;
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: var(--radius-full) !important;
+    }
+    
+    /* Inventory action buttons */
+    .table-header-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+    }
+    
+    .table-filters {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+    
+    .filter-dropdown {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    
+    .inventory-table th, 
+    .inventory-table td {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Stacking footer to single column */
+    .footer-inner {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Stacking KPI metrics single column */
+    .kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Main Content padding minimized */
+    .main-content {
+        padding: 0.5rem !important;
+        padding-top: calc(60px + 1.25rem) !important;
+    }
+    
+    /* Title sizing */
+    .gradient-text {
+        font-size: 1.4rem !important;
+    }
+    
+    /* Premium glow elements details */
+    .insight-section {
+        padding: 1rem !important;
+    }
+    
+    .hiw-arch-card {
+        padding: 1rem !important;
+    }
+    
+    /* Auth panel screen width */
+    #authScreen .glass-panel {
+        width: 90% !important;
+        padding: 1.5rem !important;
+    }
+    
+    /* Pricing layout tweaks */
+    .pricing-content {
+        padding: 1.5rem 1rem 3rem !important;
+    }
+    
+    .price-value {
+        font-size: 2.2rem !important;
+    }
+}
