@@ -488,49 +488,154 @@ async def predict_demand(
         # ── Holiday calendar ─────────────────────────────────────────────────────────
         import datetime
         import calendar
+        import urllib.request
+        import re
+
         # Use the CSV's max date as the reference point, NOT today.
         # This ensures "upcoming event" is relative to the end of the uploaded data range,
         # so Jan-March CSVs won't surface holidays from August or later.
         csv_end_date = date_max.date() if hasattr(date_max, 'date') else date_max
         ref_year = csv_end_date.year
+        years_to_fetch = [ref_year, ref_year + 1]
+
+        # 1. Fetch holidays from the internet dynamically (Office Holidays ICS feed)
+        region_map = {
+            "BD": "bangladesh",
+            "US": "usa",
+            "UK": "united-kingdom",
+            "GB": "united-kingdom",
+            "IN": "india",
+        }
+        country_name = region_map.get(region.upper(), "bangladesh")
+        url = f"https://www.officeholidays.com/ics-clean/{country_name}"
+        
+        online_holidays = {}
         try:
-            local_holidays = holidays.country_holidays(region, years=[ref_year, ref_year + 1])
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            )
+            with urllib.request.urlopen(req, timeout=8) as response:
+                ical_data = response.read().decode('utf-8')
+                
+            events = ical_data.split("BEGIN:VEVENT")
+            for event in events[1:]:
+                date_match = re.search(r'DTSTART(?:;VALUE=DATE)?:(\d{8})', event)
+                summary_match = re.search(r'SUMMARY(?:;[^:]+)?:([^\r\n]+)', event)
+                
+                if date_match and summary_match:
+                    date_str = date_match.group(1)
+                    summary_val = summary_match.group(1).strip()
+                    try:
+                        h_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+                        if h_date.year in years_to_fetch:
+                            online_holidays[h_date] = summary_val
+                    except Exception:
+                        pass
         except Exception:
-            local_holidays = holidays.BD(years=[ref_year, ref_year + 1])
-            
+            # Fall back to local library on failure
+            pass
+
+        # 2. Setup python-holidays as fallback
+        local_holidays = {}
+        try:
+            h_obj = holidays.country_holidays(region, years=years_to_fetch)
+        except Exception:
+            try:
+                h_obj = holidays.BD(years=years_to_fetch)
+            except Exception:
+                h_obj = {}
+
+        # 3. Combine: use online holidays if successfully fetched; otherwise local
+        for y in years_to_fetch:
+            year_online = {d: n for d, n in online_holidays.items() if d.year == y}
+            if year_online:
+                for d, n in year_online.items():
+                    local_holidays[d] = n
+            else:
+                for d, n in h_obj.items():
+                    if d.year == y:
+                        local_holidays[d] = n
+
+        # 4. Standardize and clean holiday names (Translate Bangla strings / unify names)
+        BD_HOLIDAY_EN = {
+            "শহীদ দিবস ও আন্তর্জাতিক মাতৃভাষা দিবস": "International Mother Language Day",
+            "জাতির জনকের জন্মদিন ও জাতীয় শিশু দিবস": "National Children's Day (Sheikh Mujibur Rahman's Birthday)",
+            "স্বাধীনতা ও জাতীয় দিবস": "Independence & National Day",
+            "শব-ই-বরাত": "Shab-e-Barat",
+            "বাংলা নববর্ষ": "Bengali New Year (Pohela Boishakh)",
+            "মে দিবস": "May Day (International Workers' Day)",
+            "বুদ্ধ পূর্ণিমা": "Buddha Purnima",
+            "ঈদুল ফিতর": "Eid ul-Fitr",
+            "ঈদুল আযহা": "Eid ul-Adha",
+            "জাতীয় শোক দিবস": "National Mourning Day",
+            "জন্মাষ্টমী": "Janmashtami",
+            "ঈদে মিলাদুন্নবী (সাঃ)": "Eid-e-Miladunnabi (Prophet's Birthday)",
+            "দুর্গাপূজা": "Durga Puja",
+            "বিজয় দিবস": "Victory Day",
+            "বড়দিন": "Christmas Day",
+            "আশুরা": "Ashura",
+        }
+
+        def clean_holiday_name(raw_name: str) -> str:
+            mapped = BD_HOLIDAY_EN.get(raw_name)
+            if mapped:
+                return mapped
+                
+            lower_name = raw_name.lower()
+            if "eid-ul-azha" in lower_name or "eid al-adha" in lower_name or "eid-ul-adha" in lower_name:
+                return "Eid ul-Adha"
+            if "eid al-fitr" in lower_name or "eid-ul-fitr" in lower_name:
+                return "Eid ul-Fitr"
+            if "shab e-barat" in lower_name or "shab-e-barat" in lower_name:
+                return "Shab-e-Barat"
+            if "shab-e-qadr" in lower_name or "shab e-qadr" in lower_name:
+                return "Shab-e-Qadr"
+            if "miladunnabi" in lower_name or "milad un nabi" in lower_name:
+                return "Eid-e-Miladunnabi"
+            if "durga puja" in lower_name:
+                return "Durga Puja"
+            if "ashura" in lower_name:
+                return "Ashura"
+            if "language martyrs" in lower_name or "mother language" in lower_name:
+                return "International Mother Language Day"
+            if "independence" in lower_name:
+                return "Independence Day"
+            if "victory day" in lower_name:
+                return "Victory Day"
+            if "bengali new year" in lower_name or "pohela boishakh" in lower_name:
+                return "Bengali New Year"
+            if "labour day" in lower_name or "may day" in lower_name:
+                return "May Day"
+            if "buddha purnima" in lower_name or "buddha's birthday" in lower_name:
+                return "Buddha Purnima"
+            if "christmas" in lower_name:
+                return "Christmas Day"
+            if "janmashtami" in lower_name:
+                return "Janmashtami"
+            return raw_name
+
+        local_holidays = {d: clean_holiday_name(n) for d, n in local_holidays.items()}
+
         # Only consider holidays that come AFTER the last date in the CSV
         future_holidays = {d: n for d, n in local_holidays.items() if d > csv_end_date}
+        
+        # Check if the closest holiday is within the forecast horizon
+        upcoming_holiday = None
         if future_holidays:
-            next_date = min(future_holidays.keys())
-            raw_name  = future_holidays[next_date]
+            closest_date = min(future_holidays.keys())
+            if (closest_date - csv_end_date).days <= forecast_horizon:
+                upcoming_holiday = (closest_date, future_holidays[closest_date])
 
-            # The `holidays` library returns Bangla strings for the BD locale.
-            # Map every known Bangladesh public holiday to its English name.
-            BD_HOLIDAY_EN = {
-                "শহীদ দিবস ও আন্তর্জাতিক মাতৃভাষা দিবস": "International Mother Language Day",
-                "জাতির জনকের জন্মদিন ও জাতীয় শিশু দিবস": "National Children's Day (Sheikh Mujibur Rahman's Birthday)",
-                "স্বাধীনতা ও জাতীয় দিবস": "Independence & National Day",
-                "শব-ই-বরাত": "Shab-e-Barat",
-                "বাংলা নববর্ষ": "Bengali New Year (Pohela Boishakh)",
-                "মে দিবস": "May Day (International Workers' Day)",
-                "বুদ্ধ পূর্ণিমা": "Buddha Purnima",
-                "ঈদুল ফিতর": "Eid ul-Fitr",
-                "ঈদুল আযহা": "Eid ul-Adha",
-                "জাতীয় শোক দিবস": "National Mourning Day",
-                "জন্মাষ্টমী": "Janmashtami",
-                "ঈদে মিলাদুন্নবী (সাঃ)": "Eid-e-Miladunnabi (Prophet's Birthday)",
-                "দুর্গাপূজা": "Durga Puja",
-                "বিজয় দিবস": "Victory Day",
-                "বড়দিন": "Christmas Day",
-                "আশুরা": "Ashura",
-            }
-            upcoming_event_name = BD_HOLIDAY_EN.get(raw_name, raw_name)
-
+        if upcoming_holiday:
+            next_date, raw_name = upcoming_holiday
+            upcoming_event_name = raw_name
             upcoming_event_date = next_date.strftime("%b %d, %Y")
+            event_impact = "+15% expected"
         else:
-            upcoming_event_name = "End of Period"
-            last_day = calendar.monthrange(csv_end_date.year, csv_end_date.month)[1]
-            upcoming_event_date = csv_end_date.replace(day=last_day).strftime("%b %d, %Y")
+            upcoming_event_name = "None"
+            upcoming_event_date = ""
+            event_impact = "No Holiday Impact"
 
         # â”€â”€ Per-product loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         # org_name already resolved above
@@ -736,7 +841,7 @@ async def predict_demand(
                 "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this period",
                 "upcoming_event": upcoming_event_name,
                 "upcoming_event_date": upcoming_event_date,
-                "event_impact": "+15% expected",
+                "event_impact": event_impact,
                 "avg_margin": "24.5%",
                 "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' ({at_risk[0]['product_id']}) before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",
                 "timeline": [
