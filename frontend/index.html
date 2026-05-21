@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -366,7 +366,7 @@
                     </div>
 
                     <!-- 7. Profit margin indicator -->
-                    <div class="kpi-card glass-panel" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem;">
+                    <div class="kpi-card glass-panel interactive" id="kpiMarginCard" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem; cursor: pointer;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The estimated average profit margin across your top performing inventory items.</span></div> <i class="fa-solid fa-percent" style="color: var(--accent-secondary);"></i> Avg. Margin</span>
                         </div>
@@ -480,7 +480,7 @@
 
             <!-- AI Insights Chat View -->
             <div class="insights-content" id="insightsView" style="display: none;">
-                <header class="page-header" style="text-align: center; margin-bottom: 1rem;">
+                <header class="page-header" style="text-align: center;">
                     <h1>AI Strategic Assistant</h1>
                     <p class="subtitle">Chat with StockSense AI to discover hidden trends and inventory strategies.</p>
                 </header>
@@ -492,6 +492,19 @@
                                 Hello! I am StockSense AI. I've analyzed your current inventory and sales data. How can I help you optimize your business today?
                             </div>
                         </div>
+                    </div>
+                    <!-- Suggested Question Chips -->
+                    <div class="chat-suggestions" id="chatSuggestions">
+                        <button class="chat-chip" data-q="Which products are at risk of stockout this week?"><i class="fa-solid fa-triangle-exclamation"></i> Stockout risks</button>
+                        <button class="chat-chip" data-q="What are my top 5 revenue-driving products?"><i class="fa-solid fa-ranking-star"></i> Top revenue drivers</button>
+                        <button class="chat-chip" data-q="Which items are slow-moving and tying up capital?"><i class="fa-solid fa-box"></i> Slow-moving stock</button>
+                        <button class="chat-chip" data-q="What should I reorder immediately to avoid stockouts?"><i class="fa-solid fa-cart-plus"></i> Reorder now</button>
+                        <button class="chat-chip" data-q="What is my forecasted demand for next week?"><i class="fa-solid fa-arrow-trend-up"></i> Next week forecast</button>
+                        <button class="chat-chip" data-q="Which products have the highest profit margins?"><i class="fa-solid fa-percent"></i> Highest margins</button>
+                        <button class="chat-chip" data-q="Are there any overstock situations I should know about?"><i class="fa-solid fa-warehouse"></i> Overstock alerts</button>
+                        <button class="chat-chip" data-q="What promotions should I run to clear slow inventory?"><i class="fa-solid fa-tags"></i> Promo suggestions</button>
+                        <button class="chat-chip" data-q="Give me a summary of my overall inventory health."><i class="fa-solid fa-heart-pulse"></i> Inventory health</button>
+                        <button class="chat-chip" data-q="Which products will sell out before my next restock arrives?"><i class="fa-solid fa-clock"></i> Sellout timeline</button>
                     </div>
                     <div class="chat-input-area">
                         <input type="text" id="chatInput" placeholder="Ask about sales trends, reorder points, or stock risks..." autocomplete="off">

@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKpiDailyVsForecastTrigger();
     setupKpiCashFlowTrigger();
     setupKpiDemandTrendTrigger();
+    setupKpiMarginTrigger();
 
     // 13. Setup View All Toggles for BI boxes
     setupBIMetricsToggles();
@@ -276,10 +277,10 @@ function setupNavigation() {
             }
         }
 
-        // Toggle top-bar visibility (hide it on legal and features pages to clean up layout)
+        // Toggle top-bar visibility (hide it on legal/utility pages, AI Insights, and Settings)
         const topBar = document.querySelector('.top-bar');
         if (topBar) {
-            topBar.style.display = (view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about' || view === 'contact') ? 'none' : 'flex';
+            topBar.style.display = (view === 'insights' || view === 'settings' || view === 'privacy' || view === 'terms' || view === 'features' || view === 'howItWorks' || view === 'pricing' || view === 'about' || view === 'contact') ? 'none' : 'flex';
         }
 
         if (view === 'dashboard') {
@@ -1220,6 +1221,17 @@ function initChat() {
     btn.addEventListener('click', () => sendChatMessage());
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendChatMessage();
+    });
+
+    // Suggestion chip click → populate input & submit
+    document.querySelectorAll('.chat-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const question = chip.getAttribute('data-q');
+            if (!question) return;
+            input.value = question;
+            input.focus();
+            sendChatMessage();
+        });
     });
     
     // Load existing history
@@ -5363,6 +5375,435 @@ function renderDemandTrendModalRows(items, maxVelocity) {
                 </td>
                 <td style="text-align: center; vertical-align: middle;">
                     ${statusBadge}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ==========================================
+// KPI: Average Profit Margin Interactive Modal
+// ==========================================
+function setupKpiMarginTrigger() {
+    const kpiCard = document.getElementById('kpiMarginCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalMargin();
+        });
+    }
+}
+
+async function showModalMargin() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('avgMarginModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let items = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        items = fullInventoryData;
+    } else {
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    items = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch Inventory data for Avg. Margin Hub:", e);
+        }
+    }
+
+    // 3. Compute detailed profit metrics for each item
+    // Sort by forecasted demand descending to match standard margin distribution algorithm
+    const sortedInventory = [...items].sort((a, b) => (b.forecasted_demand || 0) - (a.forecasted_demand || 0));
+    
+    const computedItems = sortedInventory.map((p, i) => {
+        const marginPct = Math.max(5, 35 - i * 3);
+        const price = p.price || 0;
+        const cost = price * (1 - marginPct / 100);
+        const marginDollar = price - cost;
+        
+        // 30d projected sales based on 7d forecasted demand
+        const projectedSales30d = Math.round((p.forecasted_demand || 0) * (30 / 7));
+        const projectedProfit30d = projectedSales30d * marginDollar;
+        
+        // Margin Classification
+        let classification = 'Healthy';
+        if (marginPct >= 25) {
+            classification = 'Leader';
+        } else if (marginPct < 15) {
+            classification = 'Alert';
+        }
+
+        return {
+            ...p,
+            marginPct,
+            cost,
+            marginDollar,
+            projectedSales30d,
+            projectedProfit30d,
+            classification
+        };
+    });
+
+    // Compute aggregate metrics
+    const totalProjectedProfit = computedItems.reduce((sum, item) => sum + item.projectedProfit30d, 0);
+    const highMarginLeadersCount = computedItems.filter(item => item.classification === 'Leader').length;
+    const lowMarginAlertsCount = computedItems.filter(item => item.classification === 'Alert').length;
+    
+    // Tab state
+    let activeTab = 'all'; // 'all', 'leaders', 'healthy', 'alerts'
+    let searchQuery = '';
+    let currentSortCol = 'profit';
+    let currentSortDir = 'desc';
+
+    // 4. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'avgMarginModal';
+    overlay.innerHTML = `
+        <div class="sku-modal-container" style="width: 1050px; max-width: 95vw; max-height: 90vh;">
+            <div class="sku-modal-header">
+                <div>
+                    <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-chart-line-up" style="color:var(--accent-secondary);"></i>
+                        Profit Margin & Revenue Contribution Hub
+                    </h2>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="marginModalSub">
+                        Analyze unit profit margins (COGS vs Retail) and projected 30-day absolute net income contributions.
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeMarginModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Scrollable Body Wrapper -->
+            <div class="bi-modal-body">
+                <!-- Summary Cards Block -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 0.5rem;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">PORTFOLIO AVG MARGIN</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--accent-secondary); font-weight: 700;">
+                            24.5% <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">aggregate target</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">PROJECTED 30D PROFIT</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-success); font-weight: 700;">
+                            ${formatCurrency(totalProjectedProfit)} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">estimated</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">HIGH MARGIN LEADERS</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-info); font-weight: 700;">
+                            ${highMarginLeadersCount} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">SKUs (>=25%)</span>
+                        </h3>
+                    </div>
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">LOW MARGIN WARNINGS</span>
+                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--status-warning); font-weight: 700;">
+                            ${lowMarginAlertsCount} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">SKUs (<15%)</span>
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Interactive Tab Container -->
+                <div class="bi-tabs-container">
+                    <button class="bi-tab-btn active" id="tab-margin-all" data-tab="all">
+                        <i class="fa-solid fa-border-all"></i> All Products (${computedItems.length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-margin-leaders" data-tab="leaders">
+                        <i class="fa-solid fa-gem" style="color: var(--status-success);"></i> High Margin Leaders (${highMarginLeadersCount})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-margin-healthy" data-tab="healthy">
+                        <i class="fa-solid fa-shield" style="color: var(--status-info);"></i> Healthy Core (${computedItems.filter(i => i.classification === 'Healthy').length})
+                    </button>
+                    <button class="bi-tab-btn" id="tab-margin-alerts" data-tab="alerts">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--status-warning);"></i> Low Margin Warnings (${lowMarginAlertsCount})
+                    </button>
+                </div>
+
+                <!-- Dynamic AI Actionable Advice Banner -->
+                <div class="glass-panel" id="marginRecommendationBanner" style="padding: 0.75rem 1rem; background: rgba(139, 92, 246, 0.04); border: 1px solid rgba(139, 92, 246, 0.1); border-radius: 8px; display: flex; gap: 0.75rem; align-items: center;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-primary); font-size: 1.1rem;"></i>
+                    <div style="flex: 1; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;" id="marginRecommendationText">
+                        Loading strategic pricing advice...
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="sku-modal-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="marginSearchInput" placeholder="Search products by SKU, Name, or Category..." autocomplete="off">
+                </div>
+
+                <!-- Scrollable Table Wrapper -->
+                <div class="sku-table-wrapper">
+                    <table class="sku-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header" data-col="sku" style="width: 14%;">SKU <span class="sort-indicator" id="sort-margin-sku"></span></th>
+                                <th class="sortable-header" data-col="name" style="width: 26%;">Product Details <span class="sort-indicator" id="sort-margin-name"></span></th>
+                                <th class="sortable-header" data-col="price" style="width: 15%; text-align: right;">Unit Price <span class="sort-indicator" id="sort-margin-price"></span></th>
+                                <th class="sortable-header" data-col="marginPct" style="width: 25%; text-align: center;">Margin Breakdown <span class="sort-indicator" id="sort-margin-marginPct"></span></th>
+                                <th class="sortable-header" data-col="profit" style="width: 20%; text-align: center;">Projected Profit (30d) <span class="sort-indicator" id="sort-margin-profit"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="marginTableBody">
+                            <!-- Dynamic rows loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS animations
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    const searchInput = document.getElementById('marginSearchInput');
+    if (searchInput) {
+        searchInput.focus({ preventScroll: true });
+    }
+
+    // Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeMarginModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // Contextual AI Advice Generator
+    const updateAdviceBanner = (tab, filteredItems) => {
+        const banner = document.getElementById('marginRecommendationBanner');
+        const textEl = document.getElementById('marginRecommendationText');
+        if (!banner || !textEl) return;
+
+        let advice = "";
+        let bgColor = "rgba(139, 92, 246, 0.04)";
+        let borderColor = "rgba(139, 92, 246, 0.1)";
+
+        if (tab === 'all') {
+            advice = `<strong>AI Recommendation:</strong> Focus customer acquisitions on high-margin SKU leaders to maximize absolute cash inflow. Consider bundled promotions combining low-margin products with high-margin anchors to lift overall basket profitability.`;
+        } else if (tab === 'leaders') {
+            advice = `<strong>AI Recommendation:</strong> These SKUs have premium margins (>= 25%). Ensure maximum availability (+15% safety stock buffer) as out-of-stocks on these units represent maximum profitability penalties.`;
+            bgColor = "rgba(16, 185, 129, 0.04)";
+            borderColor = "rgba(16, 185, 129, 0.1)";
+        } else if (tab === 'healthy') {
+            advice = `<strong>AI Recommendation:</strong> Your healthy performance core (15% - 25% margin). Explore volume wholesale discounts with suppliers to shave another 2-3% off COGS and transition these items into High-Margin Leaders.`;
+            bgColor = "rgba(59, 130, 246, 0.04)";
+            borderColor = "rgba(59, 130, 246, 0.1)";
+        } else if (tab === 'alerts') {
+            advice = `<strong>AI Warning:</strong> These SKUs operate on thin margins (< 15%). Review supplier cost structures, bundle accessories to obscure single unit prices, or plan a selective 5-8% retail price hike to defend bottom-line margins.`;
+            bgColor = "rgba(245, 158, 11, 0.04)";
+            borderColor = "rgba(245, 158, 11, 0.1)";
+        }
+
+        banner.style.background = bgColor;
+        banner.style.borderColor = borderColor;
+        textEl.innerHTML = advice;
+    };
+
+    // Filter & Render logic
+    const updateTable = () => {
+        // Filter by Tab
+        let filtered = [...computedItems];
+        if (activeTab === 'leaders') {
+            filtered = filtered.filter(item => item.classification === 'Leader');
+        } else if (activeTab === 'healthy') {
+            filtered = filtered.filter(item => item.classification === 'Healthy');
+        } else if (activeTab === 'alerts') {
+            filtered = filtered.filter(item => item.classification === 'Alert');
+        }
+
+        // Filter by Search Query
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(item => 
+                item.sku.toLowerCase().includes(q) ||
+                item.name.toLowerCase().includes(q) ||
+                (item.category && item.category.toLowerCase().includes(q))
+            );
+        }
+
+        // Sort
+        filtered.sort((a, b) => {
+            let valA, valB;
+            if (currentSortCol === 'sku') {
+                valA = a.sku;
+                valB = b.sku;
+            } else if (currentSortCol === 'name') {
+                valA = a.name;
+                valB = b.name;
+            } else if (currentSortCol === 'price') {
+                valA = a.price || 0;
+                valB = b.price || 0;
+            } else if (currentSortCol === 'marginPct') {
+                valA = a.marginPct;
+                valB = b.marginPct;
+            } else if (currentSortCol === 'profit') {
+                valA = a.projectedProfit30d;
+                valB = b.projectedProfit30d;
+            }
+
+            if (valA < valB) return currentSortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Render rows
+        const tbody = document.getElementById('marginTableBody');
+        if (tbody) {
+            tbody.innerHTML = renderMarginModalRows(filtered);
+        }
+
+        // Update indicators
+        ['sku', 'name', 'price', 'marginPct', 'profit'].forEach(col => {
+            const ind = document.getElementById(`sort-margin-${col}`);
+            if (ind) {
+                if (currentSortCol === col) {
+                    ind.innerHTML = currentSortDir === 'asc' ? '<i class="fa-solid fa-chevron-up"></i>' : '<i class="fa-solid fa-chevron-down"></i>';
+                } else {
+                    ind.innerHTML = '';
+                }
+            }
+        });
+
+        updateAdviceBanner(activeTab, filtered);
+    };
+
+    // Set up Tab event listeners
+    ['all', 'leaders', 'healthy', 'alerts'].forEach(tab => {
+        const btn = document.getElementById(`tab-margin-${tab}`);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#avgMarginModal .bi-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTab = tab;
+                updateTable();
+            });
+        }
+    });
+
+    // Search input listener
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            updateTable();
+        });
+    }
+
+    // Sorting headers listeners
+    document.querySelectorAll('#avgMarginModal .sortable-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const col = header.getAttribute('data-col');
+            if (currentSortCol === col) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortCol = col;
+                currentSortDir = 'desc'; // Default to desc for profit and margins
+            }
+            updateTable();
+        });
+    });
+
+    // Initial table render
+    updateTable();
+}
+
+function renderMarginModalRows(items) {
+    if (items.length === 0) {
+        return `
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
+                    No products found matching the criteria.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const price = item.price || 0;
+        const cost = item.cost || 0;
+        const profitPerUnit = item.marginDollar || 0;
+        const marginPct = item.marginPct || 0;
+        const profit30d = item.projectedProfit30d || 0;
+        const category = item.category || 'N/A';
+
+        // Select badge design based on classification
+        let classBadge = '';
+        let barColor = '';
+        if (item.classification === 'Leader') {
+            classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-gem"></i> Premium</span>`;
+            barColor = 'linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.7))';
+        } else if (item.classification === 'Healthy') {
+            classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-shield"></i> Healthy</span>`;
+            barColor = 'linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.7))';
+        } else {
+            classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fa-solid fa-triangle-exclamation"></i> Low Margin</span>`;
+            barColor = 'linear-gradient(90deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.7))';
+        }
+
+        // Relative progress bar for margin percentage representation (scaled against a max margin of 35%)
+        const progressPct = Math.min(100, (marginPct / 35) * 100);
+
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                        <span style="font-weight: 650; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${category}</span>
+                    </div>
+                </td>
+                <td style="text-align: right; font-weight: 500; color: var(--text-primary); font-size: 0.95rem;">
+                    ${formatCurrency(price)}
+                </td>
+                <td>
+                    <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary);">
+                            <span>Cost: <strong style="color: var(--text-muted);">${formatCurrency(cost)}</strong></span>
+                            <span style="font-weight: 700; color: ${marginPct >= 25 ? 'var(--status-success)' : marginPct >= 15 ? 'var(--status-info)' : 'var(--status-warning)'};">${marginPct.toFixed(0)}% Margin</span>
+                        </div>
+                        <div class="bi-spark-track" style="height: 6px; background: rgba(255,255,255,0.02);" title="Profit margin: ${marginPct.toFixed(1)}%">
+                            <div class="bi-spark-bar" style="width: ${progressPct}%; height: 100%; background: ${barColor}; border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                            <strong style="color: var(--status-success); font-size: 1rem;">${formatCurrency(profit30d)}</strong>
+                            <span style="font-size: 0.68rem; color: var(--text-muted);">Unit profit: ${formatCurrency(profitPerUnit)}</span>
+                        </div>
+                        ${classBadge}
+                    </div>
                 </td>
             </tr>
         `;

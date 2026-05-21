@@ -700,8 +700,6 @@ h1, h2, h3, h4 {
 
 .inventory-content,
 
-.insights-content,
-
 .settings-content {
 
     display: flex;
@@ -718,6 +716,42 @@ h1, h2, h3, h4 {
 
     margin: 0 auto;
 
+}
+
+/* Insights page fills the remaining viewport so the chat is always fully visible
+   without scrolling — the footer is only reachable by scrolling */
+.insights-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.5rem;
+
+    height: calc(100vh - 70px - 4rem);
+
+    min-height: 500px;
+
+    width: 100%;
+
+    max-width: 1600px;
+
+    margin: 0 auto;
+
+}
+
+/* Compact header specifically inside the Insights page */
+.insights-content .page-header {
+    margin-bottom: 0.25rem;
+}
+
+.insights-content .page-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.1rem;
+}
+
+.insights-content .page-header .subtitle {
+    font-size: 0.82rem;
 }
 
 
@@ -1951,11 +1985,9 @@ h1, h2, h3, h4 {
 
 .chat-container {
 
-    height: calc(100vh - 280px);
+    flex: 1;
 
-    min-height: 400px;
-
-    max-height: 600px;
+    min-height: 0;
 
     max-width: 1000px;
 
@@ -2060,6 +2092,64 @@ h1, h2, h3, h4 {
 }
 
 
+
+/* Suggestion Chips Strip */
+.chat-suggestions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.75rem 1.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.chat-suggestions::-webkit-scrollbar {
+    display: none;
+}
+
+.chat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--radius-full);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(139, 92, 246, 0.07);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.chat-chip i {
+    font-size: 0.72rem;
+    color: var(--accent-primary);
+    opacity: 0.8;
+}
+
+.chat-chip:hover {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.chat-chip:hover i {
+    opacity: 1;
+}
+
+.chat-chip:active {
+    transform: translateY(0);
+}
 
 .chat-input-area {
 
@@ -5140,7 +5230,8 @@ input:checked + .slider:before {
 /* Enable scrolling on the entire modal container instead of just the inner product list table wrapper */
 #dailyVsForecastModal .sku-modal-container,
 #cashFlowModal .sku-modal-container,
-#demandTrendModal .sku-modal-container {
+#demandTrendModal .sku-modal-container,
+#avgMarginModal .sku-modal-container {
     max-height: 90vh;
     overflow: hidden; /* Do not scroll container itself */
     display: flex;
@@ -5172,7 +5263,8 @@ input:checked + .slider:before {
 
 #dailyVsForecastModal .sku-table-wrapper,
 #cashFlowModal .sku-table-wrapper,
-#demandTrendModal .sku-table-wrapper {
+#demandTrendModal .sku-table-wrapper,
+#avgMarginModal .sku-table-wrapper {
     max-height: none !important;
     overflow: visible !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -5181,7 +5273,8 @@ input:checked + .slider:before {
 
 #dailyVsForecastModal .sku-table thead th,
 #cashFlowModal .sku-table thead th,
-#demandTrendModal .sku-table thead th {
+#demandTrendModal .sku-table thead th,
+#avgMarginModal .sku-table thead th {
     position: sticky;
     top: 0; /* Align perfectly to the top of the scroll container (.bi-modal-body) */
     z-index: 10;
