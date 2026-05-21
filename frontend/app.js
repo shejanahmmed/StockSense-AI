@@ -388,6 +388,15 @@ function setupNavigation() {
         });
     }
 
+    // Wire up Demo View triggers
+    const footerNavDemo = document.getElementById('footerNavDemo');
+    if (footerNavDemo) {
+        footerNavDemo.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('dashboard');
+        });
+    }
+
     // Auto-hide Top Navbar on scroll
     const mainContent = document.querySelector('.main-content');
     const topNavbar = document.querySelector('.top-navbar');
