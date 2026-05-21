@@ -4851,3 +4851,180 @@ input:checked + .slider:before {
     }
 }
 
+
+
+/* Interactive KPI Card Hover Effects */
+.kpi-card.interactive {
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kpi-card.interactive:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12), var(--shadow-glass) !important;
+}
+
+/* Modal Overlay & Animations */
+.sku-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 17, 26, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sku-modal-overlay.open {
+    opacity: 1;
+}
+
+.sku-modal-container {
+    background: rgba(25, 28, 41, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    width: 850px;
+    max-width: 95vw;
+    max-height: 85vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transform: scale(0.92);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sku-modal-overlay.open .sku-modal-container {
+    transform: scale(1);
+}
+
+/* Close & Header Styles */
+.sku-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sku-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.sku-modal-close:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--status-danger);
+}
+
+/* Inner Elements */
+.sku-modal-search {
+    position: relative;
+    width: 100%;
+}
+
+.sku-modal-search input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition-smooth);
+}
+
+.sku-modal-search input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+}
+
+.sku-modal-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* Table in Modal */
+.sku-table-wrapper {
+    overflow-y: auto;
+    flex: 1;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.sku-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sku-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+}
+
+.sku-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+
+.sku-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.sku-table th {
+    padding: 0.85rem 1.25rem;
+    background: #181b27;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.sku-table td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.92rem;
+    vertical-align: middle;
+}
+
+.sku-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sku-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.sku-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}

@@ -23,7 +23,7 @@ async def get_inventory(
         
         offset = (page - 1) * limit
         cursor.execute('''
-            SELECT sku, name, category, price, stock, supplier, status, reorder_point, supplier_lead_days, forecasted_demand 
+            SELECT sku, name, category, price, stock, supplier, status, reorder_point, supplier_lead_days, forecasted_demand, units_sold
             FROM inventory 
             WHERE org_name = ? 
             LIMIT ? OFFSET ?
@@ -91,6 +91,14 @@ async def add_inventory(item: dict, user: dict = Depends(get_current_user)):
         else:
             status = "In Stock"
 
+        # Calculate simulated units sold from daily sales generated for CSV
+        simulated_sold = 0
+        if avg_daily_sales > 0:
+            for i in range(history_days):
+                variation = (i % 5) - 2
+                daily_qty = max(0, avg_daily_sales + variation)
+                simulated_sold += daily_qty
+
         # ── Insert into inventory DB ─────────────────────────────────────────
         conn   = get_db_connection()
         cursor = conn.cursor()
@@ -98,10 +106,10 @@ async def add_inventory(item: dict, user: dict = Depends(get_current_user)):
             cursor.execute('''
                 INSERT INTO inventory
                     (org_name, sku, name, category, price, stock,
-                     reorder_point, supplier_lead_days, supplier, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     reorder_point, supplier_lead_days, supplier, status, units_sold)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (org_name, sku, name, category, price, stock,
-                  reorder_point, supplier_lead_days, supplier, status))
+                  reorder_point, supplier_lead_days, supplier, status, simulated_sold))
             conn.commit()
         except Exception as db_err:
             conn.close()

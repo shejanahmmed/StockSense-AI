@@ -49,6 +49,7 @@ def init_db():
             supplier TEXT,
             status TEXT,
             forecasted_demand INTEGER DEFAULT 0,
+            units_sold INTEGER DEFAULT 0,
             last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(org_name, sku)
         )
@@ -58,6 +59,7 @@ def init_db():
         "ALTER TABLE inventory ADD COLUMN reorder_point INTEGER DEFAULT 50",
         "ALTER TABLE inventory ADD COLUMN supplier_lead_days INTEGER DEFAULT 7",
         "ALTER TABLE inventory ADD COLUMN forecasted_demand INTEGER DEFAULT 0",
+        "ALTER TABLE inventory ADD COLUMN units_sold INTEGER DEFAULT 0",
         "ALTER TABLE inventory ADD COLUMN last_updated TEXT DEFAULT '2025-01-01'",
     ]:
         try:

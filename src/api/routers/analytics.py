@@ -590,12 +590,14 @@ async def predict_demand(
                 max(1, int(stock / (next_week / 7))) if next_week > 0 else None
             )
 
+            units_sold = int(product_df['sales_qty'].sum())
+
             # Upsert into inventory table
             cursor.execute('''
                 INSERT INTO inventory
                     (org_name, sku, name, category, price, stock, reorder_point,
-                     supplier_lead_days, supplier, status, forecasted_demand, last_updated)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                     supplier_lead_days, supplier, status, forecasted_demand, units_sold, last_updated)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 ON CONFLICT(org_name, sku) DO UPDATE SET
                     name=excluded.name, category=excluded.category,
                     price=excluded.price, stock=excluded.stock,
@@ -603,9 +605,10 @@ async def predict_demand(
                     supplier_lead_days=excluded.supplier_lead_days,
                     status=excluded.status,
                     forecasted_demand=excluded.forecasted_demand,
+                    units_sold=excluded.units_sold,
                     last_updated=excluded.last_updated
             ''', (org_name, sku, product_name, category, unit_price, stock,
-                  reorder_point, lead_days, '', status, next_week))
+                  reorder_point, lead_days, '', status, next_week, units_sold))
 
             # Store per-product forecast rows
             for row in result["forecast"]:
@@ -628,6 +631,7 @@ async def predict_demand(
                 "percent_change": f"{'+' if result['percent_change'] > 0 else ''}{result['percent_change']:.1f}%",
                 "recommended_order": recommended_order,
                 "days_to_stockout": days_to_stockout,
+                "units_sold": units_sold,
                 "forecast": result["forecast"],
             })
 

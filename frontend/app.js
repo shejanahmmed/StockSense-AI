@@ -53,6 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Pricing Currency based on saved settings
     updatePricingCurrency();
 
+    // 12. Setup KPI SKU Modal Trigger
+    setupKpiSkuTrigger();
+    setupKpiTotalUnitsTrigger();
+
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
@@ -2867,3 +2871,388 @@ function toggleFaq(btn) {
         chevron.style.transform = 'rotate(180deg)';
     }
 }
+
+// ==========================================
+// Total SKUs Interactive Dialog
+// ==========================================
+function setupKpiSkuTrigger() {
+    const kpiCard = document.getElementById('kpiSKUsCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalSKUList();
+        });
+    }
+}
+
+async function showModalSKUList() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('skuListModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let skus = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        skus = fullInventoryData;
+    } else {
+        // Fetch on-the-fly from database
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    skus = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch SKU data on-the-fly:", e);
+        }
+    }
+
+    // 3. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'skuListModal';
+
+    // Construct glassmorphic contents
+    overlay.innerHTML = `
+        <div class="sku-modal-container">
+            <div class="sku-modal-header">
+                <div>
+                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-list-check" style="color:var(--accent-primary);"></i> Unique Products (SKUs)
+                    </h3>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="skuModalSub">
+                        Tracked total of ${skus.length} active unique products in inventory.
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeSkuModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="sku-modal-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="skuModalSearchInput" placeholder="Search by SKU / Product ID or Name..." autocomplete="off">
+            </div>
+
+            <div class="sku-table-wrapper">
+                <table class="sku-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Product ID / SKU</th>
+                            <th style="width: 50%;">Product Details</th>
+                            <th style="width: 25%;">Price per Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="skuModalTableBody">
+                        ${renderSkuModalRows(skus)}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    // Focus search input automatically
+    const searchInput = document.getElementById('skuModalSearchInput');
+    if (searchInput) searchInput.focus();
+
+    // 4. Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeSkuModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // 5. Search Filtering Logic
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const filtered = skus.filter(item => {
+                return (item.sku && item.sku.toLowerCase().includes(query)) ||
+                       (item.name && item.name.toLowerCase().includes(query)) ||
+                       (item.category && item.category.toLowerCase().includes(query));
+            });
+            
+            const tbody = document.getElementById('skuModalTableBody');
+            if (tbody) {
+                tbody.innerHTML = renderSkuModalRows(filtered);
+            }
+
+            const sub = document.getElementById('skuModalSub');
+            if (sub) {
+                if (query.length > 0) {
+                    sub.textContent = `Showing ${filtered.length} of ${skus.length} matched products.`;
+                } else {
+                    sub.textContent = `Tracked total of ${skus.length} active unique products in inventory.`;
+                }
+            }
+        });
+    }
+}
+
+function renderSkuModalRows(items) {
+    if (!items || items.length === 0) {
+        return `
+            <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
+                    No matching products found.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
+                    </div>
+                </td>
+                <td style="font-weight: 600; color: var(--accent-primary); font-size: 0.95rem;">
+                    ${price}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
+// ==========================================
+// Total Units Interactive Dialog
+// ==========================================
+function setupKpiTotalUnitsTrigger() {
+    const kpiCard = document.getElementById('kpiTotalUnitsCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalTotalUnitsList();
+        });
+    }
+}
+
+async function showModalTotalUnitsList() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('unitsListModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let items = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        items = fullInventoryData;
+    } else {
+        // Fetch on-the-fly from database
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    items = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch Inventory data on-the-fly:", e);
+        }
+    }
+
+    // 3. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'unitsListModal';
+
+    // Construct glassmorphic contents
+    overlay.innerHTML = `
+        <div class="sku-modal-container">
+            <div class="sku-modal-header">
+                <div>
+                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-box-open" style="color:var(--accent-primary);"></i> Total Inventory Units
+                    </h3>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="unitsModalSub">
+                        Breakdown of units sold and stock remaining across all ${items.length} products.
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeUnitsModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="sku-modal-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="unitsModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
+            </div>
+
+            <div class="sku-table-wrapper">
+                <table class="sku-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 12%;">SKU / ID</th>
+                            <th style="width: 33%;">Product Details</th>
+                            <th style="width: 13%; text-align: center;">Total Units</th>
+                            <th style="width: 13%; text-align: center;">Units Sold</th>
+                            <th style="width: 13%; text-align: center;">Remaining</th>
+                            <th style="width: 16%; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unitsModalTableBody">
+                        ${renderUnitsModalRows(items)}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    // Focus search input automatically
+    const searchInput = document.getElementById('unitsModalSearchInput');
+    if (searchInput) searchInput.focus();
+
+    // 4. Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeUnitsModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // 5. Search Filtering Logic
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const filtered = items.filter(item => {
+                return (item.sku && item.sku.toLowerCase().includes(query)) ||
+                       (item.name && item.name.toLowerCase().includes(query)) ||
+                       (item.category && item.category.toLowerCase().includes(query));
+            });
+            
+            const tbody = document.getElementById('unitsModalTableBody');
+            if (tbody) {
+                tbody.innerHTML = renderUnitsModalRows(filtered);
+            }
+
+            const sub = document.getElementById('unitsModalSub');
+            if (sub) {
+                if (query.length > 0) {
+                    sub.textContent = `Showing ${filtered.length} of ${items.length} matched products.`;
+                } else {
+                    sub.textContent = `Breakdown of units sold and stock remaining across all ${items.length} products.`;
+                }
+            }
+        });
+    }
+}
+
+function renderUnitsModalRows(items) {
+    if (!items || items.length === 0) {
+        return `
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
+                    No matching products found.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const sold = item.units_sold || 0;
+        const left = item.stock || 0;
+        const total = sold + left;
+        const reorderPoint = item.reorder_point || 50;
+
+        // Determine stock status beautifully
+        let statusText = 'Healthy';
+        let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
+        let remainingColor = 'var(--text-primary)';
+
+        if (left === 0) {
+            statusText = 'Out of Stock';
+            badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
+            remainingColor = 'var(--status-danger)';
+        } else if (left <= reorderPoint) {
+            statusText = 'Low Stock';
+            badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
+            remainingColor = 'var(--status-warning)';
+        } else if (left >= reorderPoint * 3) {
+            statusText = 'Overstocked';
+            badgeStyle = 'background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.25);';
+            remainingColor = 'var(--accent-primary)';
+        }
+
+        const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; ${badgeStyle}">${statusText}</span>`;
+
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
+                    </div>
+                </td>
+                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
+                    ${total.toLocaleString()}
+                </td>
+                <td style="color: var(--text-secondary); text-align: center;">
+                    ${sold.toLocaleString()}
+                </td>
+                <td style="text-align: center; font-weight: 600; color: ${remainingColor};">
+                    ${left.toLocaleString()}
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${statusBadge}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
