@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 12. Setup KPI SKU Modal Trigger
     setupKpiSkuTrigger();
     setupKpiTotalUnitsTrigger();
+    setupKpiAtRiskTrigger();
 
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
@@ -3226,7 +3227,7 @@ function renderUnitsModalRows(items) {
             remainingColor = 'var(--accent-primary)';
         }
 
-        const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; ${badgeStyle}">${statusText}</span>`;
+        const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
 
         return `
             <tr>
@@ -3244,6 +3245,237 @@ function renderUnitsModalRows(items) {
                 </td>
                 <td style="color: var(--text-secondary); text-align: center;">
                     ${sold.toLocaleString()}
+                </td>
+                <td style="text-align: center; font-weight: 600; color: ${remainingColor};">
+                    ${left.toLocaleString()}
+                </td>
+                <td style="text-align: center; vertical-align: middle;">
+                    ${statusBadge}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
+// ==========================================
+// At-Risk Products Interactive Dialog
+// ==========================================
+function setupKpiAtRiskTrigger() {
+    const kpiCard = document.getElementById('kpiAtRiskCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showModalAtRiskList();
+        });
+    }
+}
+
+async function showModalAtRiskList() {
+    // 1. Remove old modal if it exists
+    const old = document.getElementById('atRiskListModal');
+    if (old) old.remove();
+
+    // 2. Load latest product/SKU data if available
+    let items = [];
+    if (fullInventoryData && fullInventoryData.length > 0) {
+        items = fullInventoryData;
+    } else {
+        // Fetch on-the-fly from database
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/inventory', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.status === 'success' && json.data) {
+                    fullInventoryData = json.data;
+                    items = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch Inventory data for At-Risk list:", e);
+        }
+    }
+
+    // Filter to only get At-Risk products: stock <= reorder_point
+    const atRiskItems = items.filter(item => {
+        const left = item.stock || 0;
+        const reorderPoint = item.reorder_point || 50;
+        return left <= reorderPoint;
+    });
+
+    // 3. Create modal overlay and container
+    const overlay = document.createElement('div');
+    overlay.className = 'sku-modal-overlay';
+    overlay.id = 'atRiskListModal';
+
+    // Construct glassmorphic contents
+    overlay.innerHTML = `
+        <div class="sku-modal-container">
+            <div class="sku-modal-header">
+                <div>
+                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:var(--status-danger);"></i> At-Risk Products
+                    </h3>
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="atRiskModalSub">
+                        Tracked total of ${atRiskItems.length} products with critical or low stock levels.
+                    </p>
+                </div>
+                <button class="sku-modal-close" id="closeAtRiskModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="sku-modal-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="atRiskModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
+            </div>
+
+            <div class="sku-table-wrapper">
+                <table class="sku-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 12%;">SKU / ID</th>
+                            <th style="width: 38%;">Product Details</th>
+                            <th style="width: 14%; text-align: center;">Unit Price</th>
+                            <th style="width: 11%; text-align: center;">Total Units</th>
+                            <th style="width: 11%; text-align: center;">Units Left</th>
+                            <th style="width: 14%; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="atRiskModalTableBody">
+                        ${renderAtRiskModalRows(atRiskItems)}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
+    setTimeout(() => {
+        overlay.classList.add('open');
+    }, 10);
+
+    // Focus search input automatically
+    const searchInput = document.getElementById('atRiskModalSearchInput');
+    if (searchInput) searchInput.focus();
+
+    // 4. Modal Close Logic
+    const closeModal = () => {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 250);
+    };
+
+    document.getElementById('closeAtRiskModal').addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // 5. Search Filtering Logic
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const filtered = atRiskItems.filter(item => {
+                return (item.sku && item.sku.toLowerCase().includes(query)) ||
+                       (item.name && item.name.toLowerCase().includes(query)) ||
+                       (item.category && item.category.toLowerCase().includes(query));
+            });
+            
+            const tbody = document.getElementById('atRiskModalTableBody');
+            if (tbody) {
+                tbody.innerHTML = renderAtRiskModalRows(filtered);
+            }
+
+            const sub = document.getElementById('atRiskModalSub');
+            if (sub) {
+                if (query.length > 0) {
+                    sub.textContent = `Showing ${filtered.length} of ${atRiskItems.length} matched at-risk products.`;
+                } else {
+                    sub.textContent = `Tracked total of ${atRiskItems.length} products with critical or low stock levels.`;
+                }
+            }
+        });
+    }
+}
+
+function renderAtRiskModalRows(items) {
+    if (!items || items.length === 0) {
+        return `
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
+                    No matching at-risk products found.
+                </td>
+            </tr>
+        `;
+    }
+
+    return items.map(item => {
+        const sold = item.units_sold || 0;
+        const left = item.stock || 0;
+        const total = sold + left;
+        const reorderPoint = item.reorder_point || 50;
+        const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
+
+        // Determine stock status beautifully
+        let statusText = 'Healthy';
+        let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
+        let remainingColor = 'var(--text-primary)';
+        let whyText = '';
+        let whyColor = 'var(--text-muted)';
+
+        if (left === 0) {
+            statusText = 'Out of Stock';
+            badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
+            remainingColor = 'var(--status-danger)';
+            whyText = 'Critical: Product is completely out of stock.';
+            whyColor = 'var(--status-danger)';
+        } else if (left <= reorderPoint) {
+            statusText = 'Low Stock';
+            badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
+            remainingColor = 'var(--status-warning)';
+            whyText = `Warning: Stock level (${left}) has dropped below the reorder point of ${reorderPoint}.`;
+            whyColor = 'var(--status-warning)';
+        } else if (left >= reorderPoint * 3) {
+            statusText = 'Overstocked';
+            badgeStyle = 'background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.25);';
+            remainingColor = 'var(--accent-primary)';
+            whyText = 'Stock is high; demand forecast does not require immediate replenishment.';
+        } else {
+            whyText = 'Normal healthy stock status.';
+        }
+
+        const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
+
+        return `
+            <tr>
+                <td>
+                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                </td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
+                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
+                        <span style="font-size: 0.75rem; color: ${whyColor}; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i> ${whyText}
+                        </span>
+                    </div>
+                </td>
+                <td style="font-weight: 600; color: var(--accent-primary); text-align: center;">
+                    ${price}
+                </td>
+                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
+                    ${total.toLocaleString()}
                 </td>
                 <td style="text-align: center; font-weight: 600; color: ${remainingColor};">
                     ${left.toLocaleString()}
