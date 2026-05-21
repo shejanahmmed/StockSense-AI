@@ -5458,6 +5458,36 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.sku-modal-header > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.sku-modal-header h2 {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    color: var(--text-primary) !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.6rem !important;
+}
+
+.sku-modal-header h2 i {
+    flex-shrink: 0 !important;
+    margin-top: 0.15rem !important;
+}
+
+.sku-modal-header p {
+    margin-top: 0.35rem !important;
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+    color: var(--text-secondary) !important;
 }
 
 .sku-modal-close {
@@ -5540,9 +5570,7 @@ input:checked + .slider:before {
 }
 
 .sku-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 3;
+    /* Cleaned up redundant sticky declarations to prevent browser subpixel rounding gaps */
 }
 
 .sku-table th {
@@ -5555,8 +5583,9 @@ input:checked + .slider:before {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: sticky;
-    top: 0;
+    top: -1px; /* Align perfectly to the top edge, sealing subpixel rendering gaps */
     z-index: 3;
+    box-shadow: 0 -2px 0 0 #181b27; /* Sealing shadow to cover scrolling content in subpixel offsets */
 }
 
 .sku-table td {
@@ -5726,9 +5755,10 @@ input:checked + .slider:before {
 #demandTrendModal .sku-table thead th,
 #avgMarginModal .sku-table thead th {
     position: sticky;
-    top: 0; /* Align perfectly to the top of the scroll container (.bi-modal-body) */
+    top: -1.5px; /* Position slightly higher to close the subpixel gap at the top viewport boundary */
     z-index: 10;
     background: #181b27;
+    box-shadow: 0 -3px 0 0 #181b27; /* Opaque solid-colored upward box-shadow blocks table content leaks perfectly */
 }
 
 
@@ -5853,7 +5883,7 @@ input:checked + .slider:before {
 /* Sticky table head */
 .holiday-calendar-table thead th {
     position: sticky;
-    top: 0;
+    top: -1px;
     z-index: 5;
     background: rgba(25, 28, 41, 0.97);
     padding: 0.6rem 0.9rem;
@@ -5863,4 +5893,17 @@ input:checked + .slider:before {
     letter-spacing: 0.06em;
     color: var(--text-muted);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -2px 0 0 rgba(25, 28, 41, 0.97); /* Match backdrop background and seal subpixel gaps */
 }
+
+/* Responsive Modal Adjustments */
+@media (max-width: 768px) {
+    .sku-modal-container {
+        padding: 1.25rem !important;
+        gap: 1rem !important;
+    }
+    .sku-modal-header h2 {
+        font-size: 1.15rem !important;
+    }
+}
+

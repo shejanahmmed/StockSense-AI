@@ -5444,6 +5444,25 @@ function setupKpiMarginTrigger() {
     }
 }
 
+function getDeterministicMargin(sku, category) {
+    const str = sku || "";
+    const val = [...str].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const cat = (category || "").toLowerCase();
+    let base = 20;
+    let range = 15;
+    if (cat.includes("accessory") || cat.includes("case") || cat.includes("cable") || cat.includes("charger") || cat.includes("stand")) {
+        base = 30;
+        range = 15;
+    } else if (cat.includes("electronic") || cat.includes("watch") || cat.includes("earbud") || cat.includes("power bank")) {
+        base = 20;
+        range = 10;
+    } else {
+        base = 15;
+        range = 15;
+    }
+    return base + (val % (range + 1));
+}
+
 async function showModalMargin() {
     // 1. Remove old modal if it exists
     const old = document.getElementById('avgMarginModal');
@@ -5476,7 +5495,7 @@ async function showModalMargin() {
     const sortedInventory = [...items].sort((a, b) => (b.forecasted_demand || 0) - (a.forecasted_demand || 0));
     
     const computedItems = sortedInventory.map((p, i) => {
-        const marginPct = Math.max(5, 35 - i * 3);
+        const marginPct = getDeterministicMargin(p.sku, p.category);
         const price = p.price || 0;
         const cost = price * (1 - marginPct / 100);
         const marginDollar = price - cost;
@@ -5509,6 +5528,18 @@ async function showModalMargin() {
     const highMarginLeadersCount = computedItems.filter(item => item.classification === 'Leader').length;
     const lowMarginAlertsCount = computedItems.filter(item => item.classification === 'Alert').length;
     
+    // Compute portfolio average margin weighted by forecasted demand * price (revenue)
+    let totalForecastRev = 0;
+    let totalForecastProf = 0;
+    computedItems.forEach(item => {
+        const itemRev = (item.forecasted_demand || 0) * (item.price || 0);
+        totalForecastRev += itemRev;
+        totalForecastProf += itemRev * (item.marginPct / 100);
+    });
+    const portfolioAvgMargin = totalForecastRev > 0 
+        ? ((totalForecastProf / totalForecastRev) * 100).toFixed(1)
+        : (computedItems.reduce((sum, item) => sum + item.marginPct, 0) / Math.max(1, computedItems.length)).toFixed(1);
+
     // Tab state
     let activeTab = 'all'; // 'all', 'leaders', 'healthy', 'alerts'
     let searchQuery = '';
@@ -5541,7 +5572,7 @@ async function showModalMargin() {
                     <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">PORTFOLIO AVG MARGIN</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: var(--accent-secondary); font-weight: 700;">
-                            24.5% <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">aggregate target</span>
+                            ${portfolioAvgMargin}% <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">aggregate target</span>
                         </h3>
                     </div>
                     <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px;">

@@ -36,6 +36,18 @@ def _compute_product_status(stock: int, reorder_point: int) -> str:
     return "In Stock"
 
 
+def get_deterministic_margin(sku: str, category: str) -> int:
+    val = sum(ord(c) for c in (sku or ""))
+    cat = (category or "").lower()
+    if any(x in cat for x in ["accessory", "case", "cable", "charger", "stand"]):
+        base, r = 30, 15  # 30% to 45% margin
+    elif any(x in cat for x in ["electronic", "watch", "earbud", "power bank"]):
+        base, r = 20, 10  # 20% to 30% margin
+    else:
+        base, r = 15, 15  # 15% to 30% margin
+    return base + (val % (r + 1))
+
+
 def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD", date_min=None, date_max=None) -> dict:
     """Run the full feature-engineering + Prophet pipeline for a single product's time series."""
     product_df = product_df.copy()
@@ -806,7 +818,10 @@ async def predict_demand(
                 max(1, int(stock / (next_week / 7))) if next_week > 0 else None
             )
 
-            units_sold = int(product_df['sales_qty'].sum())
+            # Group by date, sum sales_qty, take last 14 days of history
+            prod_daily = product_df.groupby('date')['sales_qty'].sum().sort_index()
+            history_days_count = min(14, len(prod_daily))
+            units_sold = int(prod_daily.tail(history_days_count).sum())
 
             # Upsert into inventory table
             cursor.execute('''
@@ -842,6 +857,7 @@ async def predict_demand(
                 "current_stock": stock,
                 "reorder_point": reorder_point,
                 "status": status,
+                "price": unit_price,
                 "current_week_sales": result["current_week_sales"],
                 "next_week_sales": next_week,
                 "percent_change": f"{'+' if result['percent_change'] > 0 else ''}{result['percent_change']:.1f}%",
@@ -929,6 +945,13 @@ async def predict_demand(
             all_product_results=all_product_results
         )
 
+        total_forecast_rev = sum((p["next_week_sales"] or 0) * p["price"] for p in all_product_results)
+        if total_forecast_rev > 0:
+            total_forecast_prof = sum((p["next_week_sales"] or 0) * p["price"] * (get_deterministic_margin(p["product_id"], p["category"]) / 100.0) for p in all_product_results)
+            portfolio_avg_margin = (total_forecast_prof / total_forecast_rev) * 100.0
+        else:
+            portfolio_avg_margin = sum(get_deterministic_margin(p["product_id"], p["category"]) for p in all_product_results) / max(1, len(all_product_results))
+
         return {
             "status": "success",
             "historical": historical_records,
@@ -954,7 +977,7 @@ async def predict_demand(
                 "upcoming_event": upcoming_event_name,
                 "upcoming_event_date": upcoming_event_date,
                 "event_impact": event_impact,
-                "avg_margin": "24.5%",
+                "avg_margin": f"{portfolio_avg_margin:.1f}%",
                 "next_step": f"Approve purchase order for '{at_risk[0]['product_name']}' ({at_risk[0]['product_id']}) before Friday to avoid stockout." if at_risk else "Monitor inventory levels. No critical actions needed.",
                 "timeline": [
                     {
@@ -970,9 +993,9 @@ async def predict_demand(
                     {
                         "name": p["product_name"],
                         "sku": p["product_id"],
-                        "margin": f"+{max(5, 35 - i*3)}% Margin"
+                        "margin": f"+{get_deterministic_margin(p['product_id'], p['category'])}% Margin"
                     }
-                    for i, p in enumerate(sorted(all_product_results, key=lambda x: x["next_week_sales"], reverse=True))
+                    for p in sorted(all_product_results, key=lambda x: x["next_week_sales"], reverse=True)
                 ]
             },
             "products": all_product_results,
