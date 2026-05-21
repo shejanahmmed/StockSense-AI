@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKpiSkuTrigger();
     setupKpiTotalUnitsTrigger();
     setupKpiAtRiskTrigger();
+    setupKpiInventoryHealthTrigger();
 
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
@@ -3486,5 +3487,19 @@ function renderAtRiskModalRows(items) {
             </tr>
         `;
     }).join('');
+}
+
+
+// ==========================================
+// Inventory Health Interactive Dialog
+// ==========================================
+function setupKpiInventoryHealthTrigger() {
+    const kpiCard = document.getElementById('kpiInventoryHealthCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            // Clicking Inventory Health shows risk products at first, meeting user expectations
+            showModalAtRiskList();
+        });
+    }
 }
 
