@@ -153,6 +153,7 @@ h1, h2, h3, h4 {
     background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%);
 
     -webkit-background-clip: text;
+    background-clip: text;
 
     -webkit-text-fill-color: transparent;
 
@@ -3702,6 +3703,7 @@ input:checked + .slider:before {
     align-items: center;
     background: linear-gradient(135deg, #f8fafc 40%, #94a3b8);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -5569,9 +5571,7 @@ input:checked + .slider:before {
     text-align: left;
 }
 
-.sku-table thead {
-    /* Cleaned up redundant sticky declarations to prevent browser subpixel rounding gaps */
-}
+
 
 .sku-table th {
     padding: 0.85rem 1.25rem;
