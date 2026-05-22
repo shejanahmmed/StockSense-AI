@@ -2465,7 +2465,7 @@ function initChart() {
                         color: 'transparent'
                     },
                     afterFit: function(scale) {
-                        scale.width = 50;
+                        scale.width = 115; // 50px padding/buffer beyond the 65px sticky Y-axis overlay to prevent slanted labels from clipping
                     }
                 }
             }
@@ -2505,7 +2505,7 @@ function initChart() {
                             }
                         },
                         afterFit: function(scale) {
-                            scale.width = 50;
+                            scale.width = 65; // Matches the width of the sticky Y-axis canvas
                         }
                     }
                 }

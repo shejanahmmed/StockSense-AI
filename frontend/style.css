@@ -4014,11 +4014,11 @@ input:checked + .slider:before {
     position: absolute;
     left: 0;
     top: 0.75rem; /* Match the margin-top of the scroll wrapper */
-    width: 50px;
+    width: 65px;
     height: 300px;
     z-index: 10;
     pointer-events: none;
-    background: #171926;
+    background: #181929;
 }
 
 .chart-scroll-wrapper {
