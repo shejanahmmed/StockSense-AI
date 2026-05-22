@@ -322,12 +322,16 @@
                     </div>
                     <p class="subtitle" style="margin-top: -10px; margin-bottom: 1.5rem;">Data-driven recommendation cards based on public holidays, weekly seasonality, and slow-moving inventory levels.</p>
                     
-                    <div class="promo-box-container" id="promo-suggestions-container" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin;">
+                    <div class="promo-box-container" id="promo-suggestions-container" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin; cursor: grab;">
                         <!-- Promotion suggestions dynamically loaded here or empty state placeholder -->
                         <p class="empty-state" style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0; width: 100%;">
                             <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
                             Upload a CSV file to generate smart promotional campaign suggestions.
                         </p>
+                    </div>
+                    <div id="promo-scroll-indicator" style="display: none; justify-content: center; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.75rem; opacity: 0.7;">
+                        <i class="fa-solid fa-left-right" style="color: var(--accent-primary); font-size: 0.7rem;"></i>
+                        <span>Drag cards or swipe horizontally to navigate campaign planner</span>
                     </div>
                 </section>
 

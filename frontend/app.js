@@ -74,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 13. Setup View All Toggles for BI boxes
     setupBIMetricsToggles();
 
+    // 14. Initialize Drag-to-Scroll swipe behavior for AI Promotional Planner Suggestions deck
+    initPromoDragToScroll();
+
+
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
@@ -169,6 +173,10 @@ function resetDashboardToEmpty() {
                 <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
                 Upload a CSV file to generate smart promotional campaign suggestions.
             </p>`;
+    }
+    const promoScrollIndicator = document.getElementById('promo-scroll-indicator');
+    if (promoScrollIndicator) {
+        promoScrollIndicator.style.display = 'none';
     }
 
     // Reset View All toggles and hide buttons
@@ -2252,6 +2260,10 @@ function renderPromoSuggestions(suggestions) {
                 <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
                 No promotional recommendations generated for this timeframe.
             </p>`;
+        const promoScrollIndicator = document.getElementById('promo-scroll-indicator');
+        if (promoScrollIndicator) {
+            promoScrollIndicator.style.display = 'none';
+        }
         return;
     }
     
@@ -2292,15 +2304,20 @@ function renderPromoSuggestions(suggestions) {
                         <span>Target Item</span>
                         <span title="${promo.target_product}">${promo.target_product}</span>
                     </div>
-                    <button class="primary-btn" style="padding: 0 0.75rem; font-size: 0.75rem; height: 32px; border-radius: var(--radius-md); box-shadow: none;" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}')">
-                        <i class="fa-solid fa-calendar-plus"></i> Schedule
-                    </button>
+                    <div class="promo-target-label" style="text-align: right;">
+                        <span>Product Code</span>
+                        <span style="font-family: monospace; font-size: 0.85rem; color: var(--accent-primary); font-weight: 700;">${promo.target_sku || 'N/A'}</span>
+                    </div>
                 </div>
             </div>
         `;
     });
     
     container.innerHTML = html;
+    const promoScrollIndicator = document.getElementById('promo-scroll-indicator');
+    if (promoScrollIndicator) {
+        promoScrollIndicator.style.display = 'flex';
+    }
 }
 
 function formatDateString(dateStr) {
@@ -6260,11 +6277,80 @@ function showModalHolidays() {
             searchInput.addEventListener('input', () => {
                 const q = searchInput.value.toLowerCase().trim();
                 const filtered = q
-                    ? sortedHolidays.filter(h => h.name.toLowerCase().includes(q) || h.date.includes(q))
-                    : sortedHolidays;
+                     ? sortedHolidays.filter(h => h.name.toLowerCase().includes(q) || h.date.includes(q))
+                     : sortedHolidays;
                 const tbody = document.getElementById('holidayTableBody');
                 if (tbody) tbody.innerHTML = buildRows(filtered);
             });
         }
     }
 }
+
+/**
+ * Initializes drag-to-scroll swipe interactions on the AI Promotional Planner Suggestions deck.
+ * This allows user-friendly horizontal swipe-to-scroll dragging using mouse gestures on desktop.
+ */
+function initPromoDragToScroll() {
+    const slider = document.getElementById('promo-suggestions-container');
+    if (!slider) return;
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let hasDragged = false;
+    let dragThreshold = 5; // pixels threshold to recognize dragging
+
+    slider.addEventListener('mousedown', (e) => {
+        // Only trigger on left-click dragging
+        if (e.button !== 0) return;
+        
+        isDown = true;
+        hasDragged = false;
+        slider.style.cursor = 'grabbing';
+        slider.style.userSelect = 'none';
+        slider.style.webkitUserSelect = 'none';
+        
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        if (isDown) {
+            isDown = false;
+            slider.style.cursor = 'grab';
+            slider.style.removeProperty('user-select');
+            slider.style.removeProperty('-webkit-user-select');
+        }
+    });
+
+    slider.addEventListener('mouseup', () => {
+        if (isDown) {
+            isDown = false;
+            slider.style.cursor = 'grab';
+            slider.style.removeProperty('user-select');
+            slider.style.removeProperty('-webkit-user-select');
+        }
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5; // Scroll speed modifier
+        
+        if (Math.abs(x - startX) > dragThreshold) {
+            hasDragged = true;
+        }
+        
+        slider.scrollLeft = scrollLeft - walk;
+    });
+
+    // Use capture phase to intercept click events and prevent action triggers if the user was dragging
+    slider.addEventListener('click', (e) => {
+        if (hasDragged) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+}
+

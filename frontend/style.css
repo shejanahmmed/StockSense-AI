@@ -733,8 +733,6 @@ h1, h2, h3, h4 {
 
 .primary-btn:hover {
 
-    transform: translateY(-2px);
-
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 
 }
@@ -1010,8 +1008,6 @@ h1, h2, h3, h4 {
 
 
 .kpi-card:hover {
-
-    transform: translateY(-3px);
 
     background: var(--bg-glass-hover);
 
@@ -2188,7 +2184,6 @@ h1, h2, h3, h4 {
     background: rgba(139, 92, 246, 0.18);
     border-color: rgba(139, 92, 246, 0.5);
     color: var(--text-primary);
-    transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
@@ -2197,7 +2192,6 @@ h1, h2, h3, h4 {
 }
 
 .chat-chip:active {
-    transform: translateY(0);
 }
 
 .chat-input-area {
@@ -2605,7 +2599,6 @@ h1, h2, h3, h4 {
 .settings-upload-btn:hover {
     background: rgba(139,92,246,0.2);
     border-color: rgba(139,92,246,0.5);
-    transform: translateY(-1px);
 }
 
 /* ── Strategy Selection Cards ── */
@@ -2808,7 +2801,6 @@ h1, h2, h3, h4 {
 .settings-action-btn:hover {
     background: rgba(16,185,129,0.18);
     border-color: rgba(16,185,129,0.5);
-    transform: translateY(-1px);
     box-shadow: 0 4px 16px rgba(16,185,129,0.2);
 }
 
@@ -2920,7 +2912,6 @@ h1, h2, h3, h4 {
 .danger-btn:hover {
     background: rgba(239, 68, 68, 0.2);
     border-color: rgba(239, 68, 68, 0.55);
-    transform: translateY(-1px);
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
 }
 
@@ -3241,7 +3232,6 @@ input:checked + .slider:before {
 }
 
 .social-btn:hover {
-    transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.08);
 }
 
@@ -3332,7 +3322,6 @@ input:checked + .slider:before {
 }
 
 .promo-card:hover {
-    transform: translateY(-5px);
     background: var(--bg-glass-hover);
     border-color: rgba(139, 92, 246, 0.4);
     box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15);
@@ -3527,7 +3516,6 @@ input:checked + .slider:before {
 }
 
 .promo-card:hover {
-    transform: translateY(-5px);
     background: var(--bg-glass-hover);
     border-color: rgba(139, 92, 246, 0.4);
     box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15);
@@ -3963,7 +3951,7 @@ input:checked + .slider:before {
 }
 
 .feature-card:hover {
-    transform: translateY(-6px) scale(1.015);
+    transform: scale(1.015);
     box-shadow: 0 12px 40px rgba(139, 92, 246, 0.12);
     border-color: rgba(139, 92, 246, 0.25);
 }
@@ -4550,7 +4538,6 @@ input:checked + .slider:before {
     transition: var(--transition-smooth);
 }
 .hiw-arch-card:hover {
-    transform: translateY(-3px);
     background: var(--bg-glass-hover);
 }
 .hiw-arch-icon {
@@ -4761,7 +4748,6 @@ input:checked + .slider:before {
 }
 
 .pricing-card:hover {
-    transform: translateY(-5px);
     border-color: rgba(139, 92, 246, 0.3);
     box-shadow: 0 10px 30px rgba(139, 92, 246, 0.1);
 }
@@ -4774,7 +4760,7 @@ input:checked + .slider:before {
 }
 
 .pricing-highlight:hover {
-    transform: scale(1.05) translateY(-5px);
+    transform: scale(1.05);
     border-color: rgba(139, 92, 246, 0.7);
 }
 
@@ -4866,9 +4852,7 @@ input:checked + .slider:before {
     .pricing-highlight {
         transform: none;
     }
-    .pricing-highlight:hover {
-        transform: translateY(-5px);
-    }
+
 }
 
 /* =====================================================
@@ -5181,7 +5165,6 @@ input:checked + .slider:before {
 }
 
 .about-card:hover {
-    transform: translateY(-5px);
     border-color: rgba(139, 92, 246, 0.35);
     box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12);
 }
@@ -5219,7 +5202,6 @@ input:checked + .slider:before {
 }
 
 .about-member-card:hover {
-    transform: translateY(-8px);
     border-color: rgba(139, 92, 246, 0.4);
     box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
 }
@@ -5291,7 +5273,6 @@ input:checked + .slider:before {
 }
 
 .about-member-socials .social-btn:hover {
-    transform: translateY(-3px);
     color: var(--text-primary);
 }
 
@@ -5491,7 +5472,6 @@ input:checked + .slider:before {
 }
 
 .kpi-card.interactive:hover {
-    transform: translateY(-4px);
     border-color: rgba(139, 92, 246, 0.35) !important;
     box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12), var(--shadow-glass) !important;
 }
@@ -5781,7 +5761,6 @@ input:checked + .slider:before {
 }
 
 .bi-highlight-card:hover {
-    transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.15) !important;
     background: rgba(255, 255, 255, 0.02) !important;
 }
