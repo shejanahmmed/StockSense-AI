@@ -4,6 +4,7 @@
  */
 
 let forecastChartInstance = null;
+let forecastChartYAxisInstance = null;
 
 // Chart data cache for filtering
 let _chartDataCache = {
@@ -147,6 +148,11 @@ function resetDashboardToEmpty() {
         forecastChartInstance.data.labels = [];
         forecastChartInstance.data.datasets.forEach(ds => ds.data = []);
         forecastChartInstance.update();
+        if (forecastChartYAxisInstance) {
+            forecastChartYAxisInstance.options.scales.y.min = undefined;
+            forecastChartYAxisInstance.options.scales.y.max = undefined;
+            forecastChartYAxisInstance.update();
+        }
     }
 
     // Top products section → clear
@@ -2021,6 +2027,16 @@ function addNotification(title, message, type = 'info') {
 function updateChartWithData(historical, forecast) {
     if (!forecastChartInstance) return;
 
+    // Show chart controls and actual chart container, hide empty state placeholder
+    const chartWrapper = document.getElementById('chartScrollWrapper');
+    const chartContainerRelative = document.getElementById('chartContainerRelative');
+    const headerControls = document.querySelector('.chart-header-controls');
+    const emptyState = document.getElementById('chartEmptyState');
+    if (chartContainerRelative) chartContainerRelative.style.display = 'block';
+    if (chartWrapper) chartWrapper.style.display = 'block';
+    if (headerControls) headerControls.style.display = 'flex';
+    if (emptyState) emptyState.style.display = 'none';
+
     // Cache full data for filtering
     _chartDataCache.historical = historical;
     _chartDataCache.forecast = forecast;
@@ -2040,16 +2056,20 @@ function _applyChartFilter() {
 
     // --- Date range filter ---
     let filteredHist = historical;
-    if (_chartFilter.range !== 'all' && _chartFilter.range > 0) {
+    if (_chartFilter.range !== 'all' && _chartFilter.range > 0 && historical.length > 0) {
         // Anchor to the LAST date in the dataset (not today).
         // This ensures "Last 1yr" shows 365 days before the data ends,
         // even if the CSV was uploaded months ago.
-        const lastHistDate = historical.length > 0
-            ? new Date(historical[historical.length - 1].date)
-            : new Date();
-        const cutoff = new Date(lastHistDate);
-        cutoff.setDate(cutoff.getDate() - _chartFilter.range);
-        filteredHist = historical.filter(d => new Date(d.date) >= cutoff);
+        const lastHistDateStr = historical[historical.length - 1].date; // "YYYY-MM-DD"
+        const [year, month, day] = lastHistDateStr.split('-').map(Number);
+        const lastDateObj = new Date(Date.UTC(year, month - 1, day));
+        const cutoffDateObj = new Date(lastDateObj.getTime());
+        cutoffDateObj.setUTCDate(cutoffDateObj.getUTCDate() - _chartFilter.range);
+        
+        // Convert cutoff to YYYY-MM-DD UTC string for robust, timezone-independent comparison
+        const cutoffStr = cutoffDateObj.toISOString().split('T')[0];
+        filteredHist = historical.filter(d => d.date >= cutoffStr);
+        
         // Fallback: if filter is too aggressive, show at least the last 30 points
         if (filteredHist.length === 0) filteredHist = historical.slice(-30);
     }
@@ -2129,6 +2149,23 @@ function _applyChartFilter() {
     // This is required when responsive:false — it replaces the auto-resize behavior.
     forecastChartInstance.resize(dynamicWidth, CHART_HEIGHT);
     forecastChartInstance.update('none'); // 'none' = skip animation on filter changes for snappiness
+
+    // Synchronize static Y-axis overlay scales with the updated main chart scales
+    if (forecastChartYAxisInstance) {
+        const mainYScale = forecastChartInstance.scales.y;
+        forecastChartYAxisInstance.options.scales.y.min = mainYScale.min;
+        forecastChartYAxisInstance.options.scales.y.max = mainYScale.max;
+        forecastChartYAxisInstance.options.scales.y.ticks.stepSize = mainYScale.ticks.stepSize;
+        forecastChartYAxisInstance.update('none');
+    }
+
+    // Scroll to the far right so that the forecast and recent history are immediately visible
+    const chartScrollWrapper = document.getElementById('chartScrollWrapper');
+    if (chartScrollWrapper) {
+        requestAnimationFrame(() => {
+            chartScrollWrapper.scrollLeft = chartScrollWrapper.scrollWidth - chartScrollWrapper.clientWidth;
+        });
+    }
 }
 
 async function fetchDefaultInsight() {
@@ -2222,7 +2259,7 @@ function renderPromoSuggestions(suggestions) {
     suggestions.forEach(promo => {
         const badgeClass = promo.type.toLowerCase();
         let typeIcon = 'fa-tags';
-        if (promo.type === 'Holiday') typeIcon = 'fa-calendar-star';
+        if (promo.type === 'Holiday') typeIcon = 'fa-calendar-day';
         else if (promo.type === 'Clearance') typeIcon = 'fa-fire-flame-curved';
         else if (promo.type === 'Seasonality') typeIcon = 'fa-chart-line';
         
@@ -2406,11 +2443,58 @@ function initChart() {
                         color: 'rgba(255, 255, 255, 0.05)',
                         drawBorder: false,
                     },
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'transparent'
+                    },
+                    afterFit: function(scale) {
+                        scale.width = 50;
+                    }
                 }
             }
         }
     });
+
+    // Secondary chart for the sticky Y-axis numbers
+    const ctxYAxis = document.getElementById('forecastChartYAxis')?.getContext('2d');
+    if (ctxYAxis) {
+        forecastChartYAxisInstance = new Chart(ctxYAxis, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    x: {
+                        display: false,
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                family: "'Outfit', sans-serif"
+                            }
+                        },
+                        afterFit: function(scale) {
+                            scale.width = 50;
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 
 // ==========================================
@@ -5561,7 +5645,7 @@ async function showModalMargin() {
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
-                        <i class="fa-solid fa-chart-line-up" style="color:var(--accent-secondary);"></i>
+                        <i class="fa-solid fa-chart-line" style="color:var(--accent-secondary);"></i>
                         Profit Margin & Revenue Contribution Hub
                     </h2>
                     <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="marginModalSub">
@@ -5950,7 +6034,7 @@ function showModalHolidays() {
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0;font-size:1.3rem;display:flex;align-items:center;gap:0.6rem;color:var(--text-primary);">
-                        <i class="fa-solid fa-calendar-star" style="color:var(--status-warning);"></i>
+                        <i class="fa-solid fa-calendar-day" style="color:var(--status-warning);"></i>
                         Holiday &amp; Event Calendar
                     </h2>
                     <p style="margin:0.3rem 0 0;font-size:0.8rem;color:var(--text-secondary);" id="holidayModalSubtitle">

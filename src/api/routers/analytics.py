@@ -877,13 +877,13 @@ async def predict_demand(
         )
 
         # ── Aggregate historical chart data (all SKUs combined by date) ──────
-        # Show as many historical days as the forecast horizon so both sides
-        # of the chart are symmetric and show comparable time windows.
+        # Retain the entire historical sales history so that the frontend's
+        # dynamic chart range filters (30d, 90d, 180d, 1yr, all) can display
+        # the selected time windows.
         historical_agg = (
             df.groupby('date')['sales_qty'].sum()
             .reset_index()
             .sort_values('date')
-            .tail(forecast_horizon)
         )
         historical_agg['date'] = historical_agg['date'].dt.strftime('%Y-%m-%d')
         historical_records = historical_agg.rename(columns={'sales_qty': 'sales'}).to_dict(orient='records')

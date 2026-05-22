@@ -80,6 +80,52 @@
 
 
 
+/* Premium Webkit Scrollbars (Global) */
+
+::-webkit-scrollbar {
+
+    width: 6px;
+
+    height: 6px;
+
+}
+
+
+
+::-webkit-scrollbar-track {
+
+    background: rgba(255, 255, 255, 0.02);
+
+    border-radius: 99px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Thin, elegant light white border */
+
+}
+
+
+
+::-webkit-scrollbar-thumb {
+
+    background: rgba(139, 92, 246, 0.3);
+
+    border-radius: 99px;
+
+    border: 1px solid transparent;
+
+    background-clip: padding-box;
+
+}
+
+
+
+::-webkit-scrollbar-thumb:hover {
+
+    background: rgba(139, 92, 246, 0.65);
+
+}
+
+
+
 /* Base Styles */
 
 * {
@@ -949,6 +995,8 @@ h1, h2, h3, h4 {
 
 .kpi-card {
 
+    position: relative;
+
     padding: 1.5rem;
 
     display: flex;
@@ -1065,7 +1113,7 @@ h1, h2, h3, h4 {
 
 .bottom-grid {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) 320px;
+    grid-template-columns: 65% 1fr;
     gap: 1.5rem;
     align-items: start;
 }
@@ -3005,6 +3053,20 @@ input:checked + .slider:before {
     display: block;
 }
 
+/* Position tooltip in the top-right corner of KPI cards */
+.kpi-card .info-tooltip {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    margin: 0 !important;
+}
+
+/* Align tooltip hover text to the right so it stays within card boundaries */
+.kpi-card .info-tooltip .tooltip-text {
+    left: auto;
+    right: 0;
+}
+
 
 /* ============================================================
    APP FOOTER
@@ -3955,6 +4017,22 @@ input:checked + .slider:before {
 /* ============================================
    CHART SCROLL ARCHITECTURE
    ============================================ */
+.chart-container-relative {
+    position: relative;
+    width: 100%;
+}
+
+#forecastChartYAxis {
+    position: absolute;
+    left: 0;
+    top: 0.75rem; /* Match the margin-top of the scroll wrapper */
+    width: 50px;
+    height: 300px;
+    z-index: 10;
+    pointer-events: none;
+    background: #171926;
+}
+
 .chart-scroll-wrapper {
     margin-top: 0.75rem;
     width: 100%;           /* Always fill the chart-section column */
@@ -3972,10 +4050,12 @@ input:checked + .slider:before {
     scroll-behavior: auto;
 }
 .chart-scroll-wrapper::-webkit-scrollbar {
-    height: 5px;
+    height: 6px;
 }
 .chart-scroll-wrapper::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Thin, elegant light white border */
 }
 .chart-scroll-wrapper::-webkit-scrollbar-thumb {
     background: rgba(139, 92, 246, 0.35);

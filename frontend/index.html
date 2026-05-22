@@ -231,7 +231,7 @@
                     <section class="chart-section glass-panel">
                         <div class="section-header">
                             <h2 id="forecastChartTitle">Demand Forecast</h2>
-                            <div class="chart-header-controls">
+                            <div class="chart-header-controls" style="display: none;">
                                 <div class="chart-legend-custom">
                                     <span><span class="legend-dot historical"></span> Historical</span>
                                     <span><span class="legend-dot forecast"></span> Predicted</span>
@@ -276,10 +276,23 @@
                             </div>
                         </div>
                         <!-- Chart Scroll Area -->
-                        <div class="chart-scroll-wrapper" id="chartScrollWrapper">
-                            <div class="chart-inner" id="chartInner">
-                                <canvas id="forecastChart"></canvas>
+                        <div class="chart-container-relative" id="chartContainerRelative" style="position: relative; display: none;">
+                            <canvas id="forecastChartYAxis" width="50" height="300"></canvas>
+                            <div class="chart-scroll-wrapper" id="chartScrollWrapper" style="display: none;">
+                                <div class="chart-inner" id="chartInner">
+                                    <canvas id="forecastChart"></canvas>
+                                </div>
                             </div>
+                        </div>
+                        <!-- Chart Empty State Placeholder -->
+                        <div class="chart-empty-state" id="chartEmptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; text-align: center; padding: 2.5rem 1.5rem; animation: fadeIn 0.5s ease-out both;">
+                            <div class="empty-state-icon" style="font-size: 3.5rem; margin-bottom: 1.25rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 0.6rem; letter-spacing: -0.01em;">Awaiting Sales History</h3>
+                            <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 440px; margin-bottom: 0; line-height: 1.55;">
+                                Import a sales CSV containing at least 30 days of history to generate AI demand forecasts, safety thresholds, and driver analysis.
+                            </p>
                         </div>
                         <!-- Scroll Hint -->
                         <p class="chart-scroll-hint" id="chartScrollHint" style="display:none;">
@@ -293,7 +306,10 @@
                             <h2>Top Demand Drivers (SHAP)</h2>
                         </div>
                         <div class="drivers-list" id="drivers-list">
-                            <!-- Injected via JavaScript -->
+                            <div class="empty-state" style="color: var(--text-muted); font-size: 0.88rem; padding: 3rem 1rem; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: 200px;">
+                                <i class="fa-solid fa-brain" style="font-size: 2.25rem; color: var(--accent-primary); opacity: 0.65; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.35));"></i>
+                                <span style="line-height: 1.4; max-width: 200px;">SHAP attribution is computed once historical sales are uploaded.</span>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -357,7 +373,7 @@
                     <!-- 6. Holiday/event impact -->
                     <div class="kpi-card glass-panel interactive" id="kpiNextEventCard" style="flex-direction: column; gap: 0.5rem; padding: 1.25rem; cursor: pointer;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The next upcoming holiday or scheduled promotional event that the AI has factored into demand projections.</span></div> <i class="fa-solid fa-calendar-star" style="color: var(--status-warning);"></i> Next Event</span>
+                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The next upcoming holiday or scheduled promotional event that the AI has factored into demand projections.</span></div> <i class="fa-solid fa-calendar-day" style="color: var(--status-warning);"></i> Next Event</span>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem;">
                             <h3 class="kpi-value" id="metric-event" style="font-size: 1.2rem;">—</h3>
@@ -1424,7 +1440,7 @@
                                 <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
                             </button>
                             <div class="hiw-faq-answer">
-                                <p>The minimum is <strong>14 days</strong> of sales history per SKU. For reliable seasonality detection, we recommend at least <strong>30–60 days</strong>. Products with fewer than 14 data points will display an "Insufficient History" warning and be excluded from AI forecasting until more data is available.</p>
+                                <p>The minimum is <strong>30 days</strong> of sales history per SKU. For reliable seasonality detection, we recommend at least <strong>60–90 days</strong>. Products with fewer than 30 data points will display an "Insufficient History" warning and be excluded from AI forecasting until more data is available.</p>
                             </div>
                         </div>
 
@@ -1465,7 +1481,7 @@
                 <div class="hiw-cta-banner glass-panel premium-glow">
                     <div class="hiw-cta-text">
                         <h3>Ready to generate your first AI forecast?</h3>
-                        <p>Upload a CSV file with at least 14 days of sales data to instantly populate your dashboard with demand forecasts, stock alerts, and promotional recommendations.</p>
+                        <p>Upload a CSV file with at least 30 days of sales data to instantly populate your dashboard with demand forecasts, stock alerts, and promotional recommendations.</p>
                     </div>
                     <button class="primary-btn" id="hiwUploadBtn" style="padding: 0.85rem 1.8rem; font-size: 0.95rem; font-weight: 600; white-space: nowrap;">
                         <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload CSV Now
