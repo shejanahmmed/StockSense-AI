@@ -13,4 +13,5 @@ groq
 python-dotenv
 pytest
 PyJWT
-holidaysfpdf
+holidays
+fpdf2
