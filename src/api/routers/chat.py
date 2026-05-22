@@ -13,6 +13,7 @@ class ChatRequest(BaseModel):
     message: str
     history: list = []
     inventory_context: Any = None
+    currency: str = "BDT"
 
 @router.post("/api/chat")
 async def chat_with_ai(request: ChatRequest, user: dict = Depends(get_current_user)):
@@ -24,7 +25,12 @@ async def chat_with_ai(request: ChatRequest, user: dict = Depends(get_current_us
         cursor = conn.cursor()
         
         # Generate Response
-        response = generate_chat_response(request.message, request.history, request.inventory_context)
+        response = generate_chat_response(
+            request.message,
+            request.history,
+            request.inventory_context,
+            currency=request.currency
+        )
         
         # Store both messages
         cursor.execute("INSERT INTO chat_history (org_name, role, content) VALUES (?, ?, ?)", (org_name, "user", request.message))

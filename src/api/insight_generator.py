@@ -165,7 +165,7 @@ def generate_insight(data: Dict[str, Any]) -> str:
         except Exception:
             return "Unable to generate forecast insights at this time. Please review the raw forecast data."
 
-def generate_chat_response(query: str, history: list, context_data: Dict[str, Any]) -> str:
+def generate_chat_response(query: str, history: list, context_data: Dict[str, Any], currency: str = "BDT") -> str:
     """
     Generates a conversational AI response for the chat assistant.
     
@@ -173,11 +173,20 @@ def generate_chat_response(query: str, history: list, context_data: Dict[str, An
         query: The user's message.
         history: List of previous messages in the conversation.
         context_data: Current inventory or forecast data to inform the answer.
+        currency: The user's active dashboard currency preference.
         
     Returns:
         A conversational string response.
     """
     inventory_summary = json.dumps(context_data, indent=2)
+    
+    currency_symbols = {
+        "USD": "$",
+        "CAD": "C$",
+        "CNY": "¥",
+        "BDT": "৳",
+    }
+    currency_symbol = currency_symbols.get(currency.upper(), "৳")
     
     system_prompt = f"""You are StockSense AI, an intelligent inventory assistant for SME business owners.
 Your goal is to answer questions about inventory, sales trends, and business strategy using the provided context.
@@ -191,6 +200,7 @@ Guidelines:
 3. If the user asks for advice, provide data-driven recommendations.
 4. Keep answers under 4-5 sentences.
 5. If you are asked about something not in the context, use your general business knowledge but clarify it is general advice.
+6. VERY IMPORTANT: The user's active dashboard currency is {currency} (symbol: {currency_symbol}). You MUST represent and format all currency amounts, prices, revenues, and financial values in your response using the {currency_symbol} symbol (or {currency} abbreviation) and NEVER use the dollar ($) sign unless the active currency itself is USD or CAD. For example, if a price or value is 100, format it as {currency_symbol}100 or 100 {currency}, not $100.
 """
 
     messages = [{"role": "system", "content": system_prompt}]

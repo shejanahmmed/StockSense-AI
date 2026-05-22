@@ -1301,6 +1301,7 @@ async function sendChatMessage() {
 
     try {
         const token = localStorage.getItem('stockSense_jwt');
+        const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 
@@ -1310,7 +1311,8 @@ async function sendChatMessage() {
             body: JSON.stringify({
                 message: text,
                 history: chatHistory,
-                inventory_context: currentInventoryContext
+                inventory_context: currentInventoryContext,
+                currency: currency
             })
         });
 
