@@ -564,15 +564,12 @@ h1, h2, h3, h4 {
 /* Top Bar */
 
 .top-bar {
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     height: 60px;
-
+    position: relative;
+    z-index: 50;
 }
 
 
@@ -590,6 +587,8 @@ h1, h2, h3, h4 {
     width: 400px;
 
     border-radius: var(--radius-full);
+
+    position: relative;
 
 }
 
@@ -5965,4 +5964,105 @@ input:checked + .slider:before {
         font-size: 1.15rem !important;
     }
 }
+
+/* ==========================================
+   Dashboard Search Autocomplete Suggestions
+   ========================================== */
+.search-suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    max-height: 320px;
+    overflow-y: auto;
+    z-index: 1000;
+    border-radius: var(--radius-md);
+    background: #181929;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 0 15px rgba(139, 92, 246, 0.08);
+    padding: 0.5rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+}
+
+.search-suggestions-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+.search-suggestions-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-full);
+}
+
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 2px solid transparent;
+}
+
+.search-suggestion-item i {
+    font-size: 0.95rem;
+    color: #a78bfa;
+    width: 16px;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--text-primary);
+    border-left-color: var(--accent-primary);
+    padding-left: calc(0.9rem + 2px);
+}
+
+.search-suggestion-item .suggestion-category {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-sm);
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    color: #a78bfa;
+    letter-spacing: 0.02em;
+}
+
+.search-suggestion-item .suggestion-category.product-badge {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+}
+
+/* Glowing Twice-Blinking Focus Effect */
+@keyframes doubleBlinkGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0px rgba(139, 92, 246, 0);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    20%, 60% {
+        box-shadow: 0 0 6px 1px rgba(139, 92, 246, 0.35);
+        border-color: var(--accent-primary);
+    }
+    40%, 80% {
+        box-shadow: 0 0 0 0px rgba(139, 92, 246, 0);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+.search-glow-blink {
+    animation: doubleBlinkGlow 1.8s cubic-bezier(0.25, 1, 0.5, 1) both;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
 

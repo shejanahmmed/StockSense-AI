@@ -92,6 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let fullInventoryData = [];
+let inventoryChangesPending = localStorage.getItem('stockSense_inventoryChangesPending') === 'true';
+
+function updateSyncButtonVisibility() {
+    const syncBtn = document.getElementById('inventorySyncBtn');
+    if (!syncBtn) return;
+    syncBtn.style.display = inventoryChangesPending ? 'inline-flex' : 'none';
+}
 
 // ==========================================
 // Reset Dashboard to Empty / Fresh State
@@ -808,6 +815,9 @@ function renderInventoryTable(data, page = 1) {
                     const data = await res.json();
                     if (data.status === 'success') {
                         addNotification('Item Deleted', `Successfully removed ${sku} from inventory.`, 'success');
+                        inventoryChangesPending = true;
+                        localStorage.setItem('stockSense_inventoryChangesPending', 'true');
+                        updateSyncButtonVisibility();
                         loadInventoryData();
                     } else {
                         addNotification('Delete Failed', data.message || 'Could not delete item.', 'warning');
@@ -1114,6 +1124,9 @@ function showModalAddItem() {
                     ? `"${name}" added. ${data.csv_rows_added} CSV rows written — re-run forecast to include this product.`
                     : `"${name}" (${sku}) added to inventory.`;
                 addNotification('Product Added', notifMsg, 'success');
+                inventoryChangesPending = true;
+                localStorage.setItem('stockSense_inventoryChangesPending', 'true');
+                updateSyncButtonVisibility();
                 loadInventoryData();
             } else {
                 errEl.textContent = data.message || 'Failed to add product.';
@@ -1140,6 +1153,114 @@ function populateCategoryFilter(data) {
         + categories.map(c => `<option value="${c}">${c}</option>`).join('');
 }
 
+async function reforecastFromInventory() {
+    const syncBtn = document.getElementById('inventorySyncBtn');
+    if (!syncBtn) return;
+
+    const hasCSV = !!localStorage.getItem('stockSense_uploadedFile');
+    if (!hasCSV) {
+        addNotification(
+            'Sync Delayed',
+            'No sales history CSV uploaded yet. Please upload a CSV file on the dashboard first.',
+            'warning'
+        );
+        return;
+    }
+
+    const originalHTML = syncBtn.innerHTML;
+    syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Updating AI...';
+    syncBtn.disabled = true;
+
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+        const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+        const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+
+        const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}&region=${region}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const detail = errData.detail || 'Prediction failed';
+            throw new Error(typeof detail === 'string' ? detail : (detail.message || 'Prediction failed'));
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            inventoryChangesPending = false;
+            localStorage.removeItem('stockSense_inventoryChangesPending');
+            updateSyncButtonVisibility();
+
+            // Update chart title with actual forecast horizon from server
+            const chartTitle = document.getElementById('forecastChartTitle');
+            if (chartTitle && data.forecast_label) {
+                chartTitle.textContent = `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+            }
+
+            // Cache the full result so it survives page refreshes
+            localStorage.setItem('stockSense_lastResult', JSON.stringify({
+                historical:  data.historical,
+                forecast:    data.forecast,
+                insight:     data.insight,
+                drivers:     data.drivers,
+                kpis:        data.kpis,
+                bi_metrics:  data.bi_metrics,
+                promo_suggestions: data.promo_suggestions,
+                holidays:    data.holidays
+            }));
+
+            // Update main chart
+            updateChartWithData(data.historical, data.forecast);
+            
+            // Update AI insight panel
+            if (data.insight && data.drivers) {
+                renderInsight(data.insight);
+                renderDrivers(data.drivers);
+            }
+
+            // Update promotional planner
+            if (data.promo_suggestions) {
+                renderPromoSuggestions(data.promo_suggestions);
+            }
+            
+            // Reset View All toggles for the new upload dataset
+            _showAllTimeline = false;
+            _showAllDrivers = false;
+
+            // Update dashboard KPIs
+            if (data.kpis)        updateKPIs(data.kpis);
+            if (data.bi_metrics)  updateBIMetrics(data.bi_metrics);
+
+            // Auto-refresh the inventory table from the DB
+            loadInventoryData();
+            
+            const productCount = data.products ? data.products.length : 0;
+            
+            addNotification(
+                'AI Demand Forecast Updated',
+                `Successfully re-calculated demand for all active SKUs in your inventory.`,
+                'success'
+            );
+        } else {
+            addNotification('Update Failed', data.message || 'Could not update forecasting.', 'warning');
+        }
+    } catch (error) {
+        console.error("Reforecast sync failed:", error);
+        addNotification(
+            'Sync Error',
+            error.message || 'Failed to update forecast from inventory data.',
+            'error'
+        );
+    } finally {
+        syncBtn.innerHTML = originalHTML;
+        syncBtn.disabled = false;
+    }
+}
+
 function initInventoryActions() {
 
     const filterBtn = document.getElementById('inventoryFilterBtn');
@@ -1148,6 +1269,12 @@ function initInventoryActions() {
     const applyBtn = document.getElementById('applyFilters');
     const resetBtn = document.getElementById('resetFilters');
     const addBtn = document.getElementById('inventoryAddBtn');
+    const syncBtn = document.getElementById('inventorySyncBtn');
+
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => reforecastFromInventory());
+        updateSyncButtonVisibility();
+    }
 
     if (addBtn) {
         addBtn.addEventListener('click', () => showModalAddItem());
@@ -1341,24 +1468,156 @@ function appendMessage(role, content) {
 
 function initSearch() {
     const searchInput = document.getElementById('dashboardSearch');
-    if (!searchInput) return;
+    const suggestionsPanel = document.getElementById('searchSuggestions');
+    if (!searchInput || !suggestionsPanel) return;
 
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
+    let activeSuggestionIndex = -1;
+    let currentSuggestions = [];
+
+    // Define dashboard searchable sections
+    const dashboardKeywords = [
+        { text: 'Total SKUs', elementId: 'kpiSKUsCard', category: 'Metric', icon: 'fa-layer-group', aliases: ['skus', 'sku count', 'total skus', 'products count'] },
+        { text: 'Total Units', elementId: 'kpiTotalUnitsCard', category: 'Metric', icon: 'fa-box-open', aliases: ['units', 'total units', 'stock quantity', 'total stock'] },
+        { text: 'Forecasted Demand', elementId: 'kpiForecastDemandCard', category: 'Metric', icon: 'fa-arrow-trend-up', aliases: ['forecasted demand', 'predictions', 'expected sales', 'future demand'] },
+        { text: 'At-Risk Products', elementId: 'kpiAtRiskCard', category: 'Metric', icon: 'fa-cart-plus', aliases: ['at risk', 'stockouts', 'replenishment alert', 'low stock'] },
+        { text: 'Inventory Health', elementId: 'kpiInventoryHealthCard', category: 'Metric', icon: 'fa-clock', aliases: ['inventory health', 'health score', 'reliability'] },
+        { text: 'Demand Forecast Chart', elementId: 'demandForecastCard', category: 'Analytics', icon: 'fa-chart-line', aliases: ['demand forecast', 'forecast chart', 'prophet graph', 'forecast graph'] },
+        { text: 'Top Demand Drivers (SHAP)', elementId: 'demandDriversCard', category: 'Analytics', icon: 'fa-brain', aliases: ['demand drivers', 'shap values', 'shap attribution', 'machine learning impact'] },
+        { text: 'AI Insight Narrative', elementId: 'aiInsightCard', category: 'Co-Pilot', icon: 'fa-wand-magic-sparkles', aliases: ['ai insight', 'narrative report', 'co pilot insights', 'action items'] },
+        { text: 'AI Promotional Planner', elementId: 'promo-planner-section', category: 'Optimizer', icon: 'fa-tags', aliases: ['promotional planner', 'weekly seasonality', 'holiday campaigns', 'promo recommendations'] }
+    ];
+
+    function showSuggestions(query) {
+        suggestionsPanel.innerHTML = '';
+        activeSuggestionIndex = -1;
         
-        // Filter drivers if on dashboard
+        if (!query) {
+            suggestionsPanel.style.display = 'none';
+            currentSuggestions = [];
+            return;
+        }
+
+        // Filter dashboard keywords
+        const matchedKeywords = dashboardKeywords.filter(k => {
+            return k.text.toLowerCase().includes(query) || 
+                   k.aliases.some(alias => alias.toLowerCase().includes(query)) ||
+                   k.category.toLowerCase().includes(query);
+        });
+
+        // Filter inventory products (max 4 suggestions to avoid list overflow)
+        let matchedProducts = [];
+        if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
+            matchedProducts = fullInventoryData.filter(item => {
+                return (item.name && item.name.toLowerCase().includes(query)) ||
+                       (item.sku && item.sku.toLowerCase().includes(query)) ||
+                       (item.category && item.category.toLowerCase().includes(query));
+            }).slice(0, 4).map(item => ({
+                text: `${item.name} (${item.sku})`,
+                elementId: 'inventoryTableContainer',
+                category: 'Product',
+                icon: 'fa-box',
+                productName: item.name,
+                sku: item.sku,
+                isProduct: true
+            }));
+        }
+
+        currentSuggestions = [...matchedKeywords, ...matchedProducts];
+
+        if (currentSuggestions.length === 0) {
+            suggestionsPanel.style.display = 'none';
+            return;
+        }
+
+        currentSuggestions.forEach((s, idx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'search-suggestion-item';
+            if (s.isProduct) {
+                itemDiv.innerHTML = `<i class="fa-solid ${s.icon}"></i> <span>${s.text}</span> <span class="suggestion-category product-badge">${s.category}</span>`;
+            } else {
+                itemDiv.innerHTML = `<i class="fa-solid ${s.icon}"></i> <span>${s.text}</span> <span class="suggestion-category">${s.category}</span>`;
+            }
+
+            itemDiv.addEventListener('click', () => selectSuggestion(s));
+            suggestionsPanel.appendChild(itemDiv);
+        });
+
+        suggestionsPanel.style.display = 'flex';
+    }
+
+    function selectSuggestion(suggestion) {
+        suggestionsPanel.style.display = 'none';
+        searchInput.value = ''; // Clear search bar for clean UX after selecting suggestion
+
+        if (suggestion.isProduct) {
+            // Switch to inventory view
+            const navInventory = document.getElementById('navInventory');
+            if (navInventory) navInventory.click();
+
+            // Perform filtering inside inventory table
+            const query = suggestion.productName.toLowerCase();
+            if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
+                const filteredInventory = fullInventoryData.filter(item => {
+                    return (item.name && item.name.toLowerCase().includes(query)) ||
+                           (item.sku && item.sku.toLowerCase().includes(query));
+                });
+                renderInventoryTable(filteredInventory);
+            }
+
+            // Scroll to the inventory table container
+            setTimeout(() => {
+                const tableContainer = document.querySelector('.inventory-table-container');
+                if (tableContainer) {
+                    tableContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Blink the table container twice with a premium glow
+                    triggerGlowBlink(tableContainer);
+                }
+            }, 150);
+        } else {
+            // Scroll to section on the dashboard
+            // Ensure we are on the dashboard
+            const navDashboard = document.getElementById('navDashboard');
+            if (navDashboard) navDashboard.click();
+
+            const targetElement = document.getElementById(suggestion.elementId);
+            if (targetElement) {
+                setTimeout(() => {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    triggerGlowBlink(targetElement);
+                }, 100);
+            }
+        }
+    }
+
+    function triggerGlowBlink(element) {
+        element.classList.remove('search-glow-blink');
+        // Force reflow
+        void element.offsetWidth;
+        element.classList.add('search-glow-blink');
+
+        // Clean up class after animation ends (1.8s)
+        setTimeout(() => {
+            element.classList.remove('search-glow-blink');
+        }, 1850);
+    }
+
+    // Input listening
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        showSuggestions(query);
+
+        // Standard filter for drivers & table as a fallback or live update
         const driverItems = document.querySelectorAll('.driver-item');
         driverItems.forEach(item => {
             const name = item.querySelector('.driver-name').textContent.toLowerCase();
             const impact = item.querySelector('.driver-impact').textContent.toLowerCase();
-            
             if (name.includes(query) || impact.includes(query)) {
                 item.style.display = 'block';
             } else {
                 item.style.display = 'none';
             }
         });
-        
+
         // Filter global inventory
         if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
             const filteredInventory = fullInventoryData.filter(item => {
@@ -1369,14 +1628,74 @@ function initSearch() {
             });
             renderInventoryTable(filteredInventory);
         }
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', (e) => {
+        const items = suggestionsPanel.querySelectorAll('.search-suggestion-item');
         
-        // Seamlessly switch to Inventory Database if searching
-        if (query.length > 0 && typeof currentView !== 'undefined' && currentView === 'dashboard') {
-            const navInventory = document.getElementById('navInventory');
-            if (navInventory) {
-                navInventory.click();
-                searchInput.focus(); // Re-focus after view switch
+        if (suggestionsPanel.style.display === 'none' || items.length === 0) {
+            // Hitting enter on query
+            if (e.key === 'Enter') {
+                const query = searchInput.value.toLowerCase().trim();
+                // Find first keyword or product that matches
+                if (query) {
+                    const match = currentSuggestions[0];
+                    if (match) {
+                        selectSuggestion(match);
+                        e.preventDefault();
+                    }
+                }
             }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeSuggestionIndex++;
+            if (activeSuggestionIndex >= items.length) activeSuggestionIndex = 0;
+            updateActiveItem(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeSuggestionIndex--;
+            if (activeSuggestionIndex < 0) activeSuggestionIndex = items.length - 1;
+            updateActiveItem(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeSuggestionIndex >= 0 && activeSuggestionIndex < currentSuggestions.length) {
+                selectSuggestion(currentSuggestions[activeSuggestionIndex]);
+            } else if (currentSuggestions.length > 0) {
+                selectSuggestion(currentSuggestions[0]);
+            }
+        } else if (e.key === 'Escape') {
+            suggestionsPanel.style.display = 'none';
+            activeSuggestionIndex = -1;
+        }
+    });
+
+    function updateActiveItem(items) {
+        items.forEach((item, index) => {
+            if (index === activeSuggestionIndex) {
+                item.classList.add('active');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsPanel.contains(e.target)) {
+            suggestionsPanel.style.display = 'none';
+        }
+    });
+
+    // Re-trigger suggestions on focus
+    searchInput.addEventListener('focus', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        if (query) {
+            showSuggestions(query);
         }
     });
 }

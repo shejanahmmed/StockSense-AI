@@ -529,27 +529,76 @@ async def get_holidays(
 
 @router.post("/api/predict")
 async def predict_demand(
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
     strategy: str = "balanced",
     deep_learning: bool = True,
     region: str = "BD",
     user: dict = Depends(get_current_user)
 ):
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported.")
+    org_name = user.get("sub", "Unknown")
+    raw_dir = project_root / "data" / "raw"
+    csv_save_path = raw_dir / f"{org_name}_uploaded.csv"
+
+    if file is not None:
+        if not file.filename.endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Only CSV files are supported.")
+
+        try:
+            contents = await file.read()
+            raw_dir.mkdir(parents=True, exist_ok=True)
+            with open(csv_save_path, "wb") as _f:
+                _f.write(contents)
+
+            df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to parse uploaded CSV: {str(e)}")
+    else:
+        # Load from disk
+        if not csv_save_path.exists():
+            raise HTTPException(
+                status_code=422,
+                detail="No previously uploaded sales history CSV found. Please upload a CSV file first."
+            )
+        
+        try:
+            df = pd.read_csv(csv_save_path)
+            
+            # Retrieve active inventory products from SQLite to sync edits and deletions
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days FROM inventory WHERE org_name = ?', (org_name,))
+            db_items = cursor.fetchall()
+            conn.close()
+            
+            # Standardise columns for comparison
+            df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
+            
+            db_items_dict = {str(item["sku"]): item for item in db_items}
+            active_skus = set(db_items_dict.keys())
+            
+            # Sync deletions: drop rows for products not in SQLite inventory
+            if active_skus:
+                df = df[df['product_id'].astype(str).isin(active_skus)].copy()
+            else:
+                df = df.iloc[0:0].copy()
+                
+            # Sync edits: update product details in historical CSV
+            for sku, item in db_items_dict.items():
+                mask = df['product_id'].astype(str) == sku
+                if mask.any():
+                    df.loc[mask, 'product_name'] = item['name']
+                    df.loc[mask, 'category'] = item['category']
+                    df.loc[mask, 'unit_price'] = float(item['price'] or 0.0)
+                    df.loc[mask, 'reorder_point'] = int(item['reorder_point'] or 50)
+                    df.loc[mask, 'supplier_lead_days'] = int(item['supplier_lead_days'] or 7)
+                    
+            # Save synchronized CSV back to disk
+            df.to_csv(csv_save_path, index=False)
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to synchronize and load CSV data: {str(e)}")
 
     try:
-        contents = await file.read()
-        org_name = user.get("sub", "Unknown")
-
-        # Persist the uploaded CSV so new products can be appended to it later
-        raw_dir = project_root / "data" / "raw"
-        raw_dir.mkdir(parents=True, exist_ok=True)
-        csv_save_path = raw_dir / f"{org_name}_uploaded.csv"
-        with open(csv_save_path, "wb") as _f:
-            _f.write(contents)
-
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
         # â”€â”€ Column normalisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
