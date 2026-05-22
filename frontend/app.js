@@ -3464,10 +3464,20 @@ function initUserProfile() {
                 });
                 const result = await response.json();
                 if (result.status === 'success') {
+                    // Clear all cached frontend state
+                    localStorage.removeItem('stockSense_uploadedFile');
+                    localStorage.removeItem('stockSense_lastResult');
+                    localStorage.removeItem('stockSense_inventoryChangesPending');
+                    
                     addNotification('Data Purged', result.message, 'warning');
-                    // Clear the local inventory table immediately
+                    
+                    // Clear the local inventory table immediately and reload
                     if (typeof fullInventoryData !== 'undefined') fullInventoryData = [];
                     renderInventoryTable([]);
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     throw new Error(result.detail || 'Purge failed');
                 }
