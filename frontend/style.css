@@ -765,23 +765,14 @@ h1, h2, h3, h4 {
 /* Insights page fills the remaining viewport so the chat is always fully visible
    without scrolling — the footer is only reachable by scrolling */
 .insights-content {
-
     display: flex;
-
     flex-direction: column;
-
     gap: 0.5rem;
-
-    height: calc(100vh - 70px - 3rem);
-
-    min-height: 500px;
-
+    height: 75vh;
+    min-height: 620px;
     width: 100%;
-
     max-width: 1600px;
-
     margin: 0 auto;
-
 }
 
 /* Compact header specifically inside the Insights page */
