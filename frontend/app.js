@@ -3285,6 +3285,46 @@ function initUserProfile() {
             }
         });
     }
+
+    // 2b. Avatar Remove Logic
+    const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+    if (removeAvatarBtn) {
+        removeAvatarBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to remove your organization logo?')) return;
+            
+            try {
+                const avatarInput = document.getElementById('settingAvatarUrl');
+                if (avatarInput) avatarInput.value = '';
+                localStorage.setItem('stockSense_avatarUrl', '');
+                
+                const currentName = localStorage.getItem('stockSense_storeName') || 'Store';
+                const currentRole = localStorage.getItem('stockSense_industry') || 'Electronics';
+                
+                // Save updated empty profile avatar URL to the backend database
+                const token = localStorage.getItem('stockSense_jwt');
+                await fetch('/api/user/profile', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        org_name: currentName,
+                        industry: currentRole,
+                        avatar_url: ''
+                    })
+                });
+                
+                // Immediately refresh UI
+                updateUserProfileUI(currentName, currentRole, '');
+                
+                addNotification('Logo Removed', 'Your organization logo has been successfully removed.', 'success');
+            } catch (error) {
+                console.error("Remove Avatar Error:", error);
+                addNotification('Removal Failed', 'Could not remove your organization logo.', 'warning');
+            }
+        });
+    }
     
     // 3. Profile Dropdown Toggle
     const profileBtn = document.getElementById('userProfileBtn');
@@ -3487,6 +3527,16 @@ function updateUserProfileUI(name, role, avatarUrl) {
         dropdownAvatar.style.backgroundPosition = 'center';
     }
     if (dropdownAvatarIcon) dropdownAvatarIcon.style.display = 'none';
+
+    // Toggle Remove Button
+    const removeBtn = document.getElementById('removeAvatarBtn');
+    if (removeBtn) {
+        if (avatarUrl && avatarUrl.trim() !== '' && avatarUrl !== '/default_avatar.png' && avatarUrl !== 'default_avatar.png') {
+            removeBtn.style.display = 'inline-flex';
+        } else {
+            removeBtn.style.display = 'none';
+        }
+    }
 
     // Update main header dashboard text
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');

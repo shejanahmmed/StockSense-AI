@@ -603,9 +603,14 @@
                                         <p class="avatar-upload-title">Upload Organization Logo</p>
                                         <p class="avatar-upload-hint">JPG, PNG or GIF &bull; Max 2MB &bull; Recommended 256×256px</p>
                                         <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                                        <button class="settings-upload-btn" id="uploadAvatarBtn">
-                                            <i class="fa-solid fa-upload"></i> Choose File
-                                        </button>
+                                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                            <button class="settings-upload-btn" id="uploadAvatarBtn">
+                                                <i class="fa-solid fa-upload"></i> Choose File
+                                            </button>
+                                            <button class="settings-remove-btn" id="removeAvatarBtn" style="display: none;">
+                                                <i class="fa-solid fa-trash-can"></i> Remove
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <input type="hidden" id="settingAvatarUrl" value="" />
