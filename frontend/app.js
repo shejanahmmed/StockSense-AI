@@ -2998,7 +2998,7 @@ function initAuth() {
         toggleAuthBtn.addEventListener('click', () => {
             isSignup = !isSignup;
             if (isSignup) {
-                authIndustryGroup.style.display = 'block';
+                authIndustryGroup.style.display = 'flex';
                 loginBtn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
                 toggleAuthBtn.innerHTML = 'Already have an account? Log In';
             } else {
