@@ -1,66 +1,106 @@
 <div align="center">
+  <img src="frontend/assets/logo/StockSense%20AI.svg" alt="StockSense AI Logo" width="120" height="120" style="margin-bottom: 1.5rem;" />
   <h1 align="center">StockSense AI</h1>
   <p align="center">
-    <strong>Intelligent, Explainable Inventory Forecasting for SMEs</strong>
+    <strong>Predictive Supply Chain & Enterprise Intelligence for SMEs</strong>
     <br />
-    Translating complex time-series predictions into actionable plain-English business advice.
+    Translating complex time-series ensembles and Explainable AI (XAI) metrics into plain-English, actionable business strategies.
+  </p>
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python Version" />
+    <img src="https://img.shields.io/badge/FastAPI-0.100.0%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/Prophet-Ensemble-8B5CF6?style=for-the-badge&logo=analytics&logoColor=white" alt="Prophet Forecasting" />
+    <img src="https://img.shields.io/badge/SQLite-Cryptographic-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite Secure Database" />
+    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
   </p>
 </div>
 
 ---
 
+## 🔮 Table of Contents
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [System Architecture Pipeline](#%EF%B8%8F-system-architecture-pipeline)
+- [Technical Stack & Specifications](#-technical-stack--specifications)
+- [Getting Started & Installation](#-getting-started--installation)
+- [Configuration Environment](#-configuration-environment)
+- [REST API Reference](#-rest-api-reference)
+- [Example AI Insight Outputs](#-example-ai-insight-outputs)
+- [License](#-license)
+
+---
+
 ## 🔮 Overview
 
-**StockSense AI** is a machine learning-driven inventory forecasting system designed specifically for e-commerce Small and Medium Enterprises (SMEs). 
+**StockSense AI** is an advanced, machine learning-driven inventory forecasting and business intelligence engine designed specifically for small-to-medium enterprises (SMEs). 
 
-While most enterprise forecasting tools output complex charts and dataframes, StockSense AI takes it a step further. It predicts future demand, explains *why* demand is changing using SHAP values, translates these metrics into highly actionable advice via LLMs, and **dynamically recommends optimized promotional campaigns**.
+Traditional enterprise resources planning (ERP) platforms output dense, complex multi-dimensional dataframes and charts that require a data science background to decipher. StockSense AI closes this accessibility gap. It executes highly accurate ensemble time-series predictions, interprets features with Explainable AI (XAI) algorithms, and transforms raw telemetry into human-readable business strategies, step-by-step stock alerts, and **dynamic promotional planner cards** using large language models.
 
-No data science degree required. Just clear instructions on what to order, when to run promotions, and why.
+---
 
 ## ✨ Key Features
 
-- 📈 **Ensemble Forecasting & Robust Baselines**: Uses Prophet (zero-filled, calendar-reindexed) and LightGBM for highly accurate time-series demand predictions (7–30 days out) that capture true organic seasonality without over-inflation.
-- 🎯 **AI Promotion Recommendation Engine**: Automatically generates data-driven promotional campaigns. It suggests pre-holiday festive boosts, overstock clearances (based on dynamic thresholding), and weekend flash sales, displayed in an interactive, glassmorphic UI planner deck.
-- 🧠 **Explainable AI (XAI)**: Utilizes SHAP TreeExplainer to break open the "black box" and identify the top drivers influencing your specific forecast.
-- 💬 **Actionable LLM Insights & Chat Assistant**: A sophisticated pipeline that packages forecast data, SHAP drivers, and business context into a structured JSON payload, fed to an LLM (Llama 3.3/Groq) to generate direct business advice.
-- 📦 **Global Inventory Management**: Fully-featured inventory database with live tracking, category filtering, low-stock alerts, one-click CSV export, and SKU addition/deletion interfaces.
-- 📄 **Automated PDF Reporting**: Generate professional weekly summary reports directly from the dashboard.
-- 🎨 **Premium Dashboard**: A stunning, modern frontend built with high-fidelity glassmorphism aesthetics, dark mode, custom typography, and dynamic Chart.js visualizations.
-- 🔒 **Enterprise-Grade Security**: Secured with SHA-256 hashed SQLite databases and robust JWT authentication with secure HMAC key lengths.
+- 📈 **Hybrid Ensemble Forecasting**: Leverages combined predictions of Prophet (zero-filled, calendar-reindexed) and LightGBM engines. Delivers robust 7–30 day forecasting bounds, dynamically modeling seasonal holidays and organic promotional demand.
+- 🧠 **Explainable AI (XAI) Metrics**: Employs SHAP (SHapley Additive exPlanations) TreeExplainer to break down the "black box" forecast, exposing the top mathematical variables influencing future demands.
+- 🎯 **AI Promotion Recommendation Engine**: Formulates pre-holiday sales boosts, overstock liquidation alerts based on customizable safety margins, and weekend flash-sale programs in an interactive glassmorphic card deck.
+- 💬 **Stateless LLM Logic & Chat Assistant**: Couples data-rich payloads (forecast points, SHAP factors, and inventory contexts) into clean JSON structures fed to local LLMs (Ollama) or secure, stateless cloud endpoints (Groq / Llama 3.3).
+- 🔒 **Edge Sovereignty & Security**: Promotes a local-first security posture. Includes secure JWT token architectures, SHA-256 password hashing, and database encryption to ensure data custody remains local.
+- 🎨 **Premium Enterprise Dashboard**: Fully responsive web frontend meticulously styled with sleek dark mode aesthetics, glassmorphism panel backdrops (`blur(24px)`), smooth CSS keyframe micro-animations, and dynamic visual graphs powered by Chart.js.
+- 📄 **One-Click PDF Diagnostics**: Renders compile-ready, beautiful PDF reports leveraging FPDF, summarizing critical week-over-week supply KPIs.
 
-## 🏗️ The 6-Step Architecture Pipeline
+---
 
-1. **Forecast Model Runs**: Prophet + LightGBM ensemble generates zero-anchored predictions and confidence intervals for multiple products.
-2. **SHAP Explainability Runs**: SHAP TreeExplainer extracts feature importance for the specific forecast window.
-3. **Calculate Business Metrics**: The system computes percent change, stockout risks, reorder points, and supplier lead times.
-4. **Promotion Heuristics Engine**: Evaluates holiday arrays, inventory overstock thresholds, and day-of-week sales lifts to generate targeted campaign recommendations.
-5. **Package into Structured JSON**: All outputs are combined into a clean, unified JSON "insight payload".
-6. **LLM Generation**: The payload is sent to Ollama (local) or Groq API (deployed) to output specific, actionable business advice.
+## 🏗️ System Architecture Pipeline
 
-## 💻 Tech Stack
+StockSense AI follows a deterministic, 6-stage telemetry processing pipeline to synthesize model insights:
 
-### Backend & Machine Learning
-- **Python 3.10+**
-- **FastAPI / Uvicorn**: High-performance backend API routing and authentication.
-- **Prophet & LightGBM**: Ensemble time-series forecasting.
-- **SHAP**: Model explainability.
-- **DuckDB & Pandas**: Fast, analytical data processing.
-- **Ollama / Groq**: LLM integration for insight generation.
-- **FPDF**: Automated PDF report generation.
+```mermaid
+graph TD
+    A["Raw Transactional Datastores (SQLite)"] --> B["Prophet & LightGBM Forecasting Engine"]
+    B --> C["SHAP Model Explainer (Extracts Feature Drivers)"]
+    C --> D["Business Heuristics Engine (Stockout Risks & Lead Times)"]
+    D --> E["Dynamic Promotion & Discount Logic Engine"]
+    E --> F["Unified Pipeline Payload (Structured JSON)"]
+    F --> G["LLM Reasoning Layer (Groq / Ollama API)"]
+    G --> H["Premium Glassmorphic UI & Interactive Dashboard"]
+    G --> I["Generated FPDF Enterprise Summary Reports"]
+```
 
-### Frontend
-- **HTML5 / CSS3 / Vanilla JS**: Lightweight, zero-dependency foundation.
-- **Chart.js**: Dynamic data visualization.
-- **Google Fonts (Outfit)** & **FontAwesome**: Modern typography and iconography.
+1. **Forecasting**: Standardizes transaction timelines, applies calendar reindexing, and feeds data through Prophet and LightGBM models.
+2. **Explainability**: SHAP TreeExplainer extracts shapley values to attribute the exact percentage influence of baseline trends, holidays, and pricing adjustments.
+3. **Operational Calculations**: Evaluates reorder points, current inventory levels, lead-times, and calculates exact stockout thresholds.
+4. **Promotion Recommendations**: Assesses inventory age, shelf-life boundaries, and sales thresholds to formulate specific markdown campaigns.
+5. **Payload Compilation**: Assembles forecasting metrics, stockout warn flags, SHAP values, and suggested markdowns into a standardized JSON payload.
+6. **LLM Synthesis**: Translates the telemetry payload into clear, plain-English operational instructions and conversational responses.
 
-## 🚀 Getting Started
+---
+
+## 💻 Technical Stack & Specifications
+
+### Backend Ecosystem
+- **Core Environment**: Python 3.10+
+- **API Engine**: FastAPI & Uvicorn (Asynchronous routing, structured request schemas, and high-performance throughput).
+- **Machine Learning Core**: Prophet, LightGBM, and SHAP.
+- **Data Engineering**: DuckDB & Pandas (optimized vector processing for fast transactional ingestion).
+- **Secure Storage**: SQLite with SHA-256 cryptographic hashes.
+- **Reporting System**: FPDF.
+
+### Frontend Presentation
+- **Core Stack**: Vanilla HTML5, CSS3, and JavaScript (zero bloated dependencies).
+- **Data Visualizations**: Responsive Chart.js canvas elements with custom gradient fills.
+- **Typography & Assets**: Outfit (Google Fonts), FontAwesome Icons, and custom drop-shadow SVGs.
+
+---
+
+## 🚀 Getting Started & Installation
 
 ### Prerequisites
-- Python 3.10 or higher
-- [Ollama](https://ollama.ai/) installed locally (optional, for local LLM inference)
-- A [Groq](https://groq.com/) API key (for production inference)
+- Python 3.10 or higher installed.
+- [Ollama](https://ollama.ai/) installed locally (optional, for local LLM inference models).
+- A [Groq API Key](https://groq.com/) (recommended for fast, stateless remote cloud inference).
 
-### Installation
+### Installation Workflow
 
 1. **Clone the repository**
    ```bash
@@ -68,41 +108,135 @@ No data science degree required. Just clear instructions on what to order, when 
    cd StockSense-AI
    ```
 
-2. **Create a virtual environment & install dependencies**
+2. **Initialize a secure virtual environment & install requirements**
    ```bash
+   # On macOS/Linux
+   python3 -m venv venv
+   source venv/bin/activate
+
+   # On Windows (PowerShell)
    python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   .\venv\Scripts\Activate.ps1
+
+   # Install core dependencies
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
-3. **Set up Environment Variables**
-   Create a `.env` file in the root directory based on the provided `.env.example`:
+3. **Establish Local Settings**
+   Generate a `.env` configuration file in the project's root folder utilizing the provided `.env.example`:
    ```bash
+   # On macOS/Linux
    cp .env.example .env
+
+   # On Windows (PowerShell)
+   Copy-Item .env.example .env
    ```
-   *Edit `.env` to set `DEPLOYMENT_ENV` (local or production) and add your `GROQ_API_KEY` if using production.*
+
+---
+
+## ⚙️ Configuration Environment
+
+Modify the generated `.env` file to dictate environment characteristics and select your LLM model provider:
+
+```env
+# Deployment Context ('local' uses Ollama, 'production' uses Groq API)
+DEPLOYMENT_ENV=production
+
+# Groq API Gateway Credentials (Required for 'production' mode)
+GROQ_API_KEY=gsk_your_secure_api_key_goes_here
+
+# Local Ollama Host Settings (Default: http://localhost:11434)
+OLLAMA_HOST=http://localhost:11434
+
+# Security Tokens (Used to sign JWT payloads)
+JWT_SECRET=super_secret_jwt_hmac_sha256_key_minimum_32_chars
+JWT_ALGORITHM=HS256
+```
 
 ### Running the Application
 
-**Start the FastAPI Backend (includes the frontend):**
+Launch the asynchronous ASGI Uvicorn server:
 ```bash
 python -m uvicorn src.api.main:app --reload
 ```
-Then navigate to `http://127.0.0.1:8000` in your browser.
-
-## 📊 Example Output
-
-What the SME owner sees directly on their dashboard:
-
-> **🔮 AI Insight for Store 12 — Electronics**
->
-> Sales are forecast to increase **23%** next week to approximately **4,850 units**, significantly above your baseline. This surge is driven by the upcoming **Eid holiday (+18% impact)**, your current promotion campaign (+9%), and typical weekend demand patterns (+5%). 
-> 
-> ⚠️ **Stockout Warning**: Your current inventory of 3,200 units will likely be depleted by Thursday. We recommend ordering at least **5,200 units** (40% above forecast) to meet demand and avoid lost sales.
->
-> 🏷️ **Promotional Planner**:
-> - **Pre-Holiday Festive Boost**: Recommend 15% discount on Electronics starting 3 days prior.
-> - **Stock Clearance**: "Laptop Cooling Pad RGB" is highly overstocked (400 units). Recommend 25% discount to liquidate.
+Once initialized, navigate to **`http://127.0.0.1:8000`** in your browser. The embedded static files will automatically serve the glassmorphic desktop and mobile dashboards.
 
 ---
-*Built with ❤️ for SMEs. Empowering small businesses with enterprise-grade AI.*
+
+## 📊 REST API Reference
+
+### 🔐 Authentication Management
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/user/signup` | Register a new enterprise profile & organization schema. | No |
+| `POST` | `/api/user/login` | Authenticate credentials and issue session JWT tokens. | No |
+| `GET` | `/api/user/profile/{org_name}` | Fetch active organization metadata, industry fields, and preferences. | Yes |
+| `POST` | `/api/user/profile` | Update profile information (store location, business name). | Yes |
+| `POST` | `/api/user/upload-avatar` | Upload custom branding logos to local image directories. | Yes |
+| `DELETE` | `/api/user/purge` | Securely purge all database records associated with the user. | Yes |
+
+### 📦 Inventory Catalog
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/inventory` | Retrieve standard inventory counts, classifications, and safety limits. | Yes |
+| `POST` | `/api/inventory` | Provision a new product SKU into the database catalog. | Yes |
+| `PUT` | `/api/inventory/{sku}` | Modify stocking details, price indices, or lead times. | Yes |
+| `DELETE` | `/api/inventory/{sku}` | Permanently delete a SKU profile from inventory tracking. | Yes |
+
+### 🔮 Forecasting & Analytics Engine
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/predict` | Run the ensemble forecasting engine & retrain models. | Yes |
+| `GET` | `/api/forecast/{sku}` | Retrieve demand forecast steps (7-30 days) and confidence limits for a SKU. | Yes |
+| `GET` | `/api/insight` | Generate plain-English explanations utilizing SHAP drivers. | Yes |
+| `GET` | `/api/holidays` | Return catalog of holidays contributing to seasonal model adjustments. | Yes |
+| `GET` | `/api/report` | Render and export a comprehensive weekly analytical dashboard PDF report. | Yes |
+
+### 💬 AI Interactive Chat Assistant
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/chat` | Query the model regarding specific SKU warnings or optimizations. | Yes |
+| `GET` | `/api/chat/history` | Retrieve local contextual conversation history. | Yes |
+
+---
+
+## 📊 Example AI Insight Outputs
+
+The following is an example of what an SME business owner reviews on their glassmorphic dashboard interface:
+
+> ### 🔮 AI Forecast Diagnosis & Strategy — Electronics
+>
+> Overall store demand is predicted to rise **+24.5%** next week, reaching an estimated **5,120 transactions**. 
+>
+> **Drivers (Explainable AI Attributes):**
+> * 📈 **Pre-Holiday Lift (Black Friday Prep):** +18.2% (Historical seasonal index trigger).
+> * 🏷️ **Active Organization Promotion:** +5.3% (Multiplied response rate).
+> * 🌦️ **Localized Climate Trend:** +1.0% (Subtle feature coefficient).
+>
+> ---
+>
+> ### ⚠️ Inventory Risks & Action Plan
+> * **Stockout Alert (SKU: `LAP-COOL-RGB`)**: At current sales velocity, your 3,100 physical stock balance will be exhausted by Thursday morning. 
+> * **Recommendation**: Place an immediate replenishment order for **2,150 units** with your vendor (Lead-time standard: 3 business days).
+>
+> ---
+>
+> ### 🏷️ Dynamic Campaign Planner Recommendations
+> * **Festive Boost Strategy**: Standardize a 15% markdown campaign for high-visibility display items starting Tuesday morning.
+> * **Overstock Liquidation**: `Mechanical Keyboards USB-C` (SKU: `KB-MECH-99`) is currently sitting at 45% above your defined optimal storage capacity. Launch a 3-day **25% off Flash Sale** to release capital.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request if you notice bugs, want to add features, or wish to enhance our machine learning baseline models.
+
+---
+
+## 🛡️ License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+---
+*Developed with ❤️ to empower small businesses with accessible, enterprise-grade AI analytics.*
