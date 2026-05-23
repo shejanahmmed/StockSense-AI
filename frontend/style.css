@@ -5188,6 +5188,50 @@ input:checked + .slider:before {
     .price-value {
         font-size: 2.2rem !important;
     }
+
+    /* AI Strategic Assistant Mobile Optimizations */
+    .chat-container {
+        height: 65vh !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .chat-messages {
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+
+    .msg-bubble {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.88rem !important;
+    }
+
+    .chat-suggestions {
+        padding: 0.5rem 0.75rem !important;
+        gap: 0.4rem !important;
+    }
+
+    .chat-chip {
+        padding: 0.35rem 0.75rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .chat-input-area {
+        padding: 0.75rem 1rem !important;
+        gap: 0.4rem !important;
+    }
+
+    #chatInput {
+        padding: 0.65rem 0.9rem !important;
+        font-size: 0.88rem !important;
+    }
+
+    .chat-input-area button {
+        width: 38px !important;
+        height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
 }
 
 /* ==========================================
