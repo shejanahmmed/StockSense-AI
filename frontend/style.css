@@ -6378,7 +6378,7 @@ input:checked + .slider:before {
 }
 
 .new-user-guide-badge .guide-link-btn:hover i {
-    transform: translateX(2px);
+    transform: translate(1px, -1px);
 }
 
 .new-user-guide-badge .guide-link-btn i {
