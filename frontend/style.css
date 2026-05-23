@@ -3437,27 +3437,6 @@ input:checked + .slider:before {
     text-overflow: ellipsis;
 }
 
-/* ============================================================
-   PRIVACY POLICY (HIGH-END CORPORATE STANDARDS)
-   ============================================================ */
-
-.privacy-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-    padding-bottom: 5rem;
-    animation: slideInUp 0.4s ease-out forwards;
-    width: 100%;
-    max-width: 1300px;
-    margin: 0 auto;
-}
-
-.privacy-header {
-    display: flex;
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.4);
-    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25);
-}
 
 .social-btn.instagram:hover {
     color: #f77737;
