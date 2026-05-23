@@ -5232,6 +5232,58 @@ input:checked + .slider:before {
         align-items: center !important;
         justify-content: center !important;
     }
+
+    /* System Settings Page Smartphone Optimizations */
+    .settings-section-card {
+        padding: 1.25rem !important;
+        gap: 1.25rem !important;
+    }
+
+    .avatar-upload-area {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 1.25rem !important;
+        padding: 1rem !important;
+    }
+
+    .avatar-upload-area .avatar-upload-info div {
+        justify-content: center !important;
+    }
+
+    .settings-hero {
+        padding: 1rem !important;
+        gap: 0.75rem !important;
+    }
+
+    .settings-hero-left {
+        gap: 0.75rem !important;
+    }
+
+    .settings-hero-icon {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .settings-hero h1 {
+        font-size: 1.3rem !important;
+    }
+
+    .settings-tabs-nav {
+        padding: 0.35rem !important;
+        gap: 0.25rem !important;
+    }
+
+    .settings-tab {
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .settings-danger-row button {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 0.5rem !important;
+    }
 }
 
 /* ==========================================
