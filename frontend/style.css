@@ -5284,6 +5284,43 @@ input:checked + .slider:before {
         justify-content: center !important;
         margin-top: 0.5rem !important;
     }
+
+    /* Platform Capabilities & Features Page Smartphone Optimizations */
+    .features-content {
+        padding: 1rem 0.5rem 2.5rem !important;
+    }
+    
+    .features-header {
+        padding: 0 0.5rem !important;
+    }
+
+    .feature-card {
+        padding: 1.25rem 1rem !important;
+        gap: 1rem !important;
+    }
+
+    /* How It Works Page Smartphone Optimizations */
+    .hiw-content {
+        padding: 1rem 0.5rem 2.5rem !important;
+    }
+
+    .hiw-header {
+        padding: 0 0.5rem 1rem 0.5rem !important;
+    }
+
+    /* Pricing Plans Page Smartphone Optimizations */
+    .pricing-content {
+        padding: 1rem 0.5rem 2.5rem !important;
+    }
+
+    .pricing-header {
+        padding: 0 0.5rem !important;
+    }
+
+    .pricing-card {
+        padding: 1.75rem 1.25rem !important;
+        gap: 1.5rem !important;
+    }
 }
 
 /* ==========================================
