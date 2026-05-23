@@ -354,6 +354,8 @@ function setupNavigation() {
         }
     }
 
+    window.switchView = switchView;
+
     // Restore last active view from localStorage
     const savedView = localStorage.getItem('stockSense_activeView') || 'dashboard';
     currentView = null; // reset to null to force switchView execution
@@ -1706,12 +1708,14 @@ function setupCsvUpload() {
     const fileIndicator = document.getElementById('uploadedFileIndicator');
     const fileNameDisplay = document.getElementById('uploadedFileName');
     const clearFileBtn = document.getElementById('clearUploadedFileBtn');
+    const newUserCsvGuide = document.getElementById('newUserCsvGuide');
     
     // Restore uploaded file indicator and all dashboard data from localStorage
     const savedFileName = localStorage.getItem('stockSense_uploadedFile');
     if (savedFileName && fileIndicator && fileNameDisplay) {
         fileNameDisplay.textContent = savedFileName;
         fileIndicator.style.display = 'flex';
+        if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
 
         // Restore cached dashboard data so refresh doesn't wipe the analysis
         try {
@@ -1766,6 +1770,7 @@ function setupCsvUpload() {
         if (!file) return;
         
         if (fileIndicator) fileIndicator.style.display = 'none';
+        if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
         
         const originalText = uploadBtn.innerHTML;
         uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysing Products...';
@@ -1853,6 +1858,7 @@ function setupCsvUpload() {
                     fileIndicator.style.display = 'flex';
                     localStorage.setItem('stockSense_uploadedFile', file.name);
                 }
+                if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
 
                 // Update chart title with actual forecast horizon from server
                 const chartTitle = document.getElementById('forecastChartTitle');

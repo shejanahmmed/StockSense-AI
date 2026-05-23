@@ -6056,6 +6056,68 @@ input:checked + .slider:before {
     z-index: 10 !important;
 }
 
+/* New User CSV Format Guide Badge */
+.new-user-guide-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    transition: var(--transition-smooth);
+    animation: pulseGlowGuide 3s infinite alternate ease-in-out;
+}
+
+.new-user-guide-badge:hover {
+    background: rgba(139, 92, 246, 0.09);
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+}
+
+.new-user-guide-badge span {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.new-user-guide-badge .guide-link-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+    transition: var(--transition-smooth);
+}
+
+.new-user-guide-badge .guide-link-btn:hover {
+    color: #c4b5fd;
+}
+
+.new-user-guide-badge .guide-link-btn:hover i {
+    transform: translateX(2px);
+}
+
+.new-user-guide-badge .guide-link-btn i {
+    font-size: 0.72rem;
+    transition: transform var(--transition-fast);
+}
+
+@keyframes pulseGlowGuide {
+    0% {
+        box-shadow: 0 0 4px rgba(139, 92, 246, 0.03);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.12);
+    }
+}
+
 
 /* ============================================================
    A+ GRADE ENTERPRISE AUTHENTICATION SYSTEM (STRIPE / LINEAR STYLE)
@@ -6504,6 +6566,10 @@ input:checked + .slider:before {
 
 /* --- Responsive Breakpoints --- */
 @media (max-width: 920px) {
+    .new-user-guide-badge {
+        display: none !important;
+    }
+
     .auth-card-container {
         width: 100%;
         max-width: 480px;
