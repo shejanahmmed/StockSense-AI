@@ -15,45 +15,105 @@
 </head>
 <body>
     <!-- Auth/Login Screen -->
-    <div id="authScreen" style="display: none; height: 100vh; width: 100vw; align-items: center; justify-content: center; background: var(--bg-base); background-image: radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%); position: fixed; top: 0; left: 0; z-index: 10000;">
-        <div class="glass-panel" style="width: 400px; padding: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-            <div class="logo" style="justify-content: center; margin-bottom: 0.5rem;">
-                <div class="logo-icon" style="width: 56px; height: 56px; border-radius: 16px; background: transparent; display: flex; align-items: center; justify-content: center;"><img src="assets/logo/StockSense%20AI.svg" alt="StockSense Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
-            </div>
-            <h2 class="gradient-text" style="font-size: 1.8rem;">StockSense AI</h2>
-            <p class="subtitle" style="margin-top: -10px;">Enterprise Authentication</p>
+    <div id="authScreen" class="auth-screen-wrapper" style="display: none;">
+        <div class="auth-card-container">
             
-            <div class="settings-group" style="text-align: left; margin-top: 1rem;">
-                <label>Organization Name</label>
-                <input type="text" id="authStoreName" class="settings-input" placeholder="e.g. Acme Corp" style="background: rgba(0,0,0,0.2);">
+            <!-- Left Showcase Pane -->
+            <div class="auth-showcase-pane">
+                <div class="showcase-glowing-blobs"></div>
+                <div class="showcase-content">
+                    <div class="showcase-brand">
+                        <img src="assets/logo/StockSense%20AI.svg" class="showcase-logo-img" alt="StockSense AI">
+                        <h2>StockSense AI</h2>
+                        <p class="showcase-tagline">Predictive Supply Chain &amp; Enterprise Intelligence</p>
+                    </div>
+                    
+                    <div class="showcase-features">
+                        <div class="showcase-card">
+                            <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+                            <div>
+                                <h4>Prophet ML Core</h4>
+                                <p>Isolated local sub-processes compute demand thresholds and safety levels.</p>
+                            </div>
+                        </div>
+                        <div class="showcase-card">
+                            <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div>
+                                <h4>Edge Sovereignty</h4>
+                                <p>Local-first SHA-256 encryption ensures absolute client-side data custody.</p>
+                            </div>
+                        </div>
+                        <div class="showcase-card">
+                            <div class="card-icon"><i class="fa-solid fa-server"></i></div>
+                            <div>
+                                <h4>Zero-Retention APIs</h4>
+                                <p>Language model inferences are tunneled via strictly stateless endpoints.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="showcase-footer">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Ready for Enterprise Deployment</span>
+                    </div>
+                </div>
             </div>
-            <div class="settings-group" style="text-align: left;">
-                <label>Password</label>
-                <input type="password" id="authPassword" class="settings-input" placeholder="Enter secure password" style="background: rgba(0,0,0,0.2);">
-            </div>
-            <div class="settings-group" id="authIndustryGroup" style="text-align: left; display: none;">
-                <label>Industry Vertical</label>
-                <select id="authIndustry" class="settings-input" style="background: rgba(0,0,0,0.2);">
-                    <option value="Electronics">Electronics</option>
-                    <option value="Apparel">Apparel</option>
-                    <option value="Groceries">Groceries</option>
-                    <option value="Hardware">Hardware</option>
-                    <option value="Other">Other</option>
-                </select>
+
+            <!-- Right Form Pane -->
+            <div class="auth-form-pane">
+                <div class="form-header">
+                    <h3 id="authFormTitle" class="gradient-text">Access Hub</h3>
+                    <p class="subtitle" id="authFormSubtitle">Verify identity to connect to local database</p>
+                </div>
+                
+                <div class="auth-fields-stack">
+                    <div class="auth-field-group">
+                        <label class="auth-label"><i class="fa-solid fa-building"></i> Organization Name</label>
+                        <input type="text" id="authStoreName" class="auth-input" placeholder="e.g. Acme Corp">
+                    </div>
+                    
+                    <div class="auth-field-group">
+                        <label class="auth-label"><i class="fa-solid fa-key"></i> Password</label>
+                        <div class="auth-input-wrapper">
+                            <input type="password" id="authPassword" class="auth-input" placeholder="Enter secure password">
+                            <button type="button" class="auth-pwd-toggle" onclick="const p = document.getElementById('authPassword'); p.type = p.type === 'password' ? 'text' : 'password'; this.querySelector('i').classList.toggle('fa-eye'); this.querySelector('i').classList.toggle('fa-eye-slash');">
+                                <i class="fa-solid fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-field-group" id="authIndustryGroup" style="display: none;">
+                        <label class="auth-label"><i class="fa-solid fa-industry"></i> Industry Vertical</label>
+                        <select id="authIndustry" class="auth-input select-input">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Apparel">Apparel</option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="primary-btn auth-submit-btn" id="loginBtn">
+                    Access Dashboard <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="auth-switch-btn" id="toggleAuthBtn" onclick="const toSignup = this.innerHTML.includes('Sign Up'); document.getElementById('authFormTitle').innerText = toSignup ? 'Register Org' : 'Access Hub'; document.getElementById('authFormSubtitle').innerText = toSignup ? 'Initialize secure enterprise profile' : 'Verify identity to connect to local database';">
+                    Need an account? Sign Up
+                </button>
+                
+                <p class="auth-security-badge">
+                    <i class="fa-solid fa-shield-halved"></i> Secured with SHA-256 Hashed SQLite Database
+                </p>
             </div>
             
-            <button class="primary-btn" id="loginBtn" style="justify-content: center; margin-top: 1rem; padding: 1rem;">
-                Access Dashboard <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button class="secondary-btn" id="toggleAuthBtn" style="justify-content: center; width: 100%; padding: 0.8rem; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); cursor: pointer;">
-                Need an account? Sign Up
-            </button>
-            
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
-                <i class="fa-solid fa-shield-halved"></i> Secured with SHA-256 Hashed SQLite Database
-            </p>
         </div>
     </div>
+
 
     <div class="app-container" id="appContainer">
         <!-- Top Navigation -->
