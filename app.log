@@ -2236,3 +2236,45 @@
 2026-05-23 22:26:53,508 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-05-24 17:55:33,406 - src.api.main - INFO - Initializing database...
 2026-05-24 17:55:33,418 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 22:42:28,353 - src.api.main - INFO - Initializing database...
+2026-05-24 22:42:28,364 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 22:42:30,036 - src.api.main - INFO - Initializing database...
+2026-05-24 22:42:30,037 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 22:42:42,159 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:42,182 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:42,699 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:42,815 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:42,839 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:42,873 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:42,998 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,016 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:43,055 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:43,181 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,201 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:43,229 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:43,354 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,381 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:43,421 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:43,559 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,579 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:43,619 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:43,732 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,765 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:43,803 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:43,938 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:43,964 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:44,003 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:44,117 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-05-24 22:42:44,155 - cmdstanpy - INFO - Chain [1] start processing
+2026-05-24 22:42:44,192 - cmdstanpy - INFO - Chain [1] done processing
+2026-05-24 22:42:45,230 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-24 22:46:15,081 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-24 23:49:41,257 - src.api.main - INFO - Initializing database...
+2026-05-24 23:49:41,275 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 23:50:03,206 - src.api.main - INFO - Initializing database...
+2026-05-24 23:50:03,208 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 23:52:49,728 - src.api.main - INFO - Initializing database...
+2026-05-24 23:52:49,729 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 23:57:12,549 - src.api.main - INFO - Initializing database...
+2026-05-24 23:57:12,561 - src.api.main - INFO - Database initialized successfully.
+2026-05-24 23:57:12,586 - httpx - INFO - HTTP Request: GET http://testserver/api/docs/config "HTTP/1.1 200 OK"

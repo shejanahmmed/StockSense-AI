@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSense AI — Live Documentation &amp; Pitch Deck</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo/StockSense%20AI.svg">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #07080e;
+            --panel-dark: rgba(15, 17, 26, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.05);
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #d946ef;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.25);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Glowing Background Blobs */
+        .glow-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.15;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-primary);
+            top: -200px;
+            right: -100px;
+            animation: float 20s infinite alternate;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-secondary);
+            bottom: -150px;
+            left: -100px;
+            animation: float 15s infinite alternate-reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.15); }
+        }
+
+        /* Glassmorphism Common Styles */
+        .glass {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Header UI */
+        header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 50;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(7, 8, 14, 0.7);
+            backdrop-filter: blur(16px);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-area img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mode-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+            gap: 0.25rem;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .mode-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: var(--accent-primary);
+            border-color: transparent;
+        }
+
+        .action-btn.primary:hover {
+            background: #7c3aed;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .admin-trigger {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: none; /* Injected if role=admin */
+            align-items: center;
+            justify-content: center;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--accent-primary);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .admin-trigger:hover {
+            transform: rotate(30deg);
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        /* Dual Pane Layout */
+        .container {
+            max-width: 1440px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Left Column Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-height: calc(100vh - 7rem);
+            overflow-y: auto;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            padding: 0.6rem 1rem 0.6rem 2.2rem;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.88rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border-left: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-link.active {
+            color: var(--text-primary);
+            background: rgba(139, 92, 246, 0.08);
+            border-left-color: var(--accent-primary);
+        }
+
+        /* Right Column Content Stack */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .chapter-card {
+            padding: 2.5rem;
+            position: relative;
+            scroll-margin-top: 6rem;
+            transition: var(--transition-smooth);
+        }
+
+        .chapter-card:hover {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .chapter-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .chapter-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chapter-body {
+            font-size: 0.98rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .chapter-body p {
+            margin-bottom: 1.25rem;
+        }
+
+        .chapter-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Live Sync Metrics Panel */
+        .live-sync-panel {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: var(--radius-md);
+        }
+
+        .live-sync-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .live-sync-header h4 {
+            font-size: 0.88rem;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-indicator-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .live-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .live-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .live-card-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .live-card-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* SVG Architecture Diagram styling */
+        .diagram-container {
+            margin-top: 1.5rem;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .arch-diagram {
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+        }
+
+        .arch-box {
+            fill: rgba(15, 17, 26, 0.9);
+            stroke: var(--panel-border);
+            stroke-width: 1.5px;
+            rx: 6;
+        }
+
+        .arch-box.active {
+            stroke: var(--accent-primary);
+            fill: rgba(139, 92, 246, 0.05);
+        }
+
+        .arch-text {
+            fill: var(--text-secondary);
+            font-size: 11px;
+            font-family: inherit;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .arch-text.title {
+            fill: var(--text-primary);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .arch-line {
+            stroke: var(--text-muted);
+            stroke-width: 1.5px;
+            fill: none;
+            stroke-dasharray: 4,4;
+        }
+
+        .arch-line.active {
+            stroke: var(--accent-secondary);
+            stroke-dasharray: none;
+        }
+
+        /* Team Section UI */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .team-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.2);
+            background: rgba(139, 92, 246, 0.02);
+        }
+
+        .team-avatar-container {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.03);
+            transition: var(--transition-smooth);
+        }
+
+        .team-card:hover .team-avatar-container {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .team-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .team-avatar-fallback {
+            font-size: 2.2rem;
+            color: var(--text-muted);
+        }
+
+        .team-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .team-role {
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            font-weight: 500;
+            background: rgba(139, 92, 246, 0.08);
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .team-email {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .team-email:hover {
+            color: var(--text-primary);
+        }
+
+        /* Locked Screen Overlay */
+        .locked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 1000;
+            display: none; /* Shown dynamically if status=locked */
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .locked-card {
+            max-width: 550px;
+            width: 100%;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: scale-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .locked-glow {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0.2;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes scale-up {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .locked-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.4));
+        }
+
+        .locked-card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .locked-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .countdown-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+        }
+
+        .countdown-num {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .countdown-lbl {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .locked-footer {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Admin Slideout Panel */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100%;
+            background: rgba(10, 11, 18, 0.92);
+            border-left: 1px solid var(--panel-border);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 2rem;
+            overflow-y: auto;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .admin-sidebar.open {
+            right: 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .admin-header h3 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-admin-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition-smooth);
+        }
+
+        .close-admin-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .admin-section {
+            margin-bottom: 2rem;
+        }
+
+        .admin-section h4 {
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-input, .admin-select, .admin-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.88rem;
+            padding: 0.6rem 0.8rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .admin-input:focus, .admin-select:focus, .admin-textarea:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .admin-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid var(--panel-border);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .toggle-switch-lbl {
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .switch-input {
+            position: relative;
+            width: 44px;
+            height: 22px;
+            -webkit-appearance: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .switch-input:checked {
+            background: var(--accent-primary);
+        }
+
+        .switch-input::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            background: #fff;
+            transition: var(--transition-smooth);
+        }
+
+        .switch-input:checked::before {
+            left: 24px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 17, 26, 0.95);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-md);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-left: 3px solid #10b981; }
+        .toast.error { border-left: 3px solid #ef4444; }
+
+        /* Feature Matrix Badge elements */
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .matrix-table th, .matrix-table td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.88rem;
+        }
+
+        .matrix-table th {
+            color: var(--text-primary);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .matrix-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .matrix-badge.live { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .matrix-badge.beta { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .matrix-badge.planned { background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.2); }
+
+        /* Reorder panel helper list */
+        .reorder-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--panel-border);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .reorder-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .reorder-arrow-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.2rem;
+            transition: var(--transition-smooth);
+        }
+
+        .reorder-arrow-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Save & Publish tab system inside Admin Editor */
+        .editor-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .editor-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border-bottom: 2px solid transparent;
+        }
+
+        .editor-tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        /* Print styling optimized for whitepaper export */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+            }
+
+            header, .sidebar, .glow-blobs, .action-btn, .admin-trigger, .live-sync-panel, .admin-sidebar, .locked-overlay {
+                display: none !important;
+            }
+
+            .container {
+                display: block !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .chapter-card {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin-bottom: 3rem !important;
+                page-break-inside: avoid;
+            }
+
+            .chapter-header h2 {
+                background: none !important;
+                -webkit-text-fill-color: initial !important;
+                color: #000 !important;
+                font-size: 20pt !important;
+                border-bottom: 2px solid #000 !important;
+                padding-bottom: 0.5rem !important;
+            }
+
+            .chapter-body {
+                color: #333 !important;
+                font-size: 11pt !important;
+                line-height: 1.5 !important;
+            }
+
+            .matrix-badge {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                background: transparent !important;
+            }
+
+            .team-card {
+                border: 1px solid #ccc !important;
+                background: transparent !important;
+                page-break-inside: avoid;
+            }
+
+            .team-role {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                background: transparent !important;
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+                margin-bottom: 1.5rem;
+            }
+
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Glowing Background blobs -->
+    <div class="glow-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <a href="/" class="logo-area">
+            <img src="assets/logo/StockSense%20AI.svg" alt="StockSense AI Logo">
+            <h1>StockSense AI</h1>
+        </a>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btnPitchMode" onclick="switchMode('pitch')">YC Pitch Deck</button>
+            <button class="mode-btn" id="btnTechMode" onclick="switchMode('tech')">Technical whitepaper</button>
+        </div>
+
+        <div class="header-actions">
+            <a href="/" class="action-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+            <button class="action-btn primary" id="exportMarkdownBtn"><i class="fa-solid fa-file-export"></i> Export</button>
+            <button class="action-btn" id="exportPdfBtn"><i class="fa-solid fa-print"></i> PDF</button>
+            <div class="admin-trigger" id="adminTrigger" onclick="toggleAdminSidebar()"><i class="fa-solid fa-gear"></i></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Sidebar Column -->
+        <aside class="sidebar glass" id="sidebar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search chapters..." oninput="handleSearch()">
+            </div>
+            
+            <ul class="sidebar-nav" id="sidebarNav">
+                <!-- Injected dynamically based on active category -->
+            </ul>
+        </aside>
+
+        <!-- Content Column -->
+        <main class="content-area" id="contentArea">
+            <!-- Dynamic chapters stack injected here -->
+        </main>
+    </div>
+
+    <!-- Locked State Overlay Cover -->
+    <div class="locked-overlay" id="lockedOverlay">
+        <div class="locked-card glass">
+            <div class="locked-glow"></div>
+            <i class="fa-solid fa-lock locked-icon"></i>
+            <h2>Documentation Restricted</h2>
+            <p>Access is currently locked. The public preview window for this showcase is scheduled for the period below. Please contact administrators for direct credentials.</p>
+            
+            <div class="countdown-grid">
+                <div class="countdown-box">
+                    <div class="countdown-num" id="cdDays">00</div>
+                    <div class="countdown-lbl">Days</div>
+                </div>
+                <div class="countdown-box">
+                    <div class="countdown-num" id="cdHours">00</div>
+                    <div class="countdown-lbl">Hours</div>
+                </div>
+                <div class="countdown-box">
+                    <div class="countdown-num" id="cdMinutes">00</div>
+                    <div class="countdown-lbl">Minutes</div>
+                </div>
+                <div class="countdown-box">
+                    <div class="countdown-num" id="cdSeconds">00</div>
+                    <div class="countdown-lbl">Seconds</div>
+                </div>
+            </div>
+
+            <div class="locked-footer">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span id="scheduledRangeText">June 10, 2026 - June 14, 2026</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Portal slide-out -->
+    <div class="admin-sidebar" id="adminSidebar">
+        <div class="admin-header">
+            <h3><i class="fa-solid fa-shield-halved"></i> Admin Control Panel</h3>
+            <button class="close-admin-btn" onclick="toggleAdminSidebar()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- 1. General Access Controls -->
+        <div class="admin-section">
+            <h4>Access &amp; Scheduling</h4>
+            
+            <div class="toggle-switch">
+                <span class="toggle-switch-lbl">Public Access Toggle</span>
+                <input type="checkbox" class="switch-input" id="settingIsPublic" onchange="saveAdminSettings()">
+            </div>
+            
+            <div class="toggle-switch">
+                <span class="toggle-switch-lbl">Instant Live Override</span>
+                <input type="checkbox" class="switch-input" id="settingOverride" onchange="saveAdminSettings()">
+            </div>
+
+            <div class="form-group">
+                <label for="settingStartTime">Scheduled Start Time</label>
+                <input type="datetime-local" class="admin-input" id="settingStartTime" onchange="saveAdminSettings()">
+            </div>
+
+            <div class="form-group">
+                <label for="settingEndTime">Scheduled End Time</label>
+                <input type="datetime-local" class="admin-input" id="settingEndTime" onchange="saveAdminSettings()">
+            </div>
+        </div>
+
+        <!-- 2. Section Editor -->
+        <div class="admin-section">
+            <h4>Section Manager</h4>
+            
+            <div class="form-group">
+                <label for="editorSelectSection">Select Section to Edit</label>
+                <select class="admin-select" id="editorSelectSection" onchange="loadSectionIntoEditor()">
+                    <!-- Options injected dynamically -->
+                </select>
+            </div>
+
+            <div class="editor-tabs">
+                <button class="editor-tab active" id="tabEditDraft" onclick="switchEditorTab('draft')">Draft Workspace</button>
+                <button class="editor-tab" id="tabEditLive" onclick="switchEditorTab('live')">Live Output</button>
+            </div>
+
+            <div class="form-group">
+                <label for="editorTitle">Section Title</label>
+                <input type="text" class="admin-input" id="editorTitle">
+            </div>
+
+            <div class="form-group">
+                <label for="editorBody">Content (HTML Supported)</label>
+                <textarea class="admin-textarea" id="editorBody"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="action-btn primary" style="flex: 1; justify-content: center;" onclick="saveEditorChanges(false)">Save Draft</button>
+                <button class="action-btn" style="flex: 1; justify-content: center; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981;" onclick="saveEditorChanges(true)">Publish Live</button>
+            </div>
+        </div>
+
+        <!-- 3. Drag & Reorder List -->
+        <div class="admin-section">
+            <h4>Display Reordering</h4>
+            <div class="form-group">
+                <label>Manage Ordering Sequence</label>
+                <div id="reorderListContainer" style="display: flex; flex-direction: column;">
+                    <!-- Sections ordered stack injected -->
+                </div>
+            </div>
+            <button class="action-btn primary" style="width: 100%; justify-content: center;" onclick="submitDisplayOrder()">Save Ordering</button>
+        </div>
+
+        <!-- 4. Team Members list -->
+        <div class="admin-section">
+            <h4>Team Showcase Directory</h4>
+            <div id="adminTeamList" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- Managed team items -->
+            </div>
+            
+            <h5 style="font-size: 0.82rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Add / Edit Team Member</h5>
+            <input type="hidden" id="teamEditId">
+            <div class="form-group">
+                <label for="teamEditName">Full Name</label>
+                <input type="text" class="admin-input" id="teamEditName">
+            </div>
+            <div class="form-group">
+                <label for="teamEditRole">Role in Application</label>
+                <input type="text" class="admin-input" id="teamEditRole">
+            </div>
+            <div class="form-group">
+                <label for="teamEditEmail">Email Address</label>
+                <input type="email" class="admin-input" id="teamEditEmail">
+            </div>
+            <div class="form-group">
+                <label for="teamEditAvatar">Avatar URL (leave blank for fallback)</label>
+                <input type="text" class="admin-input" id="teamEditAvatar" placeholder="e.g. assets/default_avatar.png">
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="action-btn primary" style="flex: 1; justify-content: center;" onclick="saveTeamMember()">Save Member</button>
+                <button class="action-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="resetTeamForm()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Toast -->
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-check" id="toastIcon"></i>
+        <span id="toastMessage">Saved successfully</span>
+    </div>
+
+    <!-- Scripting Core -->
+    <script>
+        let currentMode = 'pitch'; // 'pitch' or 'tech'
+        let currentSections = [];
+        let teamMembers = [];
+        let appConfig = {};
+        let liveStats = {};
+        let searchFilter = '';
+        let activeEditorTab = 'draft'; // 'draft' or 'live'
+        let countdownInterval = null;
+
+        // Retrieve token
+        const jwtToken = localStorage.getItem('stockSense_jwt') || '';
+
+        // Initialize On Load
+        window.addEventListener('load', async () => {
+            await fetchConfig();
+            await fetchSections();
+            await fetchTeam();
+            await fetchLiveStats();
+            
+            // Start regular live sync stats interval every 15s
+            setInterval(fetchLiveStats, 15000);
+        });
+
+        // Fetch Schedule & Configuration
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/docs/config');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    appConfig = result.config;
+                    
+                    // Render admin settings inside panel
+                    document.getElementById('settingIsPublic').checked = appConfig.is_public === '1';
+                    document.getElementById('settingOverride').checked = appConfig.override_enabled === '1';
+                    
+                    // Datetime pickers require matching format
+                    if (appConfig.start_time) {
+                        document.getElementById('settingStartTime').value = appConfig.start_time.replace(' ', 'T');
+                    }
+                    if (appConfig.end_time) {
+                        document.getElementById('settingEndTime').value = appConfig.end_time.replace(' ', 'T');
+                    }
+
+                    // Format date string for countdown footer
+                    const startStr = formatDateForCountdown(appConfig.start_time || '2026-06-10 00:00:00');
+                    const endStr = formatDateForCountdown(appConfig.end_time || '2026-06-14 23:59:59');
+                    document.getElementById('scheduledRangeText').textContent = `${startStr} — ${endStr}`;
+                }
+            } catch (err) {
+                console.error("Config fetch failed", err);
+            }
+        }
+
+        function formatDateForCountdown(dtStr) {
+            try {
+                const parts = dtStr.split(' ');
+                const dateParts = parts[0].split('-');
+                const year = dateParts[0];
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const month = monthNames[parseInt(dateParts[1], 10) - 1];
+                const day = dateParts[2];
+                return `${month} ${day}, ${year} (${parts[1].substring(0, 5)})`;
+            } catch (e) {
+                return dtStr;
+            }
+        }
+
+        // Fetch Sections
+        async function fetchSections() {
+            try {
+                const headers = {};
+                if (jwtToken) {
+                    headers['Authorization'] = `Bearer ${jwtToken}`;
+                }
+                const res = await fetch('/api/docs/sections', { headers });
+                
+                if (res.status === 403) {
+                    // Restricted visitor - activate Locked Overlay countdown
+                    const data = await res.json();
+                    activateCountdown(data.config);
+                    return;
+                }
+                
+                const result = await res.json();
+                if (result.status === 'success') {
+                    currentSections = result.data;
+                    
+                    // Bypassed or unlocked - assure locked screen is closed
+                    document.getElementById('lockedOverlay').style.display = 'none';
+                    if (countdownInterval) clearInterval(countdownInterval);
+
+                    // If role is admin, show setting gear
+                    if (result.role === 'admin') {
+                        document.getElementById('adminTrigger').style.display = 'flex';
+                        renderAdminSectionDropdowns();
+                        renderAdminReorderList();
+                    }
+                    
+                    renderChapters();
+                }
+            } catch (err) {
+                console.error("Failed to load sections", err);
+            }
+        }
+
+        // Fetch Team Members
+        async function fetchTeam() {
+            try {
+                const headers = {};
+                if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+                const res = await fetch('/api/docs/team', { headers });
+                if (res.ok) {
+                    const result = await res.json();
+                    teamMembers = result.data || [];
+                    renderAdminTeamList();
+                }
+            } catch (err) {
+                console.error("Failed to fetch team list", err);
+            }
+        }
+
+        // Fetch Live Database Stats
+        async function fetchLiveStats() {
+            try {
+                const res = await fetch('/api/docs/live-stats');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    liveStats = result.stats;
+                    
+                    // Update stats counters if active in DOM
+                    const userVal = document.getElementById('statTotalUsers');
+                    const skuVal = document.getElementById('statTotalSKUs');
+                    const stockVal = document.getElementById('statTotalUnits');
+                    const forecastVal = document.getElementById('statTotalForecasts');
+                    
+                    if (userVal) userVal.textContent = liveStats.total_users;
+                    if (skuVal) skuVal.textContent = liveStats.total_skus;
+                    if (stockVal) stockVal.textContent = liveStats.total_units;
+                    if (forecastVal) forecastVal.textContent = liveStats.total_forecasts;
+                }
+            } catch (err) {
+                console.error("Live stats sync error", err);
+            }
+        }
+
+        // Countdown Timer Logic
+        function activateCountdown(config) {
+            document.getElementById('lockedOverlay').style.display = 'flex';
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            const startStr = config.start_time || '2026-06-10 00:00:00';
+            
+            function tick() {
+                // Parse standard naive SQL time
+                const targetTime = new Date(startStr.replace(' ', 'T')).getTime();
+                const now = new Date().getTime();
+                const delta = targetTime - now;
+
+                if (delta <= 0) {
+                    clearInterval(countdownInterval);
+                    // Refresh and try loading sections
+                    fetchSections();
+                    return;
+                }
+
+                const days = Math.floor(delta / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((delta % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((delta % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((delta % (1000 * 60)) / 1000);
+
+                document.getElementById('cdDays').textContent = String(days).padStart(2, '0');
+                document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('cdMinutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('cdSeconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            tick();
+            countdownInterval = setInterval(tick, 1000);
+        }
+
+        // Mode Navigation (Pitch vs Tech Docs)
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnPitchMode').classList.toggle('active', mode === 'pitch');
+            document.getElementById('btnTechMode').classList.toggle('active', mode === 'tech');
+            
+            renderChapters();
+        }
+
+        // Render Chapters Column & Sidebar Lists
+        function renderChapters() {
+            const sidebarNav = document.getElementById('sidebarNav');
+            const contentArea = document.getElementById('contentArea');
+            
+            sidebarNav.innerHTML = '';
+            contentArea.innerHTML = '';
+
+            // Filter sections matching current category (category: 'pitch' or 'tech')
+            const isPitch = currentMode === 'pitch';
+            const targetCategory = isPitch ? 'pitch' : 'tech';
+            
+            let filtered = currentSections.filter(sec => sec.category === targetCategory);
+
+            // Filter by search keyword
+            if (searchFilter) {
+                const keyword = searchFilter.toLowerCase();
+                filtered = filtered.filter(sec => 
+                    sec.title.toLowerCase().includes(keyword) || 
+                    (sec.content && sec.content.toLowerCase().includes(keyword)) ||
+                    (sec.draft_content && sec.draft_content.toLowerCase().includes(keyword))
+                );
+            }
+
+            if (filtered.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="glass" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 1rem;"></i>
+                        <p>No chapters match your search query.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach((sec, index) => {
+                // Determine which content to display
+                // If draft exists and user is admin, show indicator or load draft
+                const hasDraft = sec.draft_content !== null && sec.draft_content !== undefined;
+                const isPublished = sec.is_published === 1;
+                
+                let bodyHtml = hasDraft ? sec.draft_content : sec.content;
+                
+                // If bodyHtml is markdown, let's parse basic headers, bullets, bold text, and HTML elements
+                const displayHtml = parseMarkdownToHtml(bodyHtml || '');
+
+                // 1. Append Sidebar Anchor Link
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="#sec-${sec.section_id}" class="nav-link ${index === 0 ? 'active' : ''}" id="nav-link-${sec.section_id}">
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        <span>${sec.title}</span>
+                        ${hasDraft ? '<span style="width:6px; height:6px; border-radius:50%; background:var(--accent-secondary);" title="Draft changes exist"></span>' : ''}
+                        ${!isPublished ? '<i class="fa-solid fa-eye-slash" style="font-size:0.75rem;" title="Private draft"></i>' : ''}
+                    </a>
+                `;
+                sidebarNav.appendChild(li);
+
+                // 2. Append Chapter card
+                const card = document.createElement('section');
+                card.className = 'chapter-card glass';
+                card.id = `sec-${sec.section_id}`;
+                
+                let lastUpdatedFormatted = 'Synced';
+                if (sec.last_updated) {
+                    try {
+                        lastUpdatedFormatted = sec.last_updated.substring(0, 16);
+                    } catch(e) {}
+                }
+
+                card.innerHTML = `
+                    <div class="chapter-header">
+                        <h2>${sec.title}</h2>
+                        <div class="chapter-meta">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Updated: ${lastUpdatedFormatted}</span>
+                        </div>
+                    </div>
+                    <div class="chapter-body">
+                        ${displayHtml}
+                        
+                        <!-- Modular Enhancements Hook -->
+                        ${sec.section_id === 'team_showcase' || sec.section_id === 'tech_team' ? getTeamShowcaseHtml() : ''}
+                        ${sec.section_id === 'tech_feature_matrix' ? getFeatureMatrixHtml() : ''}
+                        ${sec.section_id === 'product_demo' ? getLiveDashboardPromo() : ''}
+                        ${sec.section_id === 'tech_overview' ? getLiveDashboardOverview() : ''}
+                        ${sec.section_id === 'tech_architecture' ? getArchitectureDiagramHtml() : ''}
+                    </div>
+                `;
+                contentArea.appendChild(card);
+            });
+
+            // Bind click scroll actions to sidebar
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                        links.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Intersection Observer to highlight active sidebar item on scroll
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const secId = entry.target.id;
+                        links.forEach(l => {
+                            const active = l.getAttribute('href') === `#${secId}`;
+                            l.classList.toggle('active', active);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            filtered.forEach(sec => {
+                const el = document.getElementById(`sec-${sec.section_id}`);
+                if (el) observer.observe(el);
+            });
+        }
+
+        // Basic Markdown-to-HTML parser for formatted seeds representation
+        function parseMarkdownToHtml(mdText) {
+            if (!mdText) return '';
+            
+            // Escape HTML slightly to prevent injection except authorized elements
+            let html = mdText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Re-allow basic tags we use for rendering structures
+            html = html
+                .replace(/&lt;br&gt;/g, '<br>')
+                .replace(/&lt;br \/&gt;/g, '<br>')
+                .replace(/&lt;b&gt;([\s\S]*?)&lt;\/b&gt;/g, '<strong>$1</strong>')
+                .replace(/&lt;strong&gt;([\s\S]*?)&lt;\/strong&gt;/g, '<strong>$1</strong>')
+                .replace(/&lt;ul&gt;([\s\S]*?)&lt;\/ul&gt;/g, '<ul>$1</ul>')
+                .replace(/&lt;li&gt;([\s\S]*?)&lt;\/li&gt;/g, '<li>$1</li>');
+
+            // Bullets formatting
+            html = html.replace(/^\s*-\s+(.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.+<\/li>)/g, '<ul>$1</ul>');
+            // Clean consecutive duplicated <ul> wrappers
+            html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+            // Paragraph formatting
+            html = html.split('\n\n').map(p => {
+                if (p.trim().startsWith('<ul>') || p.trim().startsWith('<li>') || p.trim().startsWith('<br>')) {
+                    return p;
+                }
+                return `<p>${p}</p>`;
+            }).join('');
+
+            return html;
+        }
+
+        // Search Handlers
+        function handleSearch() {
+            searchFilter = document.getElementById('searchInput').value;
+            renderChapters();
+        }
+
+        /* 
+         --- Modular UI Enhancements ---
+        */
+        
+        // 1. Live Data Sync Stats block
+        function getLiveDashboardPromo() {
+            return `
+                <div class="live-sync-panel">
+                    <div class="live-sync-header">
+                        <h4><i class="fa-solid fa-satellite-dish"></i> Live Database Node Integration</h4>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div class="live-indicator-dot"></div>
+                            <span style="font-size:0.75rem; color:#10b981; font-weight:600;">ACTIVE AUTO-SYNC</span>
+                        </div>
+                    </div>
+                    <div class="live-grid">
+                        <div class="live-card">
+                            <div class="live-card-val" id="statTotalUsers">${liveStats.total_users || 0}</div>
+                            <div class="live-card-lbl">Tenant Users</div>
+                        </div>
+                        <div class="live-card">
+                            <div class="live-card-val" id="statTotalSKUs">${liveStats.total_skus || 0}</div>
+                            <div class="live-card-lbl">SKUs Tracked</div>
+                        </div>
+                        <div class="live-card">
+                            <div class="live-card-val" id="statTotalUnits">${liveStats.total_units || 0}</div>
+                            <div class="live-card-lbl">Warehouse Stock</div>
+                        </div>
+                        <div class="live-card">
+                            <div class="live-card-val" id="statTotalForecasts">${liveStats.total_forecasts || 0}</div>
+                            <div class="live-card-lbl">Prophet Predictions</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getLiveDashboardOverview() {
+            return getLiveDashboardPromo();
+        }
+
+        // 2. Interactive SVG Architecture Diagram (UI -> API -> Services -> DB)
+        function getArchitectureDiagramHtml() {
+            return `
+                <div class="diagram-container">
+                    <svg viewBox="0 0 650 300" class="arch-diagram">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6" />
+                            </marker>
+                        </defs>
+                        <!-- Title -->
+                        <text x="325" y="25" class="arch-text title">StockSense Edge System Topology</text>
+                        
+                        <!-- Client Layer -->
+                        <g>
+                            <rect x="30" y="80" width="160" height="70" class="arch-box active" />
+                            <text x="110" y="105" class="arch-text title">Edge SPA UI</text>
+                            <text x="110" y="125" class="arch-text">Vanilla JS / Chart.js</text>
+                        </g>
+
+                        <!-- API Gateway -->
+                        <g>
+                            <rect x="245" y="80" width="160" height="70" class="arch-box active" />
+                            <text x="325" y="105" class="arch-text title">FastAPI Local Core</text>
+                            <text x="325" y="125" class="arch-text">Python ASGI Backend</text>
+                        </g>
+
+                        <!-- Storage Layer -->
+                        <g>
+                            <rect x="460" y="80" width="160" height="70" class="arch-box" />
+                            <text x="540" y="105" class="arch-text title">SQLite Storage</text>
+                            <text x="540" y="125" class="arch-text">Local data / users.db</text>
+                        </g>
+
+                        <!-- Predictive Service (isolated process) -->
+                        <g>
+                            <rect x="137" y="200" width="160" height="70" class="arch-box" />
+                            <text x="217" y="225" class="arch-text title">Prophet ML Worker</text>
+                            <text x="217" y="245" class="arch-text">Isolated Time-Series Fit</text>
+                        </g>
+
+                        <!-- Stateless AI Agent Gateway -->
+                        <g>
+                            <rect x="352" y="200" width="160" height="70" class="arch-box" />
+                            <text x="432" y="225" class="arch-text title">Stateless AI Interface</text>
+                            <text x="432" y="245" class="arch-text">Zero-Retention API Gateway</text>
+                        </g>
+
+                        <!-- Connections -->
+                        <!-- UI -> API -->
+                        <path d="M 190 115 L 245 115" class="arch-line active" marker-end="url(#arrow)" />
+                        <!-- API -> DB -->
+                        <path d="M 405 115 L 460 115" class="arch-line active" marker-end="url(#arrow)" />
+                        <!-- API -> Prophet Worker -->
+                        <path d="M 325 150 C 325 175, 217 175, 217 200" class="arch-line" marker-end="url(#arrow)" />
+                        <!-- API -> Stateless LLM -->
+                        <path d="M 325 150 C 325 175, 432 175, 432 200" class="arch-line" marker-end="url(#arrow)" />
+                    </svg>
+                </div>
+            `;
+        }
+
+        // 3. Feature Matrix with Status Indicators
+        function getFeatureMatrixHtml() {
+            return `
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Module / Feature</th>
+                            <th>Scope &amp; Runtime</th>
+                            <th>Status Badge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Prophet Forecast Visuals</strong></td>
+                            <td>Edge / Client Sandbox</td>
+                            <td><span class="matrix-badge live">LIVE AUTO-SYNC</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SHAP Feature Driver Plots</strong></td>
+                            <td>Local Python Subprocess</td>
+                            <td><span class="matrix-badge live">LIVE AUTO-SYNC</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stateful ML Chat Companion</strong></td>
+                            <td>Stateless Secure Inferences</td>
+                            <td><span class="matrix-badge live">LIVE AUTO-SYNC</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dynamic Promotion Compiler</strong></td>
+                            <td>Holiday &amp; Seasonality Ingestion</td>
+                            <td><span class="matrix-badge live">LIVE AUTO-SYNC</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GraphRAG Supplier Logistics Map</strong></td>
+                            <td>Cloud Sovereign Node Integration</td>
+                            <td><span class="matrix-badge planned">PLANNED (Q3)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // 4. Team Showcase UI (uniform grids, aspect ratios, email links, uniform cards)
+        function getTeamShowcaseHtml() {
+            if (teamMembers.length === 0) {
+                return `
+                    <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.88rem;">
+                        Awaiting team roster compilation...
+                    </div>
+                `;
+            }
+
+            let html = '<div class="team-grid">';
+            teamMembers.forEach(member => {
+                const hasAvatar = member.avatar_url && member.avatar_url.trim() !== '';
+                const avatarImg = hasAvatar ? `<img src="${member.avatar_url}" class="team-avatar" alt="${member.name}">` : '';
+                const fallbackAvatar = !hasAvatar ? `<i class="fa-regular fa-user team-avatar-fallback"></i>` : '';
+
+                html += `
+                    <div class="team-card glass">
+                        <div class="team-avatar-container">
+                            ${avatarImg}
+                            ${fallbackAvatar}
+                        </div>
+                        <div class="team-name">${member.name}</div>
+                        <div class="team-role">${member.role}</div>
+                        <a href="mailto:${member.email}" class="team-email">
+                            <i class="fa-regular fa-envelope"></i>
+                            <span>${member.email}</span>
+                        </a>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        /*
+         --- Admin Sidebar / Edit Portal Logic ---
+        */
+        
+        function toggleAdminSidebar() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        }
+
+        // Save access control & calendar scheduling settings
+        async function saveAdminSettings() {
+            const isPublic = document.getElementById('settingIsPublic').checked ? '1' : '0';
+            const startVal = document.getElementById('settingStartTime').value.replace('T', ' ');
+            const endVal = document.getElementById('settingEndTime').value.replace('T', ' ');
+            const overrideVal = document.getElementById('settingOverride').checked ? '1' : '0';
+
+            const payload = {
+                is_public: isPublic,
+                start_time: startVal || '2026-06-10 00:00:00',
+                end_time: endVal || '2026-06-14 23:59:59',
+                override_enabled: overrideVal
+            };
+
+            try {
+                const res = await fetch('/api/docs/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    showToast('Settings saved successfully', 'success');
+                    fetchConfig(); // refresh local model
+                } else {
+                    showToast('Failed to save settings', 'error');
+                }
+            } catch (err) {
+                console.error("Save settings error", err);
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // Load section select option list
+        function renderAdminSectionDropdowns() {
+            const select = document.getElementById('editorSelectSection');
+            select.innerHTML = '';
+            
+            currentSections.forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec.section_id;
+                opt.textContent = `[${sec.category.toUpperCase()}] — ${sec.title}`;
+                select.appendChild(opt);
+            });
+
+            // Trigger load for first option
+            if (currentSections.length > 0) {
+                loadSectionIntoEditor();
+            }
+        }
+
+        // Load targeted section values into workspace
+        function loadSectionIntoEditor() {
+            const secId = document.getElementById('editorSelectSection').value;
+            const sec = currentSections.find(s => s.section_id === secId);
+            
+            if (sec) {
+                document.getElementById('editorTitle').value = sec.title;
+                
+                // Toggle active tab workspace
+                const isDraft = activeEditorTab === 'draft';
+                const hasDraft = sec.draft_content !== null && sec.draft_content !== undefined;
+                
+                if (isDraft) {
+                    document.getElementById('editorBody').value = hasDraft ? sec.draft_content : (sec.content || '');
+                } else {
+                    document.getElementById('editorBody').value = sec.content || '';
+                }
+            }
+        }
+
+        function switchEditorTab(tab) {
+            activeEditorTab = tab;
+            document.getElementById('tabEditDraft').classList.toggle('active', tab === 'draft');
+            document.getElementById('tabEditLive').classList.toggle('active', tab === 'live');
+            
+            loadSectionIntoEditor();
+        }
+
+        // Submit section content changes (draft vs published)
+        async function saveEditorChanges(publishNow) {
+            const secId = document.getElementById('editorSelectSection').value;
+            const title = document.getElementById('editorTitle').value.trim();
+            const body = document.getElementById('editorBody').value;
+
+            if (!title) {
+                showToast('Title is required', 'error');
+                return;
+            }
+
+            const payload = {
+                title: title,
+                content: publishNow ? body : '',
+                draft_content: !publishNow ? body : null,
+                is_published: 1,
+                publish_now: publishNow
+            };
+
+            try {
+                const res = await fetch(`/api/docs/sections/${secId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(publishNow ? 'Section published live!' : 'Draft saved successfully', 'success');
+                    await fetchSections(); // Refresh full local store
+                } else {
+                    showToast('Failed to update section', 'error');
+                }
+            } catch (err) {
+                console.error("Save section error", err);
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // Render Reorder items in admin stack
+        function renderAdminReorderList() {
+            const list = document.getElementById('reorderListContainer');
+            list.innerHTML = '';
+
+            // Group reorder options based on current category view
+            const isPitch = currentMode === 'pitch';
+            const categoryFilter = isPitch ? 'pitch' : 'tech';
+            
+            const filtered = currentSections.filter(s => s.category === categoryFilter);
+
+            filtered.forEach((sec, index) => {
+                const item = document.createElement('div');
+                item.className = 'reorder-list-item';
+                item.innerHTML = `
+                    <span>${sec.title}</span>
+                    <div class="reorder-arrows">
+                        <button class="reorder-arrow-btn" onclick="moveSectionInList('${sec.section_id}', -1)" ${index === 0 ? 'disabled' : ''}>
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button class="reorder-arrow-btn" onclick="moveSectionInList('${sec.section_id}', 1)" ${index === filtered.length - 1 ? 'disabled' : ''}>
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Adjust position of item in display array locally
+        function moveSectionInList(secId, direction) {
+            const isPitch = currentMode === 'pitch';
+            const categoryFilter = isPitch ? 'pitch' : 'tech';
+            
+            // Extract all items of this category
+            const filtered = currentSections.filter(s => s.category === categoryFilter);
+            const idx = filtered.findIndex(s => s.section_id === secId);
+            
+            if (idx === -1) return;
+            
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= filtered.length) return;
+            
+            // Swap display order indices in currentSections
+            const itemA = filtered[idx];
+            const itemB = filtered[targetIdx];
+            
+            // Find global index in main array
+            const globalIdxA = currentSections.findIndex(s => s.section_id === itemA.section_id);
+            const globalIdxB = currentSections.findIndex(s => s.section_id === itemB.section_id);
+            
+            // Swap display order properties
+            const tempOrder = currentSections[globalIdxA].display_order;
+            currentSections[globalIdxA].display_order = currentSections[globalIdxB].display_order;
+            currentSections[globalIdxB].display_order = tempOrder;
+            
+            // Sort primary sections list
+            currentSections.sort((a,b) => a.display_order - b.display_order);
+            
+            renderAdminReorderList();
+        }
+
+        // Post Display orders updates to backend
+        async function submitDisplayOrder() {
+            const isPitch = currentMode === 'pitch';
+            const categoryFilter = isPitch ? 'pitch' : 'tech';
+            const orderedIds = currentSections.filter(s => s.category === categoryFilter).map(s => s.section_id);
+
+            try {
+                const res = await fetch('/api/docs/sections/reorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify({ section_ids: orderedIds })
+                });
+
+                if (res.ok) {
+                    showToast('Display sequence reordered successfully!', 'success');
+                    await fetchSections(); // Sync full lists
+                } else {
+                    showToast('Failed to save display ordering', 'error');
+                }
+            } catch (err) {
+                console.error("Submit order error", err);
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // Render administrative team member lists
+        function renderAdminTeamList() {
+            const list = document.getElementById('adminTeamList');
+            list.innerHTML = '';
+            
+            teamMembers.forEach(member => {
+                const div = document.createElement('div');
+                div.className = 'reorder-list-item';
+                div.style.background = 'rgba(255,255,255,0.01)';
+                div.innerHTML = `
+                    <div>
+                        <strong style="display:block; font-size:0.82rem;">${member.name}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${member.role}</span>
+                    </div>
+                    <div style="display:flex; gap:0.25rem;">
+                        <button class="reorder-arrow-btn" onclick="loadTeamMemberIntoForm(${member.id})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="reorder-arrow-btn" style="color:var(--text-muted);" onclick="deleteTeamMember(${member.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function loadTeamMemberIntoForm(id) {
+            const member = teamMembers.find(t => t.id === id);
+            if (member) {
+                document.getElementById('teamEditId').value = member.id;
+                document.getElementById('teamEditName').value = member.name;
+                document.getElementById('teamEditRole').value = member.role;
+                document.getElementById('teamEditEmail').value = member.email;
+                document.getElementById('teamEditAvatar').value = member.avatar_url || '';
+            }
+        }
+
+        function resetTeamForm() {
+            document.getElementById('teamEditId').value = '';
+            document.getElementById('teamEditName').value = '';
+            document.getElementById('teamEditRole').value = '';
+            document.getElementById('teamEditEmail').value = '';
+            document.getElementById('teamEditAvatar').value = '';
+        }
+
+        async function saveTeamMember() {
+            const id = document.getElementById('teamEditId').value;
+            const name = document.getElementById('teamEditName').value.trim();
+            const role = document.getElementById('teamEditRole').value.trim();
+            const email = document.getElementById('teamEditEmail').value.trim();
+            const avatar = document.getElementById('teamEditAvatar').value.trim();
+
+            if (!name || !role || !email) {
+                showToast('All core team details are required', 'error');
+                return;
+            }
+
+            const payload = {
+                name: name,
+                role: role,
+                email: email,
+                avatar_url: avatar,
+                display_order: id ? parseInt(id, 10) : teamMembers.length + 1
+            };
+
+            if (id) payload.id = parseInt(id, 10);
+
+            try {
+                const res = await fetch('/api/docs/team', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast('Team member saved!', 'success');
+                    resetTeamForm();
+                    await fetchTeam(); // Refresh team lists
+                    renderChapters(); // Refresh content grid
+                } else {
+                    showToast('Failed to save team member', 'error');
+                }
+            } catch (err) {
+                console.error("Save team member error", err);
+                showToast('Connection error', 'error');
+            }
+        }
+
+        async function deleteTeamMember(id) {
+            if (!confirm('Are you sure you want to remove this team member?')) return;
+
+            try {
+                const res = await fetch(`/api/docs/team/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+
+                if (res.ok) {
+                    showToast('Team member deleted successfully!', 'success');
+                    await fetchTeam(); // Refresh lists
+                    renderChapters(); // Refresh content grids
+                } else {
+                    showToast('Failed to delete team member', 'error');
+                }
+            } catch (err) {
+                console.error("Delete team member error", err);
+                showToast('Connection error', 'error');
+            }
+        }
+
+
+        // Toast helper notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            messageEl.textContent = message;
+            toast.className = `toast show ${type}`;
+
+            if (type === 'success') {
+                iconEl.className = 'fa-solid fa-circle-check';
+                iconEl.style.color = '#10b981';
+            } else {
+                iconEl.className = 'fa-solid fa-circle-exclamation';
+                iconEl.style.color = '#ef4444';
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        /*
+         --- Export Suite ---
+        */
+        
+        // PDF Print trigger
+        document.getElementById('exportPdfBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Markdown Compilation & trigger
+        document.getElementById('exportMarkdownBtn').addEventListener('click', () => {
+            let mdContent = `# StockSense AI — ${currentMode === 'pitch' ? 'YC Pitch Deck Portfolio' : 'Full Technical Specifications'}\n\n`;
+            
+            const isPitch = currentMode === 'pitch';
+            const categoryFilter = isPitch ? 'pitch' : 'tech';
+            const filtered = currentSections.filter(s => s.category === categoryFilter);
+
+            filtered.forEach(sec => {
+                const hasDraft = sec.draft_content !== null && sec.draft_content !== undefined;
+                const bodyText = hasDraft ? sec.draft_content : (sec.content || '');
+                
+                mdContent += `## ${sec.title}\n\n`;
+                // Convert basic HTML lists back to markdown format
+                let cleaned = bodyText
+                    .replace(/<br>/g, '\n')
+                    .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+                    .replace(/<ul>/g, '')
+                    .replace(/<\/ul>/g, '')
+                    .replace(/<li>/g, '- ')
+                    .replace(/<\/li>/g, '\n');
+
+                mdContent += `${cleaned}\n\n---\n\n`;
+            });
+
+            // If team section is present, compile team members too
+            if (filtered.some(s => s.section_id === 'team_showcase' || s.section_id === 'tech_team')) {
+                mdContent += `## Unified Contributor List\n\n`;
+                teamMembers.forEach(t => {
+                    mdContent += `- **${t.name}** — ${t.role} (${t.email})\n`;
+                });
+                mdContent += '\n---\n';
+            }
+
+            // Trigger file download
+            const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `StockSense_AI_${currentMode === 'pitch' ? 'Pitch_Deck' : 'Technical_Whitepaper'}.md`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+            
+            showToast('Markdown documentation downloaded successfully!', 'success');
+        });
+    </script>
+</body>
+</html>
