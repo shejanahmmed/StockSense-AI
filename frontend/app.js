@@ -3383,6 +3383,30 @@ function initUserProfile() {
         });
     }
     
+    // Mobile Profile Dropdown Actions
+    const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+    if (mobileSettingsBtn) {
+        mobileSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('navSettings').click();
+            const navMenu = document.querySelector('.nav-menu');
+            if (navMenu) navMenu.classList.remove('open');
+        });
+    }
+    
+    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+    if (mobileLogoutBtn) {
+        mobileLogoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(confirm('Are you sure you want to sign out?')) {
+                localStorage.removeItem('stockSense_storeName');
+                localStorage.removeItem('stockSense_industry');
+                localStorage.removeItem('stockSense_jwt');
+                window.location.reload();
+            }
+        });
+    }
+    
     // 4. Save Settings Button
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     if (saveSettingsBtn) {
@@ -3499,8 +3523,7 @@ function initUserProfile() {
 }
 
 function updateUserProfileUI(name, role, avatarUrl) {
-    const DEFAULT_AVATAR = '/default_avatar.png';
-    const effectiveAvatar = (avatarUrl && avatarUrl.trim() !== '') ? avatarUrl : DEFAULT_AVATAR;
+    const hasCustomAvatar = avatarUrl && avatarUrl.trim() !== '' && avatarUrl !== '/default_avatar.png' && avatarUrl !== 'default_avatar.png';
 
     // Sidebar
     const sidebarName = document.getElementById('sidebarUserName');
@@ -3512,21 +3535,31 @@ function updateUserProfileUI(name, role, avatarUrl) {
     const sidebarAvatar = document.getElementById('sidebarAvatar');
     const sidebarAvatarIcon = document.getElementById('sidebarAvatarIcon');
     if (sidebarAvatar) {
-        sidebarAvatar.style.backgroundImage = `url('${effectiveAvatar}')`;
-        sidebarAvatar.style.backgroundSize = 'cover';
-        sidebarAvatar.style.backgroundPosition = 'center';
+        if (hasCustomAvatar) {
+            sidebarAvatar.style.backgroundImage = `url('${avatarUrl}')`;
+            sidebarAvatar.style.backgroundSize = 'cover';
+            sidebarAvatar.style.backgroundPosition = 'center';
+            if (sidebarAvatarIcon) sidebarAvatarIcon.style.display = 'none';
+        } else {
+            sidebarAvatar.style.backgroundImage = 'none';
+            if (sidebarAvatarIcon) sidebarAvatarIcon.style.display = 'block';
+        }
     }
-    if (sidebarAvatarIcon) sidebarAvatarIcon.style.display = 'none';
 
     // Settings Preview
     const settingsPreview = document.getElementById('settingsAvatarPreview');
     const settingsIcon = document.getElementById('settingsAvatarIcon');
     if (settingsPreview) {
-        settingsPreview.style.backgroundImage = `url('${effectiveAvatar}')`;
-        settingsPreview.style.backgroundSize = 'cover';
-        settingsPreview.style.backgroundPosition = 'center';
+        if (hasCustomAvatar) {
+            settingsPreview.style.backgroundImage = `url('${avatarUrl}')`;
+            settingsPreview.style.backgroundSize = 'cover';
+            settingsPreview.style.backgroundPosition = 'center';
+            if (settingsIcon) settingsIcon.style.display = 'none';
+        } else {
+            settingsPreview.style.backgroundImage = 'none';
+            if (settingsIcon) settingsIcon.style.display = 'block';
+        }
     }
-    if (settingsIcon) settingsIcon.style.display = 'none';
 
     // Dropdown Header
     const dropdownName = document.getElementById('dropdownUserName');
@@ -3538,16 +3571,41 @@ function updateUserProfileUI(name, role, avatarUrl) {
     const dropdownAvatar = document.getElementById('dropdownAvatar');
     const dropdownAvatarIcon = document.getElementById('dropdownAvatarIcon');
     if (dropdownAvatar) {
-        dropdownAvatar.style.backgroundImage = `url('${effectiveAvatar}')`;
-        dropdownAvatar.style.backgroundSize = 'cover';
-        dropdownAvatar.style.backgroundPosition = 'center';
+        if (hasCustomAvatar) {
+            dropdownAvatar.style.backgroundImage = `url('${avatarUrl}')`;
+            dropdownAvatar.style.backgroundSize = 'cover';
+            dropdownAvatar.style.backgroundPosition = 'center';
+            if (dropdownAvatarIcon) dropdownAvatarIcon.style.display = 'none';
+        } else {
+            dropdownAvatar.style.backgroundImage = 'none';
+            if (dropdownAvatarIcon) dropdownAvatarIcon.style.display = 'block';
+        }
     }
-    if (dropdownAvatarIcon) dropdownAvatarIcon.style.display = 'none';
+
+    // Mobile Profile Sync
+    const mobileName = document.getElementById('mobileUserName');
+    const mobileRole = document.getElementById('mobileUserRole');
+    if (mobileName) mobileName.textContent = name;
+    if (mobileRole) mobileRole.textContent = role;
+
+    const mobileAvatar = document.getElementById('mobileAvatar');
+    const mobileAvatarIcon = document.getElementById('mobileAvatarIcon');
+    if (mobileAvatar) {
+        if (hasCustomAvatar) {
+            mobileAvatar.style.backgroundImage = `url('${avatarUrl}')`;
+            mobileAvatar.style.backgroundSize = 'cover';
+            mobileAvatar.style.backgroundPosition = 'center';
+            if (mobileAvatarIcon) mobileAvatarIcon.style.display = 'none';
+        } else {
+            mobileAvatar.style.backgroundImage = 'none';
+            if (mobileAvatarIcon) mobileAvatarIcon.style.display = 'block';
+        }
+    }
 
     // Toggle Remove Button
     const removeBtn = document.getElementById('removeAvatarBtn');
     if (removeBtn) {
-        if (avatarUrl && avatarUrl.trim() !== '' && avatarUrl !== '/default_avatar.png' && avatarUrl !== 'default_avatar.png') {
+        if (hasCustomAvatar) {
             removeBtn.style.display = 'inline-flex';
         } else {
             removeBtn.style.display = 'none';
