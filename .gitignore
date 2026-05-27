@@ -41,6 +41,7 @@ data/raw/*
 data/processed/*
 data/external/*
 *.csv
+!frontend/assets/sample/Demo.csv
 *.parquet
 *.sqlite
 
