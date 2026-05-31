@@ -631,14 +631,24 @@ function setupNavigation() {
 // Inventory Management
 // ==========================================
 async function loadInventoryData() {
+    const token = localStorage.getItem('stockSense_jwt');
+    if (!token) return;
+
     const tbody = document.getElementById('inventoryTableBody');
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
     
     try {
-        const token = localStorage.getItem('stockSense_jwt');
         const response = await fetch('/api/inventory', {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (response.status === 401) {
+            localStorage.removeItem('stockSense_storeName');
+            localStorage.removeItem('stockSense_jwt');
+            localStorage.removeItem('stockSense_industry');
+            localStorage.removeItem('stockSense_avatarUrl');
+            window.location.reload();
+            return;
+        }
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const result = await response.json();
@@ -665,11 +675,21 @@ async function loadInventoryData() {
 }
 
 async function loadInventorySilent() {
+    const token = localStorage.getItem('stockSense_jwt');
+    if (!token) return;
+
     try {
-        const token = localStorage.getItem('stockSense_jwt');
         const response = await fetch('/api/inventory', {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (response.status === 401) {
+            localStorage.removeItem('stockSense_storeName');
+            localStorage.removeItem('stockSense_jwt');
+            localStorage.removeItem('stockSense_industry');
+            localStorage.removeItem('stockSense_avatarUrl');
+            window.location.reload();
+            return;
+        }
         if (response.ok) {
             const result = await response.json();
             if (result.status === 'success' && result.data) {
@@ -1395,6 +1415,14 @@ async function loadChatHistory() {
         const res = await fetch('/api/chat/history', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (res.status === 401) {
+            localStorage.removeItem('stockSense_storeName');
+            localStorage.removeItem('stockSense_jwt');
+            localStorage.removeItem('stockSense_industry');
+            localStorage.removeItem('stockSense_avatarUrl');
+            window.location.reload();
+            return;
+        }
         const data = await res.json();
         if (data.status === 'success' && data.history) {
             chatHistory = data.history;
@@ -2970,10 +2998,11 @@ function initChartControls() {
 // ==========================================
 function checkAuth() {
     const savedName = localStorage.getItem('stockSense_storeName');
+    const token = localStorage.getItem('stockSense_jwt');
     const appContainer = document.getElementById('appContainer');
     const authScreen = document.getElementById('authScreen');
     
-    if (!savedName) {
+    if (!savedName || !token) {
         // Not logged in - Show Auth Screen
         if (appContainer) appContainer.style.display = 'none';
         if (authScreen) authScreen.style.display = 'flex';
