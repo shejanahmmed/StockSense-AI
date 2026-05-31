@@ -60,9 +60,9 @@
 
     /* UI Measurements */
 
-    --radius-md: 12px;
+    --radius-md: 8px;
 
-    --radius-lg: 20px;
+    --radius-lg: 12px;
 
     --radius-full: 9999px;
 
@@ -310,7 +310,7 @@ h1, h2, h3, h4 {
 
     justify-content: center;
 
-    border-radius: 10px;
+    border-radius: var(--radius-md);
 
     color: white;
 
@@ -2564,7 +2564,7 @@ h1, h2, h3, h4 {
 .settings-avatar-preview {
     width: 80px;
     height: 80px;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     background: rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
