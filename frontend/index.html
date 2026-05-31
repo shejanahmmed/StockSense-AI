@@ -2145,6 +2145,57 @@
         </main>
     </div>
 
+    <!-- AI Help Chatbot Widget -->
+    <div id="aiHelpContainer" class="ai-help-container">
+        <!-- Floating Toggle Button -->
+        <button id="aiHelpToggle" class="ai-help-toggle" title="Open AI Help Guide">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </button>
+
+        <!-- Chat Panel -->
+        <div id="aiHelpPanel" class="ai-help-panel glass" style="display: none;">
+            <div class="ai-help-header">
+                <div class="ai-help-title-wrapper">
+                    <div class="ai-help-avatar">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <h4 class="ai-help-title">StockSense AI Guide</h4>
+                        <span class="ai-help-subtitle"><span class="ai-help-status-dot"></span> Online Guide Agent</span>
+                    </div>
+                </div>
+                <button id="aiHelpClose" class="ai-help-close-btn" title="Close Panel">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Chat Messages Area -->
+            <div id="aiHelpMessages" class="ai-help-messages">
+                <div class="ai-help-message assistant">
+                    <div class="ai-help-bubble">
+                        Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions Chips -->
+            <div class="ai-help-suggestions">
+                <button class="ai-help-chip" data-query="How do I change the Forecasting Strategy?">💡 Change Strategy</button>
+                <button class="ai-help-chip" data-query="What do the SHAP demand drivers mean?">📊 Explain SHAP</button>
+                <button class="ai-help-chip" data-query="How do I upload custom product CSVs?">📦 Upload CSV</button>
+                <button class="ai-help-chip" data-query="Is my inventory data secure?">🔒 Privacy &amp; Security</button>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="ai-help-input-area">
+                <input type="text" id="aiHelpInput" class="ai-help-input" placeholder="Type a guide question..." autocomplete="off">
+                <button id="aiHelpSend" class="ai-help-send-btn" title="Send Message">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js?v=10"></script>
 </body>
 </html>

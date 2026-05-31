@@ -1,9 +1,12 @@
 import sqlite3
 import datetime
+import json
+import os
+import asyncio
 from pathlib import Path
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from src.api.auth_utils import get_current_user, require_admin
@@ -357,5 +360,156 @@ async def get_live_stats():
                 "service_status": "Operational"
             }
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class HelpChatRequest(BaseModel):
+    message: str
+    history: List[dict] = []
+
+@router.post("/api/docs/chat")
+async def docs_chat(request: HelpChatRequest, authorization: Optional[str] = Header(None)):
+    is_admin = False
+    is_logged_in = False
+    
+    # Check if session is active
+    if authorization and authorization.startswith("Bearer "):
+        try:
+            user = get_current_user(authorization)
+            if user:
+                is_logged_in = True
+                if user.get("role") == "admin":
+                    is_admin = True
+        except Exception:
+            pass # Treat as guest if token is invalid
+            
+    if not is_logged_in and not is_admin:
+        is_allowed, settings = is_docs_public_now()
+        if not is_allowed:
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "status": "locked",
+                    "message": "Access restricted. AI Guide is locked. Please sign in to ask questions.",
+                    "config": settings
+                }
+            )
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT title, content, category FROM docs_sections WHERE is_published = 1 ORDER BY display_order ASC")
+        rows = cursor.fetchall()
+        conn.close()
+        
+        context_parts = []
+        for row in rows:
+            context_parts.append(f"SECTION: {row['title']} (Category: {row['category']})\n{row['content']}\n---")
+        
+        docs_context = "\n".join(context_parts)
+        
+        system_prompt = f"""You are the StockSense AI Guide, an intelligent, extremely helpful and professional customer success companion for StockSense AI.
+Your sole job is to answer questions about StockSense AI's features, operations, forecasting strategies, tech stack, and roadmap using the provided Application Documentation Context below.
+
+Application Documentation Context:
+{docs_context}
+
+Guidelines:
+1. Be concise, friendly, and highly professional.
+2. Use markdown formatting (bolding, lists, code snippets) to make answers easily scannable and beautiful.
+3. If the user asks how to do something (e.g. "How do I change the Forecasting Strategy?"), provide step-by-step guidance based on the documentation. Specify that they should go to the dashboard's configuration/settings panel, and detail the differences between Conservative, Balanced, and Aggressive models.
+4. If a question is not covered in the context, politely explain that you are a guide for StockSense AI and can only answer questions about the app's features and operations, but offer any general business or forecasting context that might be helpful.
+5. Keep answers under 3-4 structural points or a couple of short paragraphs. Do not hallucinate URLs, features, or team members not in the documentation context.
+"""
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in request.history[-5:]: # last 5 messages for safety
+            messages.append({"role": msg.get("role"), "content": msg.get("content")})
+        messages.append({"role": "user", "content": request.message})
+        
+        env = os.environ.get("DEPLOYMENT_ENV", "local").lower()
+        
+        if env == "production":
+            try:
+                from groq import Groq
+            except ImportError:
+                raise HTTPException(status_code=500, detail="Groq library not installed in production.")
+                
+            api_key = os.environ.get("GROQ_API_KEY")
+            if not api_key:
+                raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured in production.")
+                
+            client = Groq(api_key=api_key)
+            
+            def groq_stream_generator():
+                try:
+                    response = client.chat.completions.create(
+                        messages=messages,
+                        model="llama-3.1-8b-instant",
+                        temperature=0.3,
+                        max_tokens=600,
+                        stream=True
+                    )
+                    for chunk in response:
+                        content = chunk.choices[0].delta.content
+                        if content:
+                            yield f"data: {json.dumps({'token': content})}\n\n"
+                    yield "data: [DONE]\n\n"
+                except Exception as e:
+                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                    
+            return StreamingResponse(groq_stream_generator(), media_type="text/event-stream")
+            
+        else:
+            # Local/offline mode
+            try:
+                import ollama
+            except ImportError:
+                ollama = None
+                
+            if ollama is not None:
+                def ollama_safe_stream_generator():
+                    try:
+                        response = ollama.chat(
+                            model='llama3.1',
+                            messages=messages,
+                            stream=True
+                        )
+                        for chunk in response:
+                            content = chunk['message']['content']
+                            if content:
+                                yield f"data: {json.dumps({'token': content})}\n\n"
+                        yield "data: [DONE]\n\n"
+                    except Exception:
+                        fallback_text = (
+                            f"**Hello!** I received your question about StockSense AI:\n\n"
+                            f"> *\"{request.message}\"*\n\n"
+                            f"Since your local Ollama instance is currently offline or unreachable, "
+                            f"please ensure Ollama is running (`ollama run llama3.1`) to utilize the local AI model.\n\n"
+                            f"Alternatively, you can add your `GROQ_API_KEY` to the `.env` file and set "
+                            f"`DEPLOYMENT_ENV=production` to instantly connect to our blazingly fast, "
+                            f"permanently free `llama-3.1-8b-instant` chatbot guide on Groq!"
+                        )
+                        for word in fallback_text.split(" "):
+                            yield f"data: {json.dumps({'token': word + ' '})}\n\n"
+                        yield "data: [DONE]\n\n"
+                
+                return StreamingResponse(ollama_safe_stream_generator(), media_type="text/event-stream")
+            else:
+                def mock_stream_generator():
+                    fallback_text = (
+                        f"**Welcome to the StockSense AI Guide!**\n\n"
+                        f"I see you are asking about: *\"{request.message}\"*\n\n"
+                        f"To enable active AI support, please set up your environment:\n"
+                        f"1. **Production (Recommended):** Add `GROQ_API_KEY` to your `.env` and set `DEPLOYMENT_ENV=production` for blazingly fast, free `llama-3.1-8b-instant` search guides.\n"
+                        f"2. **Local:** Install Ollama and pull `llama3.1` to enjoy 100% private, free support offline.\n\n"
+                        f"Let me know if you would like help setting this up!"
+                    )
+                    for word in fallback_text.split(" "):
+                        yield f"data: {json.dumps({'token': word + ' '})}\n\n"
+                    yield "data: [DONE]\n\n"
+                
+                return StreamingResponse(mock_stream_generator(), media_type="text/event-stream")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
