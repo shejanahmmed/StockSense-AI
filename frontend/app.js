@@ -635,7 +635,7 @@ async function loadInventoryData() {
     if (!token) return;
 
     const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
     
     try {
         const response = await fetch('/api/inventory', {
@@ -670,7 +670,7 @@ async function loadInventoryData() {
         }
     } catch (error) {
         console.error("Inventory error:", error);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
     }
 }
 
@@ -761,7 +761,7 @@ function renderInventoryTable(data, page = 1) {
     badge.innerText = data.length;
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">No products match your filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 2rem;">No products match your filters.</td></tr>';
         renderPagination(0, 1);
         return;
     }
