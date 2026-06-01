@@ -6837,6 +6837,7 @@ function initHelpChat() {
     const aiHelpToggle = document.getElementById('aiHelpToggle');
     const aiHelpPanel = document.getElementById('aiHelpPanel');
     const aiHelpClose = document.getElementById('aiHelpClose');
+    const aiHelpClear = document.getElementById('aiHelpClear');
     const aiHelpInput = document.getElementById('aiHelpInput');
     const aiHelpSend = document.getElementById('aiHelpSend');
     const aiHelpMessages = document.getElementById('aiHelpMessages');
@@ -6879,6 +6880,21 @@ function initHelpChat() {
     if (aiHelpClose) {
         aiHelpClose.addEventListener('click', () => {
             aiHelpPanel.style.display = 'none';
+        });
+    }
+
+    if (aiHelpClear) {
+        aiHelpClear.addEventListener('click', () => {
+            aiHelpHistory = [];
+            localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
+            aiHelpMessages.innerHTML = `
+                <div class="ai-help-message assistant">
+                    <div class="ai-help-bubble">
+                        Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!
+                    </div>
+                </div>
+            `;
+            aiHelpMessages.scrollTop = 0;
         });
     }
 
@@ -6985,8 +7001,56 @@ function initHelpChat() {
             let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
             let fullResponseText = '';
 
-            // Scroll the chat panel so the top of the new response aligns near the top, allowing comfortable reading
-            aiHelpMessages.scrollTo({ top: assistantBubble.offsetTop - 10, behavior: 'smooth' });
+            // Scroll the chat panel so the response starts 4-5 lines (~100px) below the top, keeping the user's question visible
+            aiHelpMessages.scrollTop = Math.max(0, assistantBubble.offsetTop - 100);
+
+            // Throttled high-performance renderer to prevent browser main-thread lag with fast streams
+            let lastRenderTime = 0;
+            let renderTimeout = null;
+
+            function updateBubble() {
+                let liveRender = fullResponseText
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
+                
+                if (liveRender.includes('<li>')) {
+                    liveRender = liveRender.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+                    liveRender = liveRender.replace(/<\/ul>\s*<ul>/g, '');
+                }
+                bubbleElement.innerHTML = liveRender;
+            }
+
+            function queueRender(force = false) {
+                const now = performance.now();
+                if (force) {
+                    if (renderTimeout) {
+                        clearTimeout(renderTimeout);
+                        renderTimeout = null;
+                    }
+                    updateBubble();
+                    lastRenderTime = now;
+                    return;
+                }
+
+                const timeSinceLast = now - lastRenderTime;
+                if (timeSinceLast >= 60) {
+                    if (renderTimeout) {
+                        clearTimeout(renderTimeout);
+                        renderTimeout = null;
+                    }
+                    updateBubble();
+                    lastRenderTime = now;
+                } else {
+                    if (!renderTimeout) {
+                        renderTimeout = setTimeout(() => {
+                            updateBubble();
+                            lastRenderTime = performance.now();
+                            renderTimeout = null;
+                        }, 60 - timeSinceLast);
+                    }
+                }
+            }
 
             let buffer = '';
             while (true) {
@@ -7011,20 +7075,9 @@ function initHelpChat() {
                             const jsonPayload = JSON.parse(cleanedLine.substring(6));
                             if (jsonPayload.token) {
                                 fullResponseText += jsonPayload.token;
-                                
-                                // Live rendering with basic formatting
-                                let liveRender = fullResponseText
-                                    .replace(/\n/g, '<br>')
-                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                    .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
-                                
-                                if (liveRender.includes('<li>')) {
-                                    liveRender = liveRender.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-                                    liveRender = liveRender.replace(/<\/ul>\s*<ul>/g, '');
-                                }
-
-                                bubbleElement.innerHTML = liveRender;
+                                queueRender();
                             } else if (jsonPayload.error) {
+                                queueRender(true);
                                 bubbleElement.innerHTML += `<br>⚠️ *Error: ${jsonPayload.error}*`;
                             }
                         } catch (e) {
@@ -7033,6 +7086,9 @@ function initHelpChat() {
                     }
                 }
             }
+
+            // Ensure the final state is rendered fully
+            queueRender(true);
 
             // Store in history
             aiHelpHistory.push({ role: 'user', content: text });

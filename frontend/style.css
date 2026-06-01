@@ -7126,6 +7126,29 @@ input:checked + .slider:before {
     color: #fff;
 }
 
+.ai-help-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ai-help-clear-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #64748b);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-help-clear-btn:hover {
+    color: var(--status-danger, #ef4444);
+}
+
 .ai-help-messages {
     flex: 1;
     padding: 1.25rem;
