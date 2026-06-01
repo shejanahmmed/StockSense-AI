@@ -59,3 +59,18 @@ async def get_chat_history(user: dict = Depends(get_current_user)):
         return {"status": "success", "history": history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/api/chat/history")
+async def clear_chat_history(user: dict = Depends(get_current_user)):
+    try:
+        org_name = user.get("sub", "Unknown")
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        
+        cursor.execute("DELETE FROM chat_history WHERE org_name = ?", (org_name,))
+        conn.commit()
+        conn.close()
+        
+        return {"status": "success", "message": "Chat history cleared successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

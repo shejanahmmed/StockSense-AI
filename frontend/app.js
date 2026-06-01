@@ -1413,14 +1413,39 @@ function initChat() {
     
     if (!input || !btn) return;
 
-    btn.addEventListener('click', () => sendChatMessage());
+    const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
+    if (!hasUploadedFile) {
+        input.disabled = true;
+        input.placeholder = "Please upload a CSV file on the dashboard to enable chat...";
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    } else {
+        input.disabled = false;
+        input.placeholder = "Ask about sales, reorders, or type '/' for quick commands...";
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+
+    btn.addEventListener('click', () => {
+        if (!hasUploadedFile) return;
+        sendChatMessage();
+    });
     input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendChatMessage();
+        if (e.key === 'Enter') {
+            if (!hasUploadedFile) return;
+            sendChatMessage();
+        }
     });
 
     // Suggestion chip click → populate input & submit
     document.querySelectorAll('.chat-chip').forEach(chip => {
         chip.addEventListener('click', () => {
+            if (!hasUploadedFile) {
+                showToast('Please upload a CSV file to query the AI assistant', 'warning');
+                return;
+            }
             const question = chip.getAttribute('data-q');
             if (!question) return;
             input.value = question;
@@ -1435,12 +1460,17 @@ function initChat() {
     if (slashBtn && slashDropdown) {
         slashBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (!hasUploadedFile) {
+                showToast('Please upload a CSV file to use quick commands', 'warning');
+                return;
+            }
             slashDropdown.style.display = slashDropdown.style.display === 'none' ? 'block' : 'none';
         });
         
         // Command item selection
         document.querySelectorAll('#slashCommandsDropdown .dropdown-item').forEach(item => {
             item.addEventListener('click', () => {
+                if (!hasUploadedFile) return;
                 const cmd = item.getAttribute('data-cmd');
                 input.value = cmd;
                 slashDropdown.style.display = 'none';
@@ -1460,9 +1490,28 @@ function initChat() {
     // Capture slash command keystroke / in input
     input.addEventListener('input', (e) => {
         if (input.value === '/') {
-            if (slashDropdown) slashDropdown.style.display = 'block';
+            if (slashDropdown && hasUploadedFile) slashDropdown.style.display = 'block';
         }
     });
+
+    // Wire up Clear Chat button
+    const clearChatBtn = document.getElementById('clearChatBtn');
+    if (clearChatBtn) {
+        if (!hasUploadedFile) {
+            clearChatBtn.disabled = true;
+            clearChatBtn.style.opacity = '0.5';
+            clearChatBtn.style.cursor = 'not-allowed';
+        } else {
+            clearChatBtn.disabled = false;
+            clearChatBtn.style.opacity = '1';
+            clearChatBtn.style.cursor = 'pointer';
+            clearChatBtn.addEventListener('click', async () => {
+                const confirmed = confirm('Are you sure you want to clear your chat history? This cannot be undone.');
+                if (!confirmed) return;
+                await clearChatHistoryFrontend();
+            });
+        }
+    }
 
     // Wire up strategy selectors
     const strategyButtons = ['chatStrategyConservative', 'chatStrategyBalanced', 'chatStrategyAggressive'];
@@ -1491,7 +1540,7 @@ function initChat() {
             if (settingsSelect) settingsSelect.value = strat;
             
             // Toast notification
-            showToast('success', `AI Strategy Engine updated to: ${strat.charAt(0).toUpperCase() + strat.slice(1)}`);
+            showToast(`AI Strategy Engine updated to: ${strat.charAt(0).toUpperCase() + strat.slice(1)}`, 'success');
         });
     });
     
@@ -1500,6 +1549,12 @@ function initChat() {
 }
 
 async function loadChatHistory() {
+    const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
+    if (!hasUploadedFile) {
+        // If there's no CSV, auto delete all chats in the DB and keep the UI clean!
+        await clearChatHistorySilently();
+        return;
+    }
     const token = localStorage.getItem('stockSense_jwt');
     if (!token) return;
     try {
@@ -1519,17 +1574,81 @@ async function loadChatHistory() {
             chatHistory = data.history;
             const chatMessages = document.getElementById('chatMessages');
             
-            chatHistory.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `message ${msg.role}`;
-                const parsedContent = msg.role === 'assistant' ? parseChatMessageContent(msg.content) : msg.content.replace(/\n/g, '<br>');
-                div.innerHTML = `<div class="msg-bubble">${parsedContent}</div>`;
-                chatMessages.appendChild(div);
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (chatMessages) {
+                chatMessages.innerHTML = `
+                    <div class="message assistant">
+                        <div class="msg-bubble">
+                            Hello! I am StockSense AI. I've analyzed your current inventory and sales data. How can I help you optimize your business today?
+                        </div>
+                    </div>
+                `;
+                chatHistory.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role}`;
+                    const parsedContent = msg.role === 'assistant' ? parseChatMessageContent(msg.content) : msg.content.replace(/\n/g, '<br>');
+                    div.innerHTML = `<div class="msg-bubble">${parsedContent}</div>`;
+                    chatMessages.appendChild(div);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
         }
     } catch (e) {
         console.error("Failed to load chat history", e);
+    }
+}
+
+async function clearChatHistorySilently() {
+    const token = localStorage.getItem('stockSense_jwt');
+    if (!token) return;
+    try {
+        await fetch('/api/chat/history', {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (e) {
+        console.warn("Failed to clear chat history silently on load:", e);
+    }
+    chatHistory = [];
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.innerHTML = `
+            <div class="message assistant">
+                <div class="msg-bubble">
+                    Hello! I am StockSense AI. Please upload a CSV file on the dashboard to enable the AI Strategic Assistant.
+                </div>
+            </div>
+        `;
+    }
+}
+
+async function clearChatHistoryFrontend() {
+    const token = localStorage.getItem('stockSense_jwt');
+    if (!token) return;
+    try {
+        const res = await fetch('/api/chat/history', {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            chatHistory = [];
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = `
+                    <div class="message assistant">
+                        <div class="msg-bubble">
+                            Hello! I am StockSense AI. I've analyzed your current inventory and sales data. How can I help you optimize your business today?
+                        </div>
+                    </div>
+                `;
+            }
+            addNotification('Chat Cleared', 'Your AI Strategic Assistant chat history has been successfully cleared.', 'success');
+        } else {
+            addNotification('Clear Failed', 'Could not clear chat history.', 'warning');
+        }
+    } catch (e) {
+        console.error("Failed to clear chat history", e);
+        addNotification('Network Error', 'Failed to connect to the server to clear chat history.', 'error');
     }
 }
 
