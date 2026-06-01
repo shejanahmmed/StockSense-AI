@@ -134,6 +134,33 @@ def init_db():
             display_order INTEGER
         )
     ''')
+    
+    # Create purchase orders and po items tables
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS purchase_orders (
+            id TEXT PRIMARY KEY,
+            org_name TEXT,
+            supplier TEXT,
+            order_date TEXT,
+            delivery_date TEXT,
+            status TEXT DEFAULT 'Draft',
+            total_amount REAL DEFAULT 0.0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS po_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            po_id TEXT,
+            sku TEXT,
+            name TEXT,
+            quantity INTEGER,
+            unit_price REAL,
+            total_price REAL,
+            FOREIGN KEY(po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+        )
+    ''')
 
     # Seed docs_settings if empty
     cursor.execute("SELECT COUNT(*) FROM docs_settings")

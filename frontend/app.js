@@ -325,6 +325,7 @@ function setupNavigation() {
             inventoryView.style.display = 'flex';
             const tbody = document.getElementById('inventoryTableBody');
             if (tbody.children.length === 0) loadInventoryData();
+            loadPoLedger(); // Persistently sync and load PO ledger
         } else if (view === 'insights') {
             navInsights.classList.add('active');
             insightsView.style.display = 'flex';
@@ -837,6 +838,14 @@ function renderInventoryTable(data, page = 1) {
                 </button>
             </td>
         `;
+        tr.style.cursor = 'pointer';
+        tr.addEventListener('click', (e) => {
+            if (e.target.closest('.action-delete') || e.target.closest('.action-draft-po') || e.target.closest('button')) {
+                return;
+            }
+            openTelemetryDrawer(item);
+        });
+
         tbody.appendChild(tr);
     });
 
@@ -7474,10 +7483,11 @@ function initPoModal() {
     const cancelBtn = document.getElementById('cancelDraftPoBtn');
     const downloadBtn = document.getElementById('downloadPoCsvBtn');
     const downloadPdfBtn = document.getElementById('downloadPoPdfBtn');
+    const confirmBtn = document.getElementById('confirmDraftPoBtn');
     const copyBtn = document.getElementById('copyPoEmailBtn');
     const qtyInput = document.getElementById('poReorderQty');
 
-    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !downloadPdfBtn || !copyBtn || !qtyInput) return;
+    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !downloadPdfBtn || !confirmBtn || !copyBtn || !qtyInput) return;
 
     const closeModal = () => {
         modal.classList.remove('open');
@@ -7745,6 +7755,65 @@ Powered by StockSense AI`;
             addNotification('PDF Export Failed', 'An error occurred during PDF generation.', 'danger');
         });
     });
+
+    // Confirm & Log PO in local SQLite database
+    confirmBtn.addEventListener('click', async () => {
+        const sku = document.getElementById('poSku').textContent;
+        const name = document.getElementById('poProdName').textContent;
+        const qty = parseInt(qtyInput.value) || 0;
+        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
+        const supplier = document.getElementById('poSupplierName').textContent;
+        const leadDays = parseInt(qtyInput.getAttribute('data-lead-days')) || 7;
+        const category = qtyInput.getAttribute('data-category') || 'General';
+
+        const today = new Date();
+        const orderDateStr = today.toISOString().split('T')[0];
+        const deliveryDate = new Date(today);
+        deliveryDate.setDate(today.getDate() + leadDays);
+        const deliveryDateStr = deliveryDate.toISOString().split('T')[0];
+
+        const poId = `PO-${sku}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        const poPayload = {
+            id: poId,
+            supplier: supplier,
+            order_date: orderDateStr,
+            delivery_date: deliveryDateStr,
+            items: [
+                {
+                    sku: sku,
+                    name: name,
+                    quantity: qty,
+                    unit_price: price
+                }
+            ]
+        };
+
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch('/api/purchase_orders', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(poPayload)
+            });
+
+            const data = await res.json();
+            if (data.status === 'success') {
+                addNotification('PO Saved & Logged', `Purchase Order ${poId} was created and logged as Draft.`, 'success');
+                modal.classList.remove('open');
+                modal.style.pointerEvents = 'none';
+                loadPoLedger(); // Refresh the ledger list
+            } else {
+                addNotification('PO Draft Failed', data.message || 'Could not draft Purchase Order.', 'warning');
+            }
+        } catch (error) {
+            console.error("PO logging failed:", error);
+            addNotification('Connection Error', 'Failed to connect to server to log Purchase Order.', 'danger');
+        }
+    });
 }
 
 async function openDraftPO(sku, name, stock) {
@@ -7877,5 +7946,311 @@ async function loadScheduledPromotions() {
 
 window.schedulePromotion = schedulePromotion;
 window.openDraftPO = openDraftPO;
+
+// ====================================================
+// Product Telemetry Side-Drawer & Persistent PO Logic
+// ====================================================
+
+let drawerChartInstance = null;
+
+async function openTelemetryDrawer(item) {
+    const drawer = document.getElementById('productTelemetryDrawer');
+    if (!drawer) return;
+
+    // Populate static fields
+    document.getElementById('drawerSku').textContent = item.sku;
+    document.getElementById('drawerProdName').textContent = item.name;
+    document.getElementById('drawerCategoryBadge').textContent = item.category;
+    document.getElementById('drawerStock').textContent = item.stock.toLocaleString();
+    document.getElementById('drawerReorderPt').textContent = item.reorder_point !== undefined ? item.reorder_point : '50';
+    document.getElementById('drawerLeadTime').textContent = `${item.supplier_lead_days || 7}d`;
+    
+    const supplierName = item.supplier && item.supplier.trim() ? item.supplier : `${item.category} Global Logistics`;
+    document.getElementById('drawerSupplier').textContent = supplierName;
+
+    // Configure Status Card styling dynamically
+    const statusCard = document.getElementById('drawerStatusCard');
+    const statusIcon = document.getElementById('drawerStatusIcon');
+    const statusText = document.getElementById('drawerStatusText');
+    const statusSub = document.getElementById('drawerStatusSub');
+
+    statusCard.className = 'drawer-status-card'; // reset classes
+    
+    if (item.stock <= 0) {
+        statusCard.classList.add('status-danger');
+        statusIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: var(--status-danger);"></i>';
+        statusText.textContent = 'Out of Stock';
+        statusSub.textContent = 'Immediate procurement required to fulfill customer demand.';
+    } else if (item.stock <= (item.reorder_point || 50)) {
+        statusCard.classList.add('status-warning');
+        statusIcon.innerHTML = '<i class="fa-solid fa-clock-rotate-left" style="color: var(--status-warning);"></i>';
+        statusText.textContent = 'Low Stock';
+        statusSub.textContent = 'Stock level is below safety threshold. Reorder recommended.';
+    } else {
+        statusCard.classList.add('status-success');
+        statusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--status-success);"></i>';
+        statusText.textContent = 'In Stock';
+        statusSub.textContent = 'Inventory level is healthy for immediate fulfillment.';
+    }
+
+    // Configure the Draft PO action button inside the drawer
+    const drawerPoBtn = document.getElementById('drawerCreatePoBtn');
+    if (drawerPoBtn) {
+        // Re-bind listener for this specific SKU
+        drawerPoBtn.onclick = () => {
+            closeTelemetryDrawer();
+            openDraftPO(item.sku, item.name, item.stock);
+        };
+    }
+
+    // Slide in the drawer!
+    drawer.classList.add('drawer-open');
+
+    // Render Mini Line Chart (actual sales history vs forecast predictions)
+    renderDrawerChart(item.sku);
+}
+
+function closeTelemetryDrawer() {
+    const drawer = document.getElementById('productTelemetryDrawer');
+    if (drawer) {
+        drawer.classList.remove('drawer-open');
+    }
+}
+
+// Bind Close Drawer event triggers
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('closeTelemetryDrawer');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeTelemetryDrawer);
+    }
+});
+
+async function renderDrawerChart(sku) {
+    const canvas = document.getElementById('drawerForecastChart');
+    if (!canvas) return;
+
+    // Destroy existing instance to prevent memory leaks
+    if (drawerChartInstance) {
+        drawerChartInstance.destroy();
+        drawerChartInstance = null;
+    }
+
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch(`/api/forecast/${encodeURIComponent(sku)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error("Forecast not generated or SKU not found.");
+        
+        const data = await res.json();
+        if (data.status === 'success' && data.forecast) {
+            const labels = data.forecast.map(row => {
+                const dateObj = new Date(row.forecast_date);
+                return dateObj.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+            });
+            const predictedSales = data.forecast.map(row => Math.round(row.predicted_sales * 10) / 10);
+
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 160);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+
+            drawerChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'AI Projected Daily Sales',
+                        data: predictedSales,
+                        borderColor: '#a78bfa',
+                        borderWidth: 2,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Predicted: ${context.parsed.y} units`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255, 255, 255, 0.4)', font: { size: 9 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.4)', font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        // Render a clean fallback label if no forecast was loaded
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.font = '12px "Outfit", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("Upload CSV to calculate predictions", canvas.width / 2, canvas.height / 2);
+    }
+}
+
+// --- PO Persistent Ledger Backend Integrations ---
+
+async function loadPoLedger() {
+    const tbody = document.getElementById('poLedgerTableBody');
+    const badge = document.getElementById('poCountBadge');
+    if (!tbody || !badge) return;
+
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch('/api/purchase_orders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const result = await res.json();
+        if (result.status === 'success' && result.data) {
+            const data = result.data;
+            badge.innerText = `${data.length} ${data.length === 1 ? 'Order' : 'Orders'}`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--accent-primary);"></i>
+                            No purchase orders logged in database yet.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+            const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+            const symbol = symbols[currency.toUpperCase()] || '৳';
+
+            data.forEach(po => {
+                const tr = document.createElement('tr');
+                
+                let statusClass = 'in-stock'; // Green for Received
+                if (po.status === 'Draft') statusClass = 'neutral-badge';
+                if (po.status === 'Ordered') statusClass = 'low-stock'; // Yellow
+                if (po.status === 'Cancelled') statusClass = 'out-of-stock'; // Red
+
+                const statusPillStyle = po.status === 'Draft' ? 'background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: var(--text-secondary);' : '';
+
+                tr.innerHTML = `
+                    <td style="font-family: monospace; font-weight: 600; color: var(--text-muted);">${po.id}</td>
+                    <td style="font-weight: 500; color: #fff;">${po.supplier}</td>
+                    <td>${po.order_date}</td>
+                    <td>${po.delivery_date}</td>
+                    <td style="text-align: right; font-weight: 600; color: var(--status-success);">${symbol}${Number(po.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td><span class="status-pill ${statusClass}" style="${statusPillStyle}">${po.status}</span></td>
+                    <td style="text-align: right; white-space: nowrap; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        ${po.status !== 'Received' ? `
+                            <button class="primary-btn action-receive-po" data-po-id="${po.id}" style="padding: 0 0.65rem; height: 32px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.35rem; background: linear-gradient(135deg, var(--status-success), #047857);">
+                                <i class="fa-solid fa-square-check"></i> Receive
+                            </button>
+                        ` : ''}
+                        <button class="icon-btn action-delete-po" data-po-id="${po.id}" title="Delete PO Record" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Re-bind Action Handlers
+            document.querySelectorAll('.action-receive-po').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const poId = e.currentTarget.getAttribute('data-po-id');
+                    await markPoAsReceived(poId);
+                });
+            });
+
+            document.querySelectorAll('.action-delete-po').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const poId = e.currentTarget.getAttribute('data-po-id');
+                    if (confirm(`Are you sure you want to delete PO Record ${poId}?`)) {
+                        await deletePo(poId);
+                    }
+                });
+            });
+        }
+    } catch (e) {
+        console.warn("Failed to load PO Ledger list:", e);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--status-danger);">Failed to query PO ledger database.</td></tr>`;
+    }
+}
+
+async function markPoAsReceived(poId) {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch(`/api/purchase_orders/${encodeURIComponent(poId)}/status`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'Received' })
+        });
+        
+        const data = await res.json();
+        if (data.status === 'success') {
+            addNotification('Inventory Reconciled', `Stock values updated for all products in PO ${poId}.`, 'success');
+            loadPoLedger();
+            loadInventoryData();
+        } else {
+            addNotification('Verification Failed', data.message || 'Could not update order status.', 'warning');
+        }
+    } catch (error) {
+        console.error("Receive PO failed:", error);
+    }
+}
+
+async function deletePo(poId) {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch(`/api/purchase_orders/${encodeURIComponent(poId)}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        if (data.status === 'success') {
+            addNotification('PO Deleted', `Purchase Order ${poId} removed successfully.`, 'success');
+            loadPoLedger();
+        } else {
+            addNotification('Delete Failed', data.message || 'Could not remove order.', 'warning');
+        }
+    } catch (error) {
+        console.error("Delete PO failed:", error);
+    }
+}
+
+// Expose bindings to global window object
+window.openTelemetryDrawer = openTelemetryDrawer;
+window.closeTelemetryDrawer = closeTelemetryDrawer;
+window.loadPoLedger = loadPoLedger;
+window.markPoAsReceived = markPoAsReceived;
+window.deletePo = deletePo;
 
 

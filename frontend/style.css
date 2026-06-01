@@ -7645,3 +7645,98 @@ input:checked + .slider:before {
         bottom: 70px;
     }
 }
+
+/* ====================================================
+   Product Telemetry Side-Drawer Glassmorphic Panel Styles
+   ==================================================== */
+.product-telemetry-drawer {
+    position: fixed;
+    top: 0;
+    right: -420px; /* Hidden by default */
+    width: 400px;
+    height: 100vh;
+    z-index: 999;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    box-sizing: border-box;
+}
+
+.product-telemetry-drawer.drawer-open {
+    transform: translateX(-420px); /* Slide in */
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.6), 0 0 40px rgba(139, 92, 246, 0.08);
+}
+
+.product-telemetry-drawer .drawer-inner {
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 12, 20, 0.82) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-right: none !important;
+    backdrop-filter: blur(28px) !important;
+    -webkit-backdrop-filter: blur(28px) !important;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* Animations for drawing components */
+@keyframes drawerSlideIn {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.product-telemetry-drawer.drawer-open .drawer-section {
+    animation: drawerSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.product-telemetry-drawer.drawer-open .drawer-section:nth-child(1) { animation-delay: 0.1s; }
+.product-telemetry-drawer.drawer-open .drawer-section:nth-child(2) { animation-delay: 0.18s; }
+.product-telemetry-drawer.drawer-open .drawer-section:nth-child(3) { animation-delay: 0.25s; }
+
+/* Custom Stat cards inside drawer */
+.drawer-stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.drawer-stat-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+.drawer-status-card {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.3s ease;
+}
+
+.drawer-status-card.status-danger {
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    background: rgba(239, 68, 68, 0.03) !important;
+}
+
+.drawer-status-card.status-warning {
+    border-color: rgba(245, 158, 11, 0.25) !important;
+    background: rgba(245, 158, 11, 0.03) !important;
+}
+
+.drawer-status-card.status-success {
+    border-color: rgba(16, 185, 129, 0.25) !important;
+    background: rgba(16, 185, 129, 0.03) !important;
+}
+
+/* responsive drawer styles */
+@media (max-width: 480px) {
+    .product-telemetry-drawer {
+        width: 100vw;
+        right: -100vw;
+    }
+    .product-telemetry-drawer.drawer-open {
+        transform: translateX(-100vw);
+    }
+}

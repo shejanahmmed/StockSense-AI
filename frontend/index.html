@@ -589,6 +589,43 @@
                         </table>
                     </div>
                 </section>
+
+                <!-- Purchase Order Ledger (Persistent DB-Backed Ledger) -->
+                <section class="inventory-table-container glass-panel" style="margin-top: 2rem;" id="poLedgerSection">
+                    <div class="table-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;" onclick="const content = document.getElementById('poLedgerBodyContainer'); const chevron = document.getElementById('poLedgerChevron'); if (content.style.display === 'none') { content.style.display = 'block'; chevron.className = 'fa-solid fa-chevron-up'; } else { content.style.display = 'none'; chevron.className = 'fa-solid fa-chevron-down'; }">
+                            <i class="fa-solid fa-file-contract" style="color: var(--accent-primary);"></i> Persistent Purchase Order Ledger 
+                            <i class="fa-solid fa-chevron-up" id="poLedgerChevron" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;"></i>
+                        </h3>
+                        <span class="badge" id="poCountBadge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border-color: rgba(139, 92, 246, 0.3);">0 Orders</span>
+                    </div>
+                    
+                    <div id="poLedgerBodyContainer" style="display: block;">
+                        <div class="table-wrapper">
+                            <table class="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Supplier Name</th>
+                                        <th>Order Date</th>
+                                        <th>Est. Delivery</th>
+                                        <th style="text-align: right;">Total Cost</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="poLedgerTableBody">
+                                    <tr>
+                                        <td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">
+                                            <i class="fa-solid fa-folder-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--accent-primary);"></i>
+                                            No purchase orders logged in database yet.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <!-- AI Insights Chat View -->
@@ -2315,6 +2352,71 @@
         </div>
     </div>
 
+    <!-- Product Telemetry Side-Drawer -->
+    <div class="product-telemetry-drawer" id="productTelemetryDrawer">
+        <div class="drawer-inner glass-panel">
+            <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div>
+                    <span class="drawer-sku-badge" id="drawerSku" style="font-family: monospace; font-size: 0.8rem; padding: 0.2rem 0.5rem; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 4px; color: var(--accent-primary); font-weight: 600;">SKU Code</span>
+                    <h2 class="drawer-title" id="drawerProdName" style="font-size: 1.35rem; font-weight: 700; color: #fff; margin: 0.5rem 0 0 0; letter-spacing: -0.01em;">Product Name</h2>
+                    <span class="badge" id="drawerCategoryBadge" style="margin-top: 0.25rem; display: inline-block;">Category</span>
+                </div>
+                <button class="drawer-close-btn" id="closeTelemetryDrawer" title="Close Drawer" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="drawer-body" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.5rem; max-height: calc(100vh - 180px);">
+                <!-- Mini-Chart Container -->
+                <div class="drawer-section">
+                    <h3 class="drawer-section-title" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 0.75rem;"><i class="fa-solid fa-chart-line" style="color: var(--accent-primary); margin-right: 0.35rem;"></i> AI Demand Forecast</h3>
+                    <div class="drawer-chart-wrapper" style="position: relative; width: 100%; height: 180px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 0.5rem; box-sizing: border-box;">
+                        <canvas id="drawerForecastChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stock Buffers & Safety Level -->
+                <div class="drawer-section">
+                    <h3 class="drawer-section-title" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 0.75rem;"><i class="fa-solid fa-shield-halved" style="color: var(--status-info); margin-right: 0.35rem;"></i> Inventory Buffers</h3>
+                    <div class="drawer-stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                        <div class="drawer-stat-card" style="padding: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; text-align: center;">
+                            <span class="stat-label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">On Hand</span>
+                            <span class="stat-value" id="drawerStock" style="font-size: 1.15rem; font-weight: 700; color: #fff;">0</span>
+                        </div>
+                        <div class="drawer-stat-card" style="padding: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; text-align: center;">
+                            <span class="stat-label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Reorder Pt.</span>
+                            <span class="stat-value text-warning" id="drawerReorderPt" style="font-size: 1.15rem; font-weight: 700; color: var(--status-warning);">0</span>
+                        </div>
+                        <div class="drawer-stat-card" style="padding: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; text-align: center;">
+                            <span class="stat-label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Lead Time</span>
+                            <span class="stat-value text-info" id="drawerLeadTime" style="font-size: 1.15rem; font-weight: 700; color: var(--status-info);">0d</span>
+                        </div>
+                    </div>
+                    <!-- Status Card -->
+                    <div class="drawer-status-card" id="drawerStatusCard" style="margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; display: flex; align-items: center; gap: 0.85rem;">
+                        <div class="status-indicator-icon" id="drawerStatusIcon" style="font-size: 1.35rem; color: var(--accent-primary); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(139,92,246,0.1); border-radius: 50%;"><i class="fa-solid fa-box"></i></div>
+                        <div>
+                            <h4 id="drawerStatusText" style="font-size: 0.92rem; font-weight: 600; color: #fff; margin: 0;">In Stock</h4>
+                            <p id="drawerStatusSub" style="font-size: 0.78rem; color: var(--text-muted); margin: 0.15rem 0 0 0;">Inventory level is healthy for immediate fulfillment.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplier Details -->
+                <div class="drawer-section">
+                    <h3 class="drawer-section-title" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 0.75rem;"><i class="fa-solid fa-truck" style="color: var(--status-warning); margin-right: 0.35rem;"></i> Supplier Performance</h3>
+                    <div class="supplier-performance-card" style="padding: 1rem; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.85rem; line-height: 1.6; display: flex; flex-direction: column; gap: 0.35rem;">
+                        <p style="margin: 0; color: var(--text-secondary);"><strong>Supplier Account:</strong> <span id="drawerSupplier" style="color: #fff; font-weight: 500;">Supplier Global Logistics</span></p>
+                        <p style="margin: 0; color: var(--text-secondary);"><strong>Fulfilment Rate:</strong> <span class="text-success" style="color: var(--status-success); font-weight: 600;">98.4%</span></p>
+                        <p style="margin: 0; color: var(--text-secondary);"><strong>Lead Variance:</strong> <span class="text-muted"><i class="fa-solid fa-plus-minus"></i> 0.8 Days average</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="drawer-footer" style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; gap: 0.5rem; flex-shrink: 0; box-sizing: border-box;">
+                <button class="primary-btn" id="drawerCreatePoBtn" style="width: 100%; justify-content: center; gap: 0.5rem; background: linear-gradient(135deg, var(--accent-primary), #6d28d9); box-shadow: 0 0 15px rgba(139,92,246,0.3); padding: 0.65rem 1.25rem;"><i class="fa-solid fa-file-invoice"></i> Draft Replenishment PO</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Purchase Order (PO) Draft Modal Overlay -->
     <div class="sku-modal-overlay" id="draftPoModal" style="pointer-events: none;">
         <div class="sku-modal-container" style="width: 1000px; max-width: 95vw; background: rgba(20, 22, 34, 0.95); border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 25px 70px rgba(0,0,0,0.7), 0 0 30px rgba(139, 92, 246, 0.15);">
@@ -2390,6 +2492,7 @@
                 <button class="secondary-btn" id="cancelDraftPoBtn" style="padding: 0.6rem 1.25rem;">Cancel</button>
                 <button class="secondary-btn" id="downloadPoCsvBtn" style="padding: 0.6rem 1.4rem; gap: 0.5rem; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
                 <button class="primary-btn" id="downloadPoPdfBtn" style="padding: 0.6rem 1.6rem; gap: 0.5rem; background: linear-gradient(135deg, var(--accent-primary), #6d28d9); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);"><i class="fa-solid fa-file-pdf"></i> Export PO PDF</button>
+                <button class="primary-btn" id="confirmDraftPoBtn" style="padding: 0.6rem 1.6rem; gap: 0.5rem; background: linear-gradient(135deg, var(--status-success), #047857); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-check"></i> Confirm &amp; Log PO</button>
             </div>
         </div>
     </div>
