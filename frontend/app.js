@@ -6985,6 +6985,9 @@ function initHelpChat() {
             let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
             let fullResponseText = '';
 
+            // Scroll the chat panel so the top of the new response aligns near the top, allowing comfortable reading
+            aiHelpMessages.scrollTo({ top: assistantBubble.offsetTop - 10, behavior: 'smooth' });
+
             let buffer = '';
             while (true) {
                 const { done, value } = await reader.read();
@@ -7021,7 +7024,6 @@ function initHelpChat() {
                                 }
 
                                 bubbleElement.innerHTML = liveRender;
-                                aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
                             } else if (jsonPayload.error) {
                                 bubbleElement.innerHTML += `<br>⚠️ *Error: ${jsonPayload.error}*`;
                             }

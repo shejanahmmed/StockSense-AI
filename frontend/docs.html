@@ -2646,6 +2646,9 @@
                 let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
                 let fullResponseText = '';
 
+                // Scroll the chat panel so the top of the new response aligns near the top, allowing comfortable reading
+                aiHelpMessages.scrollTo({ top: assistantBubble.offsetTop - 10, behavior: 'smooth' });
+
                 let buffer = '';
                 while (true) {
                     const { done, value } = await reader.read();
@@ -2682,7 +2685,6 @@
                                     }
 
                                     bubbleElement.innerHTML = liveRender;
-                                    aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
                                 } else if (jsonPayload.error) {
                                     bubbleElement.innerHTML += `<br>⚠️ *Error: ${jsonPayload.error}*`;
                                 }
@@ -2715,7 +2717,7 @@
     <div id="aiHelpContainer" class="ai-help-container">
         <!-- Floating Toggle Button -->
         <button id="aiHelpToggle" class="ai-help-toggle" title="Open AI Help Guide">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <i class="fa-solid fa-robot"></i>
         </button>
 
         <!-- Chat Panel -->
@@ -2723,7 +2725,7 @@
             <div class="ai-help-header">
                 <div class="ai-help-title-wrapper">
                     <div class="ai-help-avatar">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <i class="fa-solid fa-robot"></i>
                     </div>
                     <div>
                         <h4 class="ai-help-title">StockSense AI Guide</h4>

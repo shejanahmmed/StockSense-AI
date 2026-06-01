@@ -7033,7 +7033,7 @@ input:checked + .slider:before {
 }
 
 .ai-help-toggle:hover {
-    transform: scale(1.1) rotate(15deg);
+    filter: brightness(1.15);
     box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.6);
 }
 
