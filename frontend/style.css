@@ -803,9 +803,12 @@ h1, h2, h3, h4 {
     padding-bottom: 4rem; /* Generous bottom padding to clear the footer */
 }
 
-#insightsView .chat-container {
-    height: 680px; /* Fixed height for the chat scroll view */
-    min-height: 680px;
+@media (min-width: 769px) {
+    #insightsView .chat-container {
+        height: 680px !important;
+        min-height: 680px !important;
+        max-height: 680px !important;
+    }
 }
 
 /* Compact header specifically inside the Insights page */
@@ -2082,6 +2085,8 @@ h1, h2, h3, h4 {
 .chat-messages {
 
     flex: 1;
+
+    min-height: 0;
 
     overflow-y: auto;
 
@@ -5350,6 +5355,7 @@ input:checked + .slider:before {
     /* Chat page styling */
     .chat-container {
         height: 60vh !important;
+        max-height: 60vh !important;
     }
     
     .chat-input-area {
@@ -5526,6 +5532,7 @@ input:checked + .slider:before {
     /* AI Strategic Assistant Mobile Optimizations */
     .chat-container {
         height: 65vh !important;
+        max-height: 65vh !important;
         border-radius: var(--radius-md) !important;
     }
 
