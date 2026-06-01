@@ -81,6 +81,26 @@ def init_db():
         )
     ''')
     
+    # Create promotions table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS promotions (
+            id TEXT PRIMARY KEY,
+            org_name TEXT,
+            title TEXT,
+            type TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            target_product TEXT,
+            target_sku TEXT,
+            discount_pct TEXT,
+            expected_impact TEXT,
+            urgency TEXT,
+            reason TEXT,
+            status TEXT DEFAULT 'scheduled',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     # Create docs_settings table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS docs_settings (

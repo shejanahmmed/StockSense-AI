@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Query, Depends
+from pydantic import BaseModel
 import pandas as pd
 import io
 import hashlib
@@ -12,7 +13,6 @@ from src.api.insight_generator import generate_insight
 
 from src.api.database import get_db_connection
 from src.api.auth_utils import get_current_user
-from fastapi import Depends
 from fastapi.responses import FileResponse
 from fpdf import FPDF
 import tempfile
@@ -48,7 +48,7 @@ def get_deterministic_margin(sku: str, category: str) -> int:
     return base + (val % (r + 1))
 
 
-def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD", date_min=None, date_max=None) -> dict:
+def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: str, forecast_horizon: int = 7, region: str = "BD", date_min=None, date_max=None, org_name: str = "Unknown") -> dict:
     """Run the full feature-engineering + Prophet pipeline for a single product's time series."""
     product_df = product_df.copy()
     product_df['date'] = pd.to_datetime(product_df['date'])
@@ -91,9 +91,33 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
     combined_df = create_date_features(combined_df, region=region)
     future_mask = combined_df['sales'].isna()
 
+    # Load scheduled promotions for this product
+    promo_dates = set()
+    try:
+        sku = str(product_df['product_id'].iloc[0])
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT start_date, end_date FROM promotions 
+            WHERE org_name = ? AND target_sku = ? AND status = 'scheduled'
+        ''', (org_name, sku))
+        promo_rows = cursor.fetchall()
+        conn.close()
+        
+        for r in promo_rows:
+            start = pd.to_datetime(r['start_date'])
+            end = pd.to_datetime(r['end_date'])
+            dr = pd.date_range(start, end)
+            for d in dr:
+                promo_dates.add(d.date())
+    except Exception as e:
+        print(f"Error querying active promotions for SKU {sku}: {e}")
+
     combined_df['holiday'] = combined_df['date'].apply(lambda d: 1 if d in local_holidays else 0)
-    # Set future promotions to 0 to represent organic baseline demand.
-    combined_df.loc[future_mask, 'promo'] = 0
+    # Set future promotions based on database promotions
+    combined_df.loc[future_mask, 'promo'] = combined_df.loc[future_mask, 'date'].apply(
+        lambda d: 1 if d.date() in promo_dates else 0
+    )
     combined_df.loc[~future_mask, 'promo'] = combined_df.loc[~future_mask, 'promo'].fillna(0)
 
     # Only pass truly EXOGENOUS regressors to Prophet — events that are
@@ -842,7 +866,8 @@ async def predict_demand(
                     forecast_horizon,
                     region,
                     date_min=date_min,
-                    date_max=date_max
+                    date_max=date_max,
+                    org_name=org_name
                 )
             except Exception:
                 # Skip products with insufficient data
@@ -1183,4 +1208,160 @@ async def generate_pdf_report(user: dict = Depends(get_current_user)):
         filename=f"StockSense_Report_{org_name}.pdf",
         background=None
     )
+
+
+class PromotionModel(BaseModel):
+    id: str
+    title: str
+    type: str
+    start_date: str
+    end_date: str
+    target_product: str
+    target_sku: str
+    discount_pct: str
+    expected_impact: str
+    urgency: str
+    reason: str
+
+
+@router.post("/api/promotions")
+async def add_promotion(promo: PromotionModel, user: dict = Depends(get_current_user)):
+    org_name = user.get("sub", "Unknown")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT OR REPLACE INTO promotions (
+                id, org_name, title, type, start_date, end_date, 
+                target_product, target_sku, discount_pct, expected_impact, urgency, reason, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'scheduled')
+        ''', (promo.id, org_name, promo.title, promo.type, promo.start_date, promo.end_date,
+              promo.target_product, promo.target_sku, promo.discount_pct, promo.expected_impact,
+              promo.urgency, promo.reason))
+        conn.commit()
+        return {"status": "success", "message": f"Promotion '{promo.title}' successfully scheduled."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save promotion: {str(e)}")
+    finally:
+        conn.close()
+
+
+@router.get("/api/promotions")
+async def get_promotions(user: dict = Depends(get_current_user)):
+    org_name = user.get("sub", "Unknown")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT * FROM promotions WHERE org_name = ? ORDER BY created_at DESC', (org_name,))
+        rows = cursor.fetchall()
+        promos = [dict(row) for row in rows]
+        return {"status": "success", "promotions": promos}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to query promotions: {str(e)}")
+    finally:
+        conn.close()
+
+
+@router.delete("/api/promotions/{id}")
+async def delete_promotion(id: str, user: dict = Depends(get_current_user)):
+    org_name = user.get("sub", "Unknown")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM promotions WHERE org_name = ? AND id = ?', (org_name, id))
+        conn.commit()
+        return {"status": "success", "message": "Promotion successfully cancelled."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete promotion: {str(e)}")
+    finally:
+        conn.close()
+
+
+@router.get("/api/purchase_order/draft")
+async def draft_purchase_order(
+    sku: str = Query(...),
+    user: dict = Depends(get_current_user)
+):
+    org_name = user.get("sub", "Unknown")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get product details
+    cursor.execute('''
+        SELECT sku, name, category, price, stock, reorder_point, 
+               supplier_lead_days, supplier, forecasted_demand 
+        FROM inventory 
+        WHERE org_name = ? AND sku = ?
+    ''', (org_name, sku))
+    item = cursor.fetchone()
+    
+    conn.close()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Product not found in inventory.")
+        
+    name = item["name"]
+    category = item["category"]
+    price = item["price"] or 0.0
+    stock = item["stock"] or 0
+    reorder_point = item["reorder_point"] or 50
+    lead_days = item["supplier_lead_days"] or 7
+    supplier = item["supplier"] or ""
+    if not supplier.strip():
+        supplier = f"{category} Global Logistics"
+        
+    forecasted = item["forecasted_demand"] or 0
+    
+    # Recommended quantity: next period's forecasted sales * 1.4 safety buffer - current stock
+    recommended = max(10, int(forecasted * 1.4) - stock)
+    
+    # Round to neat batches of 5 or 10
+    if recommended > 10:
+        recommended = ((recommended + 4) // 5) * 5
+        
+    wholesale_price = price * 0.7
+    total_cost = recommended * wholesale_price
+    
+    # Build AI Email
+    email_subject = f"Urgent Stock Procurement Request: {name} (SKU: {sku})"
+    email_body = f"""Dear Sales and Logistics Team,
+
+I hope this message finds you well.
+
+Based on our automated StockSense AI predictive demand models for {org_name}, we are projecting a significant sales surge for '{name}' over the coming week. To prevent out-of-stock events and satisfy our customers, we would like to immediately place a replenishment purchase order.
+
+Please find the structured order details below:
+
+• Product Name: {name}
+• Product SKU: {sku}
+• Product Category: {category}
+• Quantity Requested: {recommended:,} units
+• Target Unit Price: {wholesale_price:.2f} (Wholesale rate)
+• Estimated Lead Time: {lead_days} days
+
+Please confirm receipt of this purchase order and reply with a formal invoice and estimated dispatch date at your earliest convenience. If you have any questions regarding these quantities, feel free to contact our inventory desk.
+
+Thank you for your continued support as a valued supply partner.
+
+Best regards,
+Procurement Officer
+{org_name} — {category} Desk
+Powered by StockSense AI
+"""
+
+    return {
+        "status": "success",
+        "sku": sku,
+        "name": name,
+        "category": category,
+        "supplier": supplier,
+        "current_stock": stock,
+        "forecasted_demand": forecasted,
+        "wholesale_price": wholesale_price,
+        "recommended_qty": recommended,
+        "total_cost": total_cost,
+        "lead_days": lead_days,
+        "email_subject": email_subject,
+        "email_body": email_body
+    }
 

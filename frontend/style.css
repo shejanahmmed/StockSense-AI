@@ -795,11 +795,17 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    height: 75vh;
-    min-height: 620px;
+    height: auto;
+    min-height: auto;
     width: 100%;
     max-width: 1600px;
     margin: 0 auto;
+    padding-bottom: 4rem; /* Generous bottom padding to clear the footer */
+}
+
+#insightsView .chat-container {
+    height: 680px; /* Fixed height for the chat scroll view */
+    min-height: 680px;
 }
 
 /* Compact header specifically inside the Insights page */
@@ -2257,15 +2263,282 @@ h1, h2, h3, h4 {
 
 }
 
-
-
 #sendChatBtn {
-
     padding: 0.75rem 1.5rem;
-
 }
 
+/* ============================================================
+   AI STRATEGIC ASSISTANT — COCKPIT & DUAL PANE UPGRADES
+   ============================================================ */
 
+.insights-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2rem;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.chat-pane {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.insights-cockpit-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Strategy Option Button Active and Hover States */
+.strategy-option-btn {
+    width: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.strategy-option-btn:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+}
+
+.strategy-option-btn.active {
+    background: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), inset 0 0 10px rgba(139, 92, 246, 0.1) !important;
+    color: #fff !important;
+}
+
+.strategy-option-btn.active .opt-title {
+    color: var(--accent-primary) !important;
+}
+
+/* Slash Commands Menu Button States */
+#slashCommandsBtn:hover {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border-color: rgba(139, 92, 246, 0.45) !important;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+.slash-commands-dropdown {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    animation: fadeInScale 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.slash-commands-dropdown .dropdown-item:hover {
+    background: rgba(139, 92, 246, 0.12) !important;
+}
+
+.slash-commands-dropdown .dropdown-item:hover .cmd-badge {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+/* Custom Markdown Table inside chat bubbles */
+.msg-bubble table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.84rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    display: table;
+}
+
+.msg-bubble th {
+    background: rgba(139, 92, 246, 0.15);
+    color: #ffffff;
+    padding: 0.7rem 0.9rem;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+}
+
+.msg-bubble td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-family: inherit;
+}
+
+.msg-bubble tr:last-child td {
+    border-bottom: none;
+}
+
+.msg-bubble tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+}
+
+.msg-bubble th:first-child, .msg-bubble td:first-child {
+    padding-left: 1.2rem;
+}
+
+.msg-bubble th:last-child, .msg-bubble td:last-child {
+    padding-right: 1.2rem;
+}
+
+/* Glassmorphic Interactive Action Cards inside chat bubbles */
+.chat-restock-card, .chat-promo-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin: 1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-restock-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--status-danger);
+}
+
+.chat-promo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--status-warning);
+}
+
+.chat-restock-card:hover {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.03);
+    box-shadow: 0 15px 35px rgba(239, 68, 68, 0.08);
+}
+
+.chat-promo-card:hover {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.03);
+    box-shadow: 0 15px 35px rgba(245, 158, 11, 0.08);
+}
+
+.card-info-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.card-title-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title-line h4 {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.card-badge {
+    font-size: 0.70rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-full);
+    font-weight: 500;
+}
+
+.card-badge.restock {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--status-danger);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.card-badge.promo {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--status-warning);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.card-desc-line {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.card-metrics-row {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.card-metric {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.card-metric strong {
+    color: #fff;
+}
+
+.card-action-pane {
+    flex-shrink: 0;
+}
+
+/* Animations */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Responsive breakdowns */
+@media (max-width: 1100px) {
+    .insights-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .insights-cockpit-pane {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 650px) {
+    .insights-cockpit-pane {
+        grid-template-columns: 1fr;
+    }
+    .chat-restock-card, .chat-promo-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .card-action-pane {
+        width: 100%;
+    }
+    .card-action-pane button {
+        width: 100%;
+        justify-content: center;
+    }
+}
 
 /* ============================================================
    SETTINGS PAGE — MODERN PROFESSIONAL REDESIGN

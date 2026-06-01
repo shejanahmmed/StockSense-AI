@@ -20,10 +20,14 @@ let _chartFilter = {
 let _activeBIMetrics = null;
 let _showAllTimeline = false;
 let _showAllDrivers = false;
+let scheduledPromoIds = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
     // 0. Initialize Authentication
     initAuth();
+
+    // 1. Initialize PO modal listeners
+    initPoModal();
 
     // 2. Initialize the Forecast Chart
     initChart();
@@ -82,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 10. If no CSV has been uploaded, show a clean empty state
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
+        loadScheduledPromotions();
         const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
         if (hasUploadedFile) {
             // Data will be restored from localStorage cache inside setupCsvUpload
@@ -323,6 +328,9 @@ function setupNavigation() {
         } else if (view === 'insights') {
             navInsights.classList.add('active');
             insightsView.style.display = 'flex';
+            if (typeof updateInsightsCockpitMetrics === 'function') {
+                updateInsightsCockpitMetrics();
+            }
         } else if (view === 'settings') {
             navSettings.classList.add('active');
             settingsView.style.display = 'flex';
@@ -815,13 +823,28 @@ function renderInventoryTable(data, page = 1) {
             <td style="color: var(--text-secondary);">${leadDays}d</td>
             <td style="color: var(--accent-primary); font-weight: 600;">${forecastDemand !== '—' ? forecastDemand + ' units' : '—'}</td>
             <td><span class="status-pill ${statusClass}">${item.status}</span></td>
-            <td style="text-align: right;">
-                <button class="icon-btn action-delete" data-sku="${item.sku}" title="Delete SKU ${item.sku}" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
+            <td style="text-align: right; white-space: nowrap;">
+                ${(item.status === 'Low Stock' || item.status === 'Out of Stock') ? `
+                    <button class="primary-btn action-draft-po" data-sku="${item.sku}" data-name="${item.name.replace(/'/g, "\\'")}" data-stock="${item.stock}" title="Draft Purchase Order" style="padding: 0 0.65rem; height: 32px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;">
+                        <i class="fa-solid fa-file-invoice"></i> Draft PO
+                    </button>
+                ` : ''}
+                <button class="icon-btn action-delete" data-sku="${item.sku}" title="Delete SKU ${item.sku}" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </td>
         `;
         tbody.appendChild(tr);
+    });
+
+    // Attach draft PO listeners
+    document.querySelectorAll('.action-draft-po').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const sku = e.currentTarget.getAttribute('data-sku');
+            const name = e.currentTarget.getAttribute('data-name');
+            const stock = parseInt(e.currentTarget.getAttribute('data-stock')) || 0;
+            openDraftPO(sku, name, stock);
+        });
     });
 
     // Attach delete listeners
@@ -1404,6 +1427,72 @@ function initChat() {
             sendChatMessage();
         });
     });
+
+    // Toggle Slash Commands Dropdown
+    const slashBtn = document.getElementById('slashCommandsBtn');
+    const slashDropdown = document.getElementById('slashCommandsDropdown');
+    if (slashBtn && slashDropdown) {
+        slashBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            slashDropdown.style.display = slashDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Command item selection
+        document.querySelectorAll('#slashCommandsDropdown .dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const cmd = item.getAttribute('data-cmd');
+                input.value = cmd;
+                slashDropdown.style.display = 'none';
+                input.focus();
+                sendChatMessage();
+            });
+        });
+        
+        // Hide on click outside
+        document.addEventListener('click', (e) => {
+            if (!slashBtn.contains(e.target) && !slashDropdown.contains(e.target)) {
+                slashDropdown.style.display = 'none';
+            }
+        });
+    }
+
+    // Capture slash command keystroke / in input
+    input.addEventListener('input', (e) => {
+        if (input.value === '/') {
+            if (slashDropdown) slashDropdown.style.display = 'block';
+        }
+    });
+
+    // Wire up strategy selectors
+    const strategyButtons = ['chatStrategyConservative', 'chatStrategyBalanced', 'chatStrategyAggressive'];
+    const cachedStrategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+    
+    strategyButtons.forEach(bId => {
+        const btnEl = document.getElementById(bId);
+        if (!btnEl) return;
+        btnEl.classList.remove('active');
+        if (btnEl.getAttribute('data-strategy') === cachedStrategy) {
+            btnEl.classList.add('active');
+        }
+    });
+
+    strategyButtons.forEach(id => {
+        const btnEl = document.getElementById(id);
+        if (!btnEl) return;
+        btnEl.addEventListener('click', () => {
+            strategyButtons.forEach(bId => document.getElementById(bId)?.classList.remove('active'));
+            btnEl.classList.add('active');
+            const strat = btnEl.getAttribute('data-strategy');
+            localStorage.setItem('stockSense_cfgStrategy', strat);
+            
+            // Sync with Settings dropdown
+            const settingsSelect = document.getElementById('settingStrategy');
+            if (settingsSelect) settingsSelect.value = strat;
+            
+            // Toast notification
+            showToast('success', `AI Strategy Engine updated to: ${strat.charAt(0).toUpperCase() + strat.slice(1)}`);
+        });
+    });
     
     // Load existing history
     loadChatHistory();
@@ -1428,11 +1517,12 @@ async function loadChatHistory() {
         if (data.status === 'success' && data.history) {
             chatHistory = data.history;
             const chatMessages = document.getElementById('chatMessages');
-            // Keep the first default message if any, then append
+            
             chatHistory.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `message ${msg.role}`;
-                div.innerHTML = `<div class="msg-bubble">${msg.content}</div>`;
+                const parsedContent = msg.role === 'assistant' ? parseChatMessageContent(msg.content) : msg.content.replace(/\n/g, '<br>');
+                div.innerHTML = `<div class="msg-bubble">${parsedContent}</div>`;
                 chatMessages.appendChild(div);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1451,15 +1541,15 @@ async function sendChatMessage() {
     appendMessage('user', text);
     input.value = '';
 
-    // If context isn't loaded yet, try to load it from the table or memory
     if (!currentInventoryContext) {
-        // Simple mock context if inventory isn't fetched
         currentInventoryContext = { info: "SME Electronics Store Inventory" };
     }
 
     try {
         const token = localStorage.getItem('stockSense_jwt');
         const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+        const activeStrategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+        
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 
@@ -1470,7 +1560,8 @@ async function sendChatMessage() {
                 message: text,
                 history: chatHistory,
                 inventory_context: currentInventoryContext,
-                currency: currency
+                currency: currency,
+                strategy: activeStrategy
             })
         });
 
@@ -1486,16 +1577,136 @@ async function sendChatMessage() {
     }
 }
 
+function parseChatMessageContent(content) {
+    if (!content) return '';
+    
+    let processed = content;
+    
+    // 1. Parse Markdown Tables
+    const tableRegex = /\|([^\n]+)\|\r?\n\|[ :\-|\r?\n]+\|((?:\r?\n\|[^\n]+\|)+)/g;
+    processed = processed.replace(tableRegex, (match) => {
+        const rows = match.trim().split('\n');
+        if (rows.length < 2) return match;
+        
+        let html = '<table><thead><tr>';
+        
+        // Parse Headers
+        const headerParts = rows[0].split('|').map(h => h.trim()).filter((h, idx) => idx > 0 && idx < rows[0].split('|').length - 1);
+        headerParts.forEach(h => {
+            html += `<th>${h}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+        
+        // Parse Body Rows (skip row 1 separator)
+        for (let i = 2; i < rows.length; i++) {
+            const cols = rows[i].split('|').map(c => c.trim()).filter((c, idx) => idx > 0 && idx < rows[i].split('|').length - 1);
+            if (cols.length === 0) continue;
+            html += '<tr>';
+            cols.forEach(c => {
+                html += `<td>${c}</td>`;
+            });
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table>';
+        return html;
+    });
+    
+    // 2. Parse [RESTOCK:sku|name|stock] tags into action cards
+    const restockRegex = /\[RESTOCK:([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
+    processed = processed.replace(restockRegex, (match, sku, name, stock) => {
+        const parsedStock = parseInt(stock) || 0;
+        return `
+        <div class="chat-restock-card">
+            <div class="card-info-pane">
+                <div class="card-title-line">
+                    <h4>${name}</h4>
+                    <span class="card-badge restock">Replenish Alert</span>
+                </div>
+                <div class="card-desc-line">SKU: <code>${sku}</code></div>
+                <div class="card-metrics-row">
+                    <span class="card-metric">Current Stock: <strong>${parsedStock.toLocaleString()}</strong></span>
+                </div>
+            </div>
+            <div class="card-action-pane">
+                <button type="button" class="primary-btn timeline-po-btn" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; height: 32px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.35rem; font-weight: 600;" onclick="window.openDraftPO('${sku}', '${name.replace(/'/g, "\\'")}', ${parsedStock})">
+                    <i class="fa-solid fa-bolt"></i> Draft PO
+                </button>
+            </div>
+        </div>
+        `;
+    });
+    
+    // 3. Parse [PROMO:discount|sku|name|reason] tags into campaign recommendation chips
+    const promoRegex = /\[PROMO:([^|\]]+)\|([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
+    processed = processed.replace(promoRegex, (match, discount, sku, name, reason) => {
+        return `
+        <div class="chat-promo-card">
+            <div class="card-info-pane">
+                <div class="card-title-line">
+                    <h4>${name}</h4>
+                    <span class="card-badge promo">${discount} Promo Opportunity</span>
+                </div>
+                <div class="card-desc-line">SKU: <code>${sku}</code> &bull; ${reason}</div>
+            </div>
+            <div class="card-action-pane">
+                <button type="button" class="primary-btn" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; height: 32px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.35rem; font-weight: 600; background: linear-gradient(135deg, var(--status-warning), #d97706); border-color: rgba(245,158,11,0.4);" onclick="switchView('dashboard'); setTimeout(() => { document.getElementById('promo-planner-section').scrollIntoView({ behavior: 'smooth' }); }, 500);">
+                    <i class="fa-solid fa-calendar-plus"></i> View Planner
+                </button>
+            </div>
+        </div>
+        `;
+    });
+    
+    // Standard conversions
+    processed = processed.replace(/\n/g, '<br>');
+    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    processed = processed.replace(/⚠️/g, '<i class="fa-solid fa-triangle-exclamation" style="color: var(--status-danger);"></i>');
+    
+    return processed;
+}
+
 function appendMessage(role, content) {
     const chatMessages = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.className = `message ${role}`;
-    div.innerHTML = `<div class="msg-bubble">${content}</div>`;
+    
+    const parsedContent = role === 'assistant' ? parseChatMessageContent(content) : content.replace(/\n/g, '<br>');
+    div.innerHTML = `<div class="msg-bubble">${parsedContent}</div>`;
     chatMessages.appendChild(div);
     
-    // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+function updateInsightsCockpitMetrics() {
+    const totalSkusEl = document.getElementById('chatMiniTotalSKUs');
+    const lowStockEl = document.getElementById('chatMiniLowStock');
+    const outStockEl = document.getElementById('chatMiniOutStock');
+    const healthEl = document.getElementById('chatMiniHealth');
+    
+    if (!totalSkusEl || !currentInventoryContext || !Array.isArray(currentInventoryContext)) return;
+    
+    const total = currentInventoryContext.length;
+    const low = currentInventoryContext.filter(i => i.status === 'Low Stock').length;
+    const out = currentInventoryContext.filter(i => i.status === 'Out of Stock').length;
+    const healthy = total - low - out;
+    const healthPct = total > 0 ? Math.round((healthy / total) * 100) : 0;
+    
+    totalSkusEl.textContent = total.toLocaleString();
+    lowStockEl.textContent = low.toLocaleString();
+    outStockEl.textContent = out.toLocaleString();
+    healthEl.textContent = `${healthPct}%`;
+    
+    if (healthPct >= 85) {
+        healthEl.style.color = 'var(--status-success)';
+    } else if (healthPct >= 60) {
+        healthEl.style.color = 'var(--status-warning)';
+    } else {
+        healthEl.style.color = 'var(--status-danger)';
+    }
+}
+
+
 
 function initSearch() {
     const searchInput = document.getElementById('dashboardSearch');
@@ -2174,6 +2385,12 @@ function updateBIMetrics(metrics) {
             }
             const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
             
+            const poBtnHtml = (item.urgency === 'Critical' || item.urgency === 'Plan') ? `
+                <button class="primary-btn timeline-po-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem; height: 26px; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'Outfit', sans-serif;" onclick="openDraftPO('${sku}', '${item.name.replace(/'/g, "\\'")}', ${item.stock})">
+                    <i class="fa-solid fa-file-invoice"></i> Draft PO
+                </button>
+            ` : '';
+
             return `
                 <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorVar}; box-shadow: 0 0 10px ${colorVar};"></div>
@@ -2184,7 +2401,10 @@ function updateBIMetrics(metrics) {
                         </strong>
                         ${textHtml}
                     </div>
-                    ${badgeHtml}
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        ${badgeHtml}
+                        ${poBtnHtml}
+                    </div>
                 </li>
             `;
         };
@@ -2635,6 +2855,17 @@ function renderPromoSuggestions(suggestions) {
         const startStr = formatDateString(promo.start_date);
         const endStr = formatDateString(promo.end_date);
         
+        const isScheduled = scheduledPromoIds.has(promo.id);
+        const btnHtml = isScheduled ? `
+            <button class="secondary-btn promo-schedule-btn" style="width: 100%; margin-top: 0.75rem; font-size: 0.8rem; justify-content: center; padding: 0.5rem; gap: 0.35rem; opacity: 0.65; cursor: not-allowed; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);" disabled>
+                <i class="fa-solid fa-calendar-check" style="color: var(--status-success);"></i> Campaign Scheduled
+            </button>
+        ` : `
+            <button class="primary-btn promo-schedule-btn" id="btn-promo-${promo.id}" style="width: 100%; margin-top: 0.75rem; font-size: 0.8rem; justify-content: center; padding: 0.5rem; gap: 0.35rem;" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}', '${promo.type}', '${promo.start_date}', '${promo.end_date}', '${promo.target_product.replace(/'/g, "\\'")}', '${promo.target_sku}', '${promo.expected_impact}', '${promo.urgency}', '${promo.reason.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-calendar-plus"></i> Schedule Campaign
+            </button>
+        `;
+
         html += `
             <div class="promo-card ${badgeClass}">
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 0.5rem;">
@@ -2655,7 +2886,9 @@ function renderPromoSuggestions(suggestions) {
                 
                 <p class="promo-card-reason" style="margin-top: -0.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; flex-grow: 1;">${promo.reason}</p>
                 
-                <div class="promo-card-footer" style="margin-top: 0.25rem;">
+                ${btnHtml}
+                
+                <div class="promo-card-footer" style="margin-top: 0.75rem;">
                     <div class="promo-target-label">
                         <span>Target Item</span>
                         <span title="${promo.target_product}">${promo.target_product}</span>
@@ -7107,5 +7340,267 @@ function initHelpChat() {
         }
     }
 }
+
+
+// ====================================================
+// Closed-Loop Actionability Operations (PO & Promos)
+// ====================================================
+
+function initPoModal() {
+    const modal = document.getElementById('draftPoModal');
+    const closeBtn = document.getElementById('closeDraftPoModal');
+    const cancelBtn = document.getElementById('cancelDraftPoBtn');
+    const downloadBtn = document.getElementById('downloadPoCsvBtn');
+    const copyBtn = document.getElementById('copyPoEmailBtn');
+    const qtyInput = document.getElementById('poReorderQty');
+
+    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !copyBtn || !qtyInput) return;
+
+    const closeModal = () => {
+        modal.classList.remove('open');
+        modal.style.pointerEvents = 'none';
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Handle interactive quantity changes
+    qtyInput.addEventListener('input', () => {
+        const qty = parseInt(qtyInput.value) || 0;
+        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
+        const total = qty * price;
+
+        // Update total cost element
+        const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+        const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+        const symbol = symbols[currency.toUpperCase()] || '৳';
+        
+        document.getElementById('poTotalCost').textContent = symbol + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // Update Email body text dynamically
+        const emailBodyEl = document.getElementById('poEmailBody');
+        const sku = document.getElementById('poSku').textContent;
+        const name = document.getElementById('poProdName').textContent;
+        const category = qtyInput.getAttribute('data-category');
+        const leadDays = qtyInput.getAttribute('data-lead-days');
+        const orgName = localStorage.getItem('stockSense_storeName') || 'Store 12';
+
+        emailBodyEl.value = `Dear Sales and Logistics Team,
+
+I hope this message finds you well.
+
+Based on our automated StockSense AI predictive demand models for ${orgName}, we are projecting a significant sales surge for '${name}' over the coming week. To prevent out-of-stock events and satisfy our customers, we would like to immediately place a replenishment purchase order.
+
+Please find the structured order details below:
+
+• Product Name: {name}
+• Product SKU: {sku}
+• Product Category: {category}
+• Quantity Requested: ${qty.toLocaleString()} units
+• Target Unit Price: ${symbol}${price.toFixed(2)} (Wholesale rate)
+• Estimated Lead Time: {leadDays} days
+
+Please confirm receipt of this purchase order and reply with a formal invoice and estimated dispatch date at your earliest convenience. If you have any questions regarding these quantities, feel free to contact our inventory desk.
+
+Thank you for your continued support as a valued supply partner.
+
+Best regards,
+Procurement Officer
+{orgName} — {category} Desk
+Powered by StockSense AI`;
+
+        // String replacements to fill templates properly
+        emailBodyEl.value = emailBodyEl.value
+            .replace(/{name}/g, name)
+            .replace(/{sku}/g, sku)
+            .replace(/{category}/g, category)
+            .replace(/{leadDays}/g, leadDays)
+            .replace(/{orgName}/g, orgName);
+    });
+
+    // Copy to clipboard
+    copyBtn.addEventListener('click', () => {
+        const body = document.getElementById('poEmailBody').value;
+        navigator.clipboard.writeText(body).then(() => {
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--status-success);"></i> Copied!';
+            copyBtn.disabled = true;
+            addNotification('Email Copied', 'Supplier procurement draft email copied to clipboard.', 'success');
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.disabled = false;
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    });
+
+    // Download CSV
+    downloadBtn.addEventListener('click', () => {
+        const sku = document.getElementById('poSku').textContent;
+        const name = document.getElementById('poProdName').textContent;
+        const qty = parseInt(qtyInput.value) || 0;
+        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
+        const total = qty * price;
+        const supplier = document.getElementById('poSupplierName').textContent;
+        const leadDays = qtyInput.getAttribute('data-lead-days');
+        
+        const csvContent = [
+            ["StockSense AI - Replenishment Purchase Order Draft"],
+            ["Store Name", localStorage.getItem('stockSense_storeName') || 'Store 12'],
+            ["Supplier Name", supplier],
+            ["Estimated Lead Days", leadDays],
+            ["Generated At", new Date().toLocaleString()],
+            [],
+            ["SKU Code", "Product Name", "Order Quantity", "Wholesale Unit Price", "Total Cost Projection"],
+            [sku, name, qty, price, total]
+        ].map(row => row.map(val => typeof val === 'string' && val.includes(',') ? `"${val}"` : val).join(',')).join('\n');
+
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `StockSense_PurchaseOrder_${sku}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        addNotification('PO Export Successful', `CSV Purchase Order for ${sku} downloaded.`, 'success');
+        modal.classList.remove('open');
+    });
+}
+
+async function openDraftPO(sku, name, stock) {
+    const modal = document.getElementById('draftPoModal');
+    if (!modal) return;
+
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch(`/api/purchase_order/draft?sku=${encodeURIComponent(sku)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+            const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+            const symbol = symbols[currency.toUpperCase()] || '৳';
+
+            // Populate static text elements
+            document.getElementById('poSupplierName').textContent = data.supplier;
+            document.getElementById('poLeadDays').textContent = `${data.lead_days} Days Lead`;
+            document.getElementById('poSku').textContent = data.sku;
+            document.getElementById('poProdName').textContent = data.name;
+            document.getElementById('poCurrentStock').textContent = data.current_stock.toLocaleString();
+            document.getElementById('poForecast').textContent = data.forecasted_demand.toLocaleString();
+            
+            document.getElementById('poUnitCost').textContent = symbol + data.wholesale_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('poTotalCost').textContent = symbol + data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            // Populate email assistant
+            document.getElementById('poEmailSubject').textContent = data.email_subject;
+            document.getElementById('poEmailBody').value = data.email_body;
+
+            // Configure input attributes for live edits
+            const qtyInput = document.getElementById('poReorderQty');
+            qtyInput.value = data.recommended_qty;
+            qtyInput.setAttribute('data-wholesale-price', data.wholesale_price);
+            qtyInput.setAttribute('data-category', data.category);
+            qtyInput.setAttribute('data-lead-days', data.lead_days);
+
+            // Open modal
+            modal.style.pointerEvents = 'auto';
+            modal.classList.add('open');
+        } else {
+            addNotification('Draft Failed', data.message || 'Could not fetch draft details.', 'warning');
+        }
+    } catch (e) {
+        console.error("Failed to load PO draft details:", e);
+        addNotification('Error', 'Failed to connect to the backend to generate Purchase Order.', 'error');
+    }
+}
+
+async function schedulePromotion(id, title, discountPct, type, startDate, endDate, targetProduct, targetSku, expectedImpact, urgency, reason) {
+    const btn = document.getElementById(`btn-promo-${id}`);
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scheduling...';
+        btn.disabled = true;
+    }
+
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const response = await fetch('/api/promotions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                id, title, type,
+                start_date: startDate,
+                end_date: endDate,
+                target_product: targetProduct,
+                target_sku: targetSku,
+                discount_pct: discountPct,
+                expected_impact: expectedImpact,
+                urgency, reason
+            })
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+            scheduledPromoIds.add(id);
+            addNotification(
+                '📅 Campaign Scheduled',
+                `Successfully scheduled '${title}' for ${targetProduct} (${discountPct} off).`,
+                'success'
+            );
+            
+            // Re-render suggestions to lock scheduled state
+            const lastResult = JSON.parse(localStorage.getItem('stockSense_lastResult') || '{}');
+            if (lastResult.promo_suggestions) {
+                renderPromoSuggestions(lastResult.promo_suggestions);
+            }
+            
+            // Trigger automatic re-forecasting so model registers promotion impact!
+            addNotification('AI Model Syncing', 'Re-computing Facebook Prophet demand projections incorporating scheduled campaign...', 'info');
+            reforecastFromInventory();
+        } else {
+            addNotification('Scheduling Failed', result.message || 'Could not schedule campaign.', 'warning');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-calendar-plus"></i> Schedule Campaign';
+                btn.disabled = false;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to schedule promotion:", e);
+        addNotification('Error', 'Failed to connect to server to schedule campaign.', 'error');
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-calendar-plus"></i> Schedule Campaign';
+            btn.disabled = false;
+        }
+    }
+}
+
+async function loadScheduledPromotions() {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        if (!token) return;
+        const response = await fetch('/api/promotions', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.status === 'success' && data.promotions) {
+            scheduledPromoIds = new Set(data.promotions.map(p => p.id));
+        }
+    } catch (e) {
+        console.warn("Failed to load scheduled promotions:", e);
+    }
+}
+
+window.schedulePromotion = schedulePromotion;
+window.openDraftPO = openDraftPO;
 
 

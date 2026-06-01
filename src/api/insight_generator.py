@@ -201,6 +201,9 @@ Guidelines:
 4. Keep answers under 4-5 sentences.
 5. If you are asked about something not in the context, use your general business knowledge but clarify it is general advice.
 6. VERY IMPORTANT: The user's active dashboard currency is {currency} (symbol: {currency_symbol}). You MUST represent and format all currency amounts, prices, revenues, and financial values in your response using the {currency_symbol} symbol (or {currency} abbreviation) and NEVER use the dollar ($) sign unless the active currency itself is USD or CAD. For example, if a price or value is 100, format it as {currency_symbol}100 or 100 {currency}, not $100.
+7. When presenting tabular data, lists of products, or metrics, you MUST format them in clean, standard Markdown tables (using '|' borders) for beautiful rendering.
+8. If you discuss specific products that are low in stock, out of stock, or need replenishment, you MUST append a trailing structured tag in the exact format: `[RESTOCK:sku|name|stock]` at the very end of your response for each product (where sku is the SKU, name is the product name, and stock is the current stock count). For example: "You should restock Laptop Pro. [RESTOCK:SKU-LAP|Laptop Pro|5]". This will compile into a one-click PO button in the UI.
+9. If you suggest active promotions for slow-moving products, you MUST append a trailing structured tag in the exact format: `[PROMO:discount|sku|name|reason]` at the very end of your response. For example: "I suggest a discount for Desk Organizer. [PROMO:20%|SKU-DSK|Desk Organizer|Clear slow-moving stock]".
 """
 
     messages = [{"role": "system", "content": system_prompt}]
@@ -225,16 +228,193 @@ Guidelines:
             logger.error(f"Chat Groq Error: {e}")
             return f"I apologize, but I'm having an API error: {str(e)}"
     else:
-        # Fallback to a dynamic mock based on actual context for local testing
+        # Fallback to dynamic structured mock if in local environment or Groq fails
+        items = []
         if isinstance(context_data, list):
-            low_stock = [i['name'] for i in context_data if i.get('status') in ['Low Stock', 'Out of Stock']]
-            item_count = len(context_data)
-            if low_stock:
-                examples = ", ".join(low_stock[:2])
-                return f"I've analyzed your query: '{query}'. Based on the {item_count} items in your inventory, I recommend focusing on your low-stock items like {examples}. Would you like me to calculate specific reorder quantities?"
+            items = context_data
+        elif isinstance(context_data, dict) and "data" in context_data:
+            items = context_data["data"]
+        
+        # If no items available in context, query local database directly!
+        if not items:
+            try:
+                from src.api.database import get_db_connection
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days, supplier, status, forecasted_demand, units_sold FROM inventory")
+                rows = cursor.fetchall()
+                conn.close()
+                items = [dict(row) for row in rows]
+            except Exception as dberr:
+                logger.error(f"Failed to query database for chat: {dberr}")
+                items = []
+
+        q = query.strip().lower()
+        
+        # 1. /restock or Stockout Risks command
+        if "/restock" in q or "restock" in q or "stockout" in q or "reorder" in q or "low stock" in q or "critical" in q:
+            at_risk = []
+            for i in items:
+                stock = i.get('stock', 0)
+                ro = i.get('reorder_point', 50)
+                status = i.get('status', '')
+                if status in ['Low Stock', 'Out of Stock'] or stock <= ro:
+                    at_risk.append(i)
+            
+            if not at_risk:
+                return "Good news! I've scanned your current inventory and all items are well-stocked. None of your products are currently at risk of stockout."
+            
+            table_lines = [
+                f"### ⚠️ Critical Stockout & Replenishment Report",
+                f"I've identified **{len(at_risk)}** items that require immediate replenishment to prevent supply chain disruptions:",
+                "",
+                f"| SKU | Product Name | Stock | Reorder Pt | Forecast (7d) | Status |",
+                f"| :--- | :--- | :---: | :---: | :---: | :---: |"
+            ]
+            for i in at_risk:
+                sku = i.get('sku', 'N/A')
+                name = i.get('name', 'N/A')
+                stock = i.get('stock', 0)
+                reorder = i.get('reorder_point', 50)
+                forecast = i.get('forecasted_demand', 0)
+                status = i.get('status', 'Low Stock')
+                status_icon = "🔴" if status == "Out of Stock" else "🟡"
+                table_lines.append(f"| `{sku}` | {name} | {stock} | {reorder} | {forecast} | {status_icon} {status} |")
+            
+            table_lines.append("")
+            table_lines.append("I've drafted interactive procurement options below. Simply click **Draft Purchase Order** on any card to automatically generate and review a purchase order for that supplier.")
+            table_lines.append("")
+            
+            # Append action tags at the end
+            for i in at_risk:
+                sku = i.get('sku')
+                name = i.get('name')
+                stock = i.get('stock', 0)
+                table_lines.append(f"[RESTOCK:{sku}|{name}|{stock}]")
+                
+            return "\n".join(table_lines)
+            
+        # 2. /overstock or excess inventory command
+        elif "/overstock" in q or "overstock" in q or "excess" in q or "slow" in q or "clear" in q or "promo" in q or "/promos" in q:
+            excess_items = []
+            for i in items:
+                stock = i.get('stock', 0)
+                forecast = i.get('forecasted_demand', 0)
+                if stock > max(forecast * 2, 20):
+                    excess_items.append(i)
+                    
+            if not excess_items:
+                return "I've scanned your inventory for excess stock. Everything looks balanced, and you don't have any significant slow-moving or overstocked inventory tying up capital."
+                
+            table_lines = [
+                f"### 📦 Excess Inventory & Promotional Opportunities",
+                f"I've found **{len(excess_items)}** items where current stock levels significantly exceed forecasted demand. These represent dead capital that could be cleared via tactical marketing campaigns:",
+                "",
+                f"| SKU | Product Name | Stock | Forecast (7d) | Price | Est. Capital Tied |",
+                f"| :--- | :--- | :---: | :---: | :---: | :---: |"
+            ]
+            for i in excess_items:
+                sku = i.get('sku', 'N/A')
+                name = i.get('name', 'N/A')
+                stock = i.get('stock', 0)
+                forecast = i.get('forecasted_demand', 0)
+                price = i.get('price', 0.0)
+                capital = (stock - forecast) * price
+                table_lines.append(f"| `{sku}` | {name} | {stock} | {forecast} | {currency_symbol}{price:.2f} | {currency_symbol}{capital:.2f} |")
+                
+            table_lines.append("")
+            table_lines.append("I suggest running targeted promotional discounts to liquidate this stock and recover capital. You can click **Schedule Campaign** on the suggestions below:")
+            table_lines.append("")
+            
+            for i in excess_items:
+                sku = i.get('sku')
+                name = i.get('name')
+                table_lines.append(f"[PROMO:15% Off|{sku}|{name}|Clear slow-moving inventory]")
+                
+            return "\n".join(table_lines)
+            
+        # 3. /forecast or sales forecast command
+        elif "/forecast" in q or "forecast" in q or "trend" in q or "predict" in q or "sales" in q:
+            if not items:
+                return "I don't see any inventory data in the active context to perform demand forecasting. Please upload a transaction sales history CSV on the overview dashboard."
+                
+            table_lines = [
+                f"### 📈 7-Day Demand Forecasts & Coverage",
+                f"Here is next week's AI-calculated demand projection and estimated stock coverage for your top products:",
+                "",
+                f"| SKU | Product Name | Current Stock | Forecasted Sales (7d) | Coverage Days | Health |",
+                f"| :--- | :--- | :---: | :---: | :---: | :--- |"
+            ]
+            for i in items[:10]:
+                sku = i.get('sku', 'N/A')
+                name = i.get('name', 'N/A')
+                stock = i.get('stock', 0)
+                forecast = i.get('forecasted_demand', 0)
+                cov_days = int((stock / forecast) * 7) if forecast > 0 else 999
+                cov_text = f"{cov_days} days" if cov_days < 99 else "99+ days"
+                
+                health = "🟢 Optimal"
+                if cov_days < 7:
+                    health = "🔴 Critical (<7d)"
+                elif cov_days < 14:
+                    health = "🟡 Low Stock (<14d)"
+                elif cov_days > 90:
+                    health = "🔵 Overstock (>90d)"
+                    
+                table_lines.append(f"| `{sku}` | {name} | {stock} | {forecast} | {cov_text} | {health} |")
+                
+            table_lines.append("")
+            table_lines.append("Prophet time-series predictions are updated automatically. If coverage is critical, use the action buttons to replenish immediately.")
+            return "\n".join(table_lines)
+            
+        # 4. /health or inventory health check
+        elif "/health" in q or "health" in q or "diagnostic" in q or "overall" in q:
+            if not items:
+                return "I cannot calculate system health because no inventory items are loaded. Please import your product database."
+                
+            total = len(items)
+            out_stock = sum(1 for i in items if i.get('status') == 'Out of Stock')
+            low_stock = sum(1 for i in items if i.get('status') == 'Low Stock')
+            healthy = total - out_stock - low_stock
+            health_pct = int((healthy / total) * 100) if total > 0 else 0
+            health_color = "🟢 Excellent" if health_pct >= 85 else "🟡 Warning" if health_pct >= 60 else "🔴 Action Required"
+            
+            report = [
+                f"### 🩺 Inventory Health & Security Diagnostics Report",
+                f"I've completed an operational diagnostic scan of your supply chain database. Here is the AI-synthesis summary:",
+                "",
+                f"- **Overall Health Index:** {health_pct}% ({health_color})",
+                f"- **Total Tracked SKUs:** {total} products",
+                f"- **Optimal Stocked SKUs:** {healthy} products",
+                f"- **Low Stock Alert SKUs:** {low_stock} products",
+                f"- **Out of Stock SKUs:** {out_stock} products",
+                "",
+                "#### 🔍 Quick Summary & Diagnosis:",
+            ]
+            
+            if out_stock > 0:
+                report.append(f"- ⚠️ **Critical Out of Stock Warning:** You have {out_stock} items completely depleted. This is resulting in immediate lost sales. Type `/restock` to see what to order.")
+            if low_stock > 0:
+                report.append(f"- ⚠️ **Replenishment Risk:** {low_stock} items are below their calculated safety threshold (reorder points). These should be drafted into a PO today.")
+            if healthy == total:
+                report.append("- ✅ **Flawless Balance:** Excellent job! All tracked products are currently within optimal supply boundaries. Keep monitoring demand forecasts weekly.")
+                
+            report.append("")
+            report.append("Would you like me to calculate specific cost projections or show details for low stock items?")
+            return "\n".join(report)
+
+        # Default fallback conversational response
+        if items:
+            low_stock_names = [i['name'] for i in items if i.get('status') in ['Low Stock', 'Out of Stock']]
+            item_count = len(items)
+            if low_stock_names:
+                examples = ", ".join(low_stock_names[:2])
+                return f"I am StockSense AI. I've analyzed your current inventory of **{item_count} items**. I noticed that some of your products, like **{examples}**, are running low. Would you like me to compile a reorder recommendation report? (You can type `/restock` to see the details, or `/health` to run a diagnostics check)."
             else:
-                return f"I've analyzed your query: '{query}'. Your {item_count} items look well-stocked. Is there a specific product category you want to forecast?"
-        return f"I've analyzed your query: '{query}'. Without an LLM connected, I can only provide general advice. Please connect to Groq for full context-aware answers."
+                return f"Hello! I am StockSense AI. I've scanned your **{item_count} items** and they all look well-stocked. How can I help you optimize your business today? (Type `/overstock` to look for capital-clearing ideas, or `/forecast` to see demand predictions)."
+        
+        return f"I've analyzed your query: '{query}'. To get context-aware answers, please upload your sales transaction CSV on the Dashboard first."
+
 
 if __name__ == "__main__":
     # Example usage / basic test
