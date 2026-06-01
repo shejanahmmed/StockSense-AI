@@ -165,7 +165,7 @@ def generate_insight(data: Dict[str, Any]) -> str:
         except Exception:
             return "Unable to generate forecast insights at this time. Please review the raw forecast data."
 
-def generate_chat_response(query: str, history: list, context_data: Dict[str, Any], currency: str = "BDT") -> str:
+def generate_chat_response(query: str, history: list, context_data: Dict[str, Any], currency: str = "BDT", org_name: str = "Unknown") -> str:
     """
     Generates a conversational AI response for the chat assistant.
     
@@ -174,10 +174,43 @@ def generate_chat_response(query: str, history: list, context_data: Dict[str, An
         history: List of previous messages in the conversation.
         context_data: Current inventory or forecast data to inform the answer.
         currency: The user's active dashboard currency preference.
+        org_name: The user's active organization identifier.
         
     Returns:
         A conversational string response.
     """
+    # Check if the active inventory context is empty
+    is_empty_inventory = False
+    items_in_context = []
+    if isinstance(context_data, list):
+        items_in_context = context_data
+    elif isinstance(context_data, dict) and "data" in context_data:
+        items_in_context = context_data["data"]
+        
+    if not items_in_context:
+        try:
+            from src.api.database import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT sku FROM inventory WHERE org_name = ? LIMIT 1", (org_name,))
+            row = cursor.fetchone()
+            conn.close()
+            if not row:
+                is_empty_inventory = True
+        except Exception:
+            is_empty_inventory = True
+    else:
+        is_empty_inventory = len(items_in_context) == 0
+
+    empty_data_instructions = ""
+    if is_empty_inventory:
+        empty_data_instructions = """
+CRITICAL: The user's active inventory database is currently EMPTY (0 items loaded). There is NO active CSV data in the system.
+- You MUST politely inform the user that their inventory database is currently empty.
+- Advise them to upload their transaction sales history CSV file or input products on the Overview Dashboard first to unlock personalized, live time-series forecasts.
+- Do NOT make up, hallucinate, or assume any fictional products, stock counts, or sales values unless you explicitly state that it is a completely hypothetical example to showcase how StockSense AI works.
+"""
+
     inventory_summary = json.dumps(context_data, indent=2)
     
     currency_symbols = {
@@ -193,6 +226,8 @@ Your goal is to answer questions about inventory, sales trends, and business str
 
 Current Context Data:
 {inventory_summary}
+
+{empty_data_instructions}
 
 Guidelines:
 1. Be concise, friendly, and professional.
@@ -241,7 +276,7 @@ Guidelines:
                 from src.api.database import get_db_connection
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute("SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days, supplier, status, forecasted_demand, units_sold FROM inventory")
+                cursor.execute("SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days, supplier, status, forecasted_demand, units_sold FROM inventory WHERE org_name = ?", (org_name,))
                 rows = cursor.fetchall()
                 conn.close()
                 items = [dict(row) for row in rows]

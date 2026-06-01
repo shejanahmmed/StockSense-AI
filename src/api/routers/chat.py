@@ -29,7 +29,8 @@ async def chat_with_ai(request: ChatRequest, user: dict = Depends(get_current_us
             request.message,
             request.history,
             request.inventory_context,
-            currency=request.currency
+            currency=request.currency,
+            org_name=org_name
         )
         
         # Store both messages

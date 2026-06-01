@@ -703,6 +703,7 @@ async function loadInventorySilent() {
             const result = await response.json();
             if (result.status === 'success' && result.data) {
                 fullInventoryData = result.data;
+                currentInventoryContext = result.data;
                 enhanceNextStepBannerWithSku();
                 
                 // Re-trigger BIMetrics rendering to inject SKU IDs into the timeline
