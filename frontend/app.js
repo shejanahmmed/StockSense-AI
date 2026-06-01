@@ -644,7 +644,7 @@ async function loadInventoryData() {
     if (!token) return;
 
     const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading inventory...</td></tr>';
     
     try {
         const response = await fetch('/api/inventory', {
@@ -679,7 +679,7 @@ async function loadInventoryData() {
         }
     } catch (error) {
         console.error("Inventory error:", error);
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--status-danger);">Failed to load inventory. Please log in again.</td></tr>';
     }
 }
 
@@ -771,7 +771,7 @@ function renderInventoryTable(data, page = 1) {
     badge.innerText = data.length;
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 2rem;">No products match your filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--text-muted); padding: 2rem;">No products match your filters.</td></tr>';
         renderPagination(0, 1);
         return;
     }
@@ -823,13 +823,15 @@ function renderInventoryTable(data, page = 1) {
             <td style="color: var(--text-secondary);">${reorderPt}</td>
             <td style="color: var(--text-secondary);">${leadDays}d</td>
             <td style="color: var(--accent-primary); font-weight: 600;">${forecastDemand !== '—' ? forecastDemand + ' units' : '—'}</td>
-            <td><span class="status-pill ${statusClass}">${item.status}</span></td>
-            <td style="text-align: right; white-space: nowrap;">
+            <td style="white-space: nowrap;"><span class="status-pill ${statusClass}">${item.status}</span></td>
+            <td style="white-space: nowrap;">
                 ${(item.status === 'Low Stock' || item.status === 'Out of Stock') ? `
-                    <button class="primary-btn action-draft-po" data-sku="${item.sku}" data-name="${item.name.replace(/'/g, "\\'")}" data-stock="${item.stock}" title="Draft Purchase Order" style="padding: 0 0.65rem; height: 32px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;">
+                    <button class="primary-btn action-draft-po" data-sku="${item.sku}" data-name="${item.name.replace(/'/g, "\\'")}" data-stock="${item.stock}" title="Draft Purchase Order" style="padding: 0 0.65rem; height: 32px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;">
                         <i class="fa-solid fa-file-invoice"></i> Draft PO
                     </button>
-                ` : ''}
+                ` : `<span style="color: var(--text-muted); font-size: 0.85rem; padding-left: 0.5rem;">—</span>`}
+            </td>
+            <td style="text-align: right; white-space: nowrap;">
                 <button class="icon-btn action-delete" data-sku="${item.sku}" title="Delete SKU ${item.sku}" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
