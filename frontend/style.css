@@ -142,6 +142,28 @@
 
 
 
+/* Hide default number input spinner arrows for a clean & professional look */
+
+input::-webkit-outer-spin-button,
+
+input::-webkit-inner-spin-button {
+
+    -webkit-appearance: none;
+
+    margin: 0;
+
+}
+
+
+
+input[type=number] {
+
+    -moz-appearance: textfield;
+
+}
+
+
+
 body {
 
     font-family: 'Outfit', sans-serif;

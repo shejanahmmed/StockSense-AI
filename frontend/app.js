@@ -7471,10 +7471,11 @@ function initPoModal() {
     const closeBtn = document.getElementById('closeDraftPoModal');
     const cancelBtn = document.getElementById('cancelDraftPoBtn');
     const downloadBtn = document.getElementById('downloadPoCsvBtn');
+    const downloadPdfBtn = document.getElementById('downloadPoPdfBtn');
     const copyBtn = document.getElementById('copyPoEmailBtn');
     const qtyInput = document.getElementById('poReorderQty');
 
-    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !copyBtn || !qtyInput) return;
+    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !downloadPdfBtn || !copyBtn || !qtyInput) return;
 
     const closeModal = () => {
         modal.classList.remove('open');
@@ -7589,6 +7590,158 @@ Powered by StockSense AI`;
         
         addNotification('PO Export Successful', `CSV Purchase Order for ${sku} downloaded.`, 'success');
         modal.classList.remove('open');
+    });
+
+    // Download PDF
+    downloadPdfBtn.addEventListener('click', () => {
+        const sku = document.getElementById('poSku').textContent;
+        const name = document.getElementById('poProdName').textContent;
+        const qty = parseInt(qtyInput.value) || 0;
+        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
+        const total = qty * price;
+        const supplier = document.getElementById('poSupplierName').textContent;
+        const leadDays = qtyInput.getAttribute('data-lead-days');
+        const category = qtyInput.getAttribute('data-category') || 'Inventory';
+        const orgName = localStorage.getItem('stockSense_storeName') || 'Store 12';
+        
+        const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+        const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+        const symbol = symbols[currency.toUpperCase()] || '৳';
+
+        // Show generating indicator on button
+        const originalHTML = downloadPdfBtn.innerHTML;
+        downloadPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
+        downloadPdfBtn.disabled = true;
+
+        // Construct HTML content for the PDF template in a virtual element
+        const element = document.createElement('div');
+        element.innerHTML = `
+            <div style="font-family: 'Outfit', sans-serif; color: #1e293b; padding: 40px; background: #ffffff; line-height: 1.5; box-sizing: border-box;">
+                <!-- Brand & Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 25px;">
+                    <div>
+                        <h1 style="margin: 0; color: #8b5cf6; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">StockSense AI</h1>
+                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Intelligent Replenishment Engine</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;">Purchase Order</h2>
+                        <p style="margin: 3px 0 0 0; font-size: 12px; color: #64748b;">PO Ref: <span style="font-family: monospace; font-weight: 600; color: #1e293b;">PO-${sku}-${Math.floor(1000 + Math.random() * 9000)}</span></p>
+                    </div>
+                </div>
+
+                <!-- From & To Metadata Grid -->
+                <div style="display: flex; justify-content: space-between; gap: 30px; margin-bottom: 30px;">
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Buyer Information</h3>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; font-size: 13px; min-height: 80px;">
+                            <p style="margin: 0; font-weight: 700; color: #0f172a;">${orgName}</p>
+                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Procurement Department</p>
+                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Inventory Desk: ${category}</p>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Supplier Information</h3>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; font-size: 13px; min-height: 80px;">
+                            <p style="margin: 0; font-weight: 700; color: #0f172a;">${supplier}</p>
+                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Lead Time: ${leadDays} Days</p>
+                            <p style="margin: 4px 0 0 0; color: #7c3aed; font-size: 12px; font-weight: 600;">Status: Draft Replenishment</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & System Stats Banner -->
+                <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 12px 15px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 12px; color: #7c3aed;">
+                    <div><strong>Order Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
+                    <div><strong>AI Model Authority:</strong> Weekly Prophet ML Core & SHAP</div>
+                </div>
+
+                <!-- Structured Item Table -->
+                <h3 style="margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Order Line Items</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                            <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">SKU Code</th>
+                            <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">Product Description</th>
+                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Quantity</th>
+                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Unit Cost</th>
+                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 12px; font-family: monospace; font-weight: 600; color: #475569;">${sku}</td>
+                            <td style="padding: 12px; font-weight: 600; color: #0f172a;">${name}</td>
+                            <td style="padding: 12px; text-align: right; font-weight: 700; color: #0f172a;">${qty.toLocaleString()}</td>
+                            <td style="padding: 12px; text-align: right; color: #475569;">${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td style="padding: 12px; text-align: right; font-weight: 700; color: #10b981;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Summary Breakdown -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
+                    <div style="width: 250px; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
+                            <span>Subtotal</span>
+                            <span>${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
+                            <span>Shipping/Handling</span>
+                            <span>Free / Included</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; font-weight: 700; color: #0f172a;">
+                            <span>Total Amount Due</span>
+                            <span style="color: #8b5cf6;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signatures & Verifications -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 25px; font-size: 12px; color: #64748b;">
+                    <div>
+                        <div style="border-bottom: 1px solid #cbd5e1; width: 180px; height: 35px;"></div>
+                        <p style="margin: 8px 0 0 0; font-weight: 500;">Buyer Procurement Officer</p>
+                    </div>
+                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                        <div style="border: 1px solid rgba(139, 92, 246, 0.2); background: rgba(139, 92, 246, 0.05); color: #8b5cf6; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">
+                            StockSense AI Verified
+                        </div>
+                        <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Automated Replenishment Optimization</p>
+                    </div>
+                </div>
+
+                <!-- Footer Disclaimer -->
+                <div style="margin-top: 60px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 9px; color: #94a3b8; line-height: 1.4;">
+                    Important Notice: This purchase order has been generated automatically via StockSense AI inventory demand planning suite. Recommended order counts ensure optimal inventory coverage and mitigate stockout frequencies.
+                </div>
+            </div>
+        `;
+
+        const opt = {
+            margin: [10, 10, 10, 10],
+            filename: `StockSense_PurchaseOrder_${sku}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Render PDF and save
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Restore button state
+            downloadPdfBtn.innerHTML = originalHTML;
+            downloadPdfBtn.disabled = false;
+            
+            // Add success alert
+            addNotification('PO PDF Downloaded', `Structured Purchase Order PDF for ${sku} is downloaded.`, 'success');
+            
+            // Close the PO modal elegantly
+            closeModal();
+        }).catch(err => {
+            console.error('PDF Generation failed: ', err);
+            downloadPdfBtn.innerHTML = originalHTML;
+            downloadPdfBtn.disabled = false;
+            addNotification('PDF Export Failed', 'An error occurred during PDF generation.', 'danger');
+        });
     });
 }
 
