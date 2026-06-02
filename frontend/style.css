@@ -7815,3 +7815,54 @@ input:checked + .slider:before {
     box-shadow: 0 0 15px rgba(139, 92, 246, 1);
 }
 
+
+/* ==========================================
+   Inventory KPI Grid & Glowing Highlights
+   ========================================== */
+
+.inventory-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .inventory-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .inventory-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Precise neon glows matching HSL palettes on hover */
+#kpiStockHealthCard:hover {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+#kpiOutOfStockCard:hover {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+#kpiDeadStockCard:hover {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+#kpiReorderUrgencyCard:hover {
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+

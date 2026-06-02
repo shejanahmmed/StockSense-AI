@@ -200,6 +200,8 @@ function resetDashboardToEmpty() {
     if (toggleTimelineBtn) toggleTimelineBtn.style.display = 'none';
     const toggleDriversBtn = document.getElementById('toggle-all-drivers');
     if (toggleDriversBtn) toggleDriversBtn.style.display = 'none';
+    // Reset Inventory Stock Health metrics
+    updateInventoryMetrics([]);
 }
 
 function formatCurrency(amount) {
@@ -773,6 +775,9 @@ function renderInventoryTable(data, page = 1) {
     currentFilteredData = data;
     currentInventoryPage = page;
     
+    // Dynamically calculate and update stock health metrics
+    updateInventoryMetrics(fullInventoryData);
+    
     const tbody = document.getElementById('inventoryTableBody');
     const badge = document.getElementById('inventoryCountBadge');
     
@@ -896,6 +901,89 @@ function renderInventoryTable(data, page = 1) {
     });
 
     renderPagination(data.length, page);
+}
+
+function updateInventoryMetrics(items) {
+    const healthIndexEl = document.getElementById('inv-health-index');
+    const healthSubEl = document.getElementById('inv-health-sub');
+    const outOfStockEl = document.getElementById('inv-out-of-stock');
+    const outOfStockSubEl = document.getElementById('inv-out-of-stock-sub');
+    const deadCapitalEl = document.getElementById('inv-dead-capital');
+    const deadSkusEl = document.getElementById('inv-dead-skus');
+    const reorderUrgencyEl = document.getElementById('inv-reorder-urgency');
+    const reorderSubEl = document.getElementById('inv-reorder-sub');
+
+    if (!healthIndexEl || !outOfStockEl || !deadCapitalEl || !reorderUrgencyEl) return;
+
+    const dataset = (items && items.length > 0) ? items : (fullInventoryData || []);
+
+    if (dataset.length === 0) {
+        healthIndexEl.textContent = '0%';
+        healthSubEl.textContent = 'Awaiting catalog data';
+        outOfStockEl.textContent = '0';
+        outOfStockSubEl.textContent = 'Catalog is empty';
+        deadCapitalEl.textContent = formatCurrency(0);
+        deadSkusEl.textContent = '0 inactive SKUs';
+        reorderUrgencyEl.textContent = '0';
+        reorderSubEl.textContent = '0 SKUs require attention';
+        return;
+    }
+
+    let inStockCount = 0;
+    let outOfStockCount = 0;
+    let deadStockCapitalWholesale = 0;
+    let deadStockSkus = 0;
+    let reorderUrgencyCount = 0;
+
+    dataset.forEach(item => {
+        const stock = parseInt(item.stock) || 0;
+        const reorderPt = parseInt(item.reorder_point) || 0;
+        const price = parseFloat(item.price) || 0;
+        const forecast = parseFloat(item.forecasted_demand) || 0;
+        const status = item.status;
+
+        // 1. Stock Health Status count
+        if (status === 'In Stock' || stock > reorderPt) {
+            inStockCount++;
+        }
+
+        // 2. Out of Stock count
+        if (stock === 0 || status === 'Out of Stock') {
+            outOfStockCount++;
+        }
+
+        // 3. Dead Stock (Forecast demand is 0, but physical stock is > 0)
+        if (forecast === 0 && stock > 0) {
+            deadStockSkus++;
+            deadStockCapitalWholesale += stock * price * 0.7; // default 30% margin
+        }
+
+        // 4. Reorder Urgency Index (Low Stock or Out of Stock)
+        if (status === 'Low Stock' || status === 'Out of Stock' || stock <= reorderPt) {
+            reorderUrgencyCount++;
+        }
+    });
+
+    // Compute Health Index
+    const healthIndex = Math.round((inStockCount / dataset.length) * 100);
+    healthIndexEl.textContent = `${healthIndex}%`;
+    healthSubEl.textContent = `${inStockCount} of ${dataset.length} SKUs fully stocked`;
+
+    // Out of Stock Display
+    outOfStockEl.textContent = outOfStockCount;
+    outOfStockSubEl.textContent = outOfStockCount > 0 
+        ? `${outOfStockCount} critical stockouts active` 
+        : 'All SKUs currently active';
+
+    // Dead Stock Display
+    deadCapitalEl.textContent = formatCurrency(deadStockCapitalWholesale);
+    deadSkusEl.textContent = `${deadStockSkus} inactive product${deadStockSkus === 1 ? '' : 's'}`;
+
+    // Reorder Urgency Display
+    reorderUrgencyEl.textContent = reorderUrgencyCount;
+    reorderSubEl.textContent = reorderUrgencyCount > 0
+        ? `${reorderUrgencyCount} product${reorderUrgencyCount === 1 ? ' requires' : 's require'} reordering`
+        : 'No immediate reorders needed';
 }
 
 function renderPagination(totalItems, currentPage) {

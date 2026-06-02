@@ -704,6 +704,74 @@
                     <p class="subtitle">Live tracking of all SKUs and supply chain metrics.</p>
                 </header>
 
+                <!-- Live Stock Health KPI Grid -->
+                <div class="inventory-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    
+                    <!-- KPI 1: Overall Stock Health -->
+                    <div class="kpi-card glass-panel interactive" id="kpiStockHealthCard">
+                        <div class="kpi-icon success-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--status-success);"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Percentage of active SKUs that are currently fully stocked.</span>
+                                </div>
+                                Stock Health Index
+                            </span>
+                            <h3 class="kpi-value" id="inv-health-index">0%</h3>
+                            <span class="trend neutral" id="inv-health-sub">Awaiting catalog data</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Active Out-of-Stocks -->
+                    <div class="kpi-card glass-panel interactive" id="kpiOutOfStockCard">
+                        <div class="kpi-icon warning-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--status-danger);"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">The number of unique products currently sitting at a zero physical count.</span>
+                                </div>
+                                Active Out-of-Stocks
+                            </span>
+                            <h3 class="kpi-value" id="inv-out-of-stock" style="color: var(--status-danger);">0</h3>
+                            <span class="trend neutral" id="inv-out-of-stock-sub">Procurement action required</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Dead Stock Capital (Wholesale) -->
+                    <div class="kpi-card glass-panel interactive" id="kpiDeadStockCard">
+                        <div class="kpi-icon info-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--status-warning);"><i class="fa-solid fa-boxes-packing"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Wholesale capital currently tied up in physical inventory with zero forecasted demand over the next 7 days.</span>
+                                </div>
+                                Dead Stock Capital
+                            </span>
+                            <h3 class="kpi-value" id="inv-dead-capital">৳0</h3>
+                            <span class="trend neutral" id="inv-dead-skus">0 inactive SKUs</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Reorder Urgency Index -->
+                    <div class="kpi-card glass-panel interactive" id="kpiReorderUrgencyCard">
+                        <div class="kpi-icon action-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-primary);"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">SKUs currently under-stocked or at risk of depletion based on forecasted demand and supplier lead times.</span>
+                                </div>
+                                Reorder Urgency
+                            </span>
+                            <h3 class="kpi-value" id="inv-reorder-urgency">0</h3>
+                            <span class="trend neutral" id="inv-reorder-sub">SKUs require attention</span>
+                        </div>
+                    </div>
+                </div>
+
                 <section class="inventory-table-container glass-panel">
                     <div class="table-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3>All Products <span class="badge" id="inventoryCountBadge" style="background: rgba(255,255,255,0.1); display: inline-flex;">0</span></h3>
