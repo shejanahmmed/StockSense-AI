@@ -44,6 +44,15 @@ Traditional enterprise resources planning (ERP) platforms output dense, complex 
 - 📈 **Hybrid Ensemble Forecasting**: Leverages combined predictions of Prophet (zero-filled, calendar-reindexed) and LightGBM engines. Delivers robust 7–30 day forecasting bounds, dynamically modeling seasonal holidays and organic promotional demand.
 - 🧠 **Explainable AI (XAI) Metrics**: Employs SHAP (SHapley Additive exPlanations) TreeExplainer to break down the "black box" forecast, exposing the top mathematical variables influencing future demands.
 - 🎯 **AI Promotion Recommendation Engine**: Formulates pre-holiday sales boosts, overstock liquidation alerts based on customizable safety margins, and weekend flash-sale programs in an interactive glassmorphic card deck.
+- 🛒 **Consolidated Multi-Item PO Planner**: Streamlines procurement via multi-SKU checkbox selection from the power-grid. Features an interactive spreadsheet-style Draft PO modal with dynamic maximum lead-time selection, real-time cost recalculations, auto-generated professional email templates for suppliers, and transactional SQLite database persistence.
+- 📥 **CSV Import Staging & Validation Console**: Supports drag-and-drop ingestion of inventory CSVs. Features automated heuristic column mapping, real-time client-side cell validation (for negatives, empty values, or malformed dates), dynamic status stats (Clean vs Erroneous rows), and click-to-edit inline cell corrections prior to database commit.
+- 🗃️ **Interactive Power-Grid Catalog**: Upgrades typical datatables into a sleek, reactive data management grid. Includes real-time fuzzy search with amber-color text highlighting, instant category capsule filtering, row-by-row action triggers (single Draft PO, Delete SKU), and click-to-open drawer overlays highlighting granular individual product telemetry.
+- 📊 **Visual Stock Health KPIs**: Displays real-time executive-level indicators:
+  - **Stock Health Index**: The percentage of catalog products fully stocked.
+  - **Out of Stock**: Counter of active critical supply stockouts.
+  - **Dead Capital Tracker**: Flags stagnant inventory with zero forecasted demand and calculates tied-up capital using dynamic margin scaling.
+  - **Reorder Urgency Index**: Sum of catalog items currently falling below their defined safety stock reorder thresholds.
+- 💼 **Cash Flow & Capital Optimization Hub**: Renders B2B financial metrics including total inventory retail portfolio valuation, COGS-based capital allocations, category-wise asset allocations, and projected revenue/sales at risk from stockouts.
 - 💬 **Stateless LLM Logic & Chat Assistant**: Couples data-rich payloads (forecast points, SHAP factors, and inventory contexts) into clean JSON structures fed to local LLMs (Ollama) or secure, stateless cloud endpoints (Groq / Llama 3.3).
 - 🔒 **Edge Sovereignty & Security**: Promotes a local-first security posture. Includes secure JWT token architectures, SHA-256 password hashing, and database encryption to ensure data custody remains local.
 - 🎨 **Premium Enterprise Dashboard**: Fully responsive web frontend meticulously styled with sleek dark mode aesthetics, glassmorphism panel backdrops (`blur(24px)`), smooth CSS keyframe micro-animations, and dynamic visual graphs powered by Chart.js.
@@ -187,17 +196,36 @@ Once initialized, navigate to **`http://127.0.0.1:8000`** in your browser. The e
 ### 🔮 Forecasting & Analytics Engine
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/predict` | Run the ensemble forecasting engine & retrain models. | Yes |
+| `POST` | `/api/predict` | Run the ensemble forecasting engine (accepts optional sales history CSV upload) & retrain models. | Yes |
 | `GET` | `/api/forecast/{sku}` | Retrieve demand forecast steps (7-30 days) and confidence limits for a SKU. | Yes |
 | `GET` | `/api/insight` | Generate plain-English explanations utilizing SHAP drivers. | Yes |
 | `GET` | `/api/holidays` | Return catalog of holidays contributing to seasonal model adjustments. | Yes |
 | `GET` | `/api/report` | Render and export a comprehensive weekly analytical dashboard PDF report. | Yes |
+| `GET` | `/api/purchase_order/draft` | Recommend reorder quantities, forecast, and COGS for a specific SKU. | Yes |
+
+### 🛒 B2B Procurement & Purchase Orders
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/purchase_orders` | Fetch all purchase orders for the authenticated organization. | Yes |
+| `GET` | `/api/purchase_orders/{po_id}` | Fetch details of a single purchase order along with its item breakdown. | Yes |
+| `POST` | `/api/purchase_orders` | Persist a new Purchase Order along with its lines in a transaction. | Yes |
+| `PUT` | `/api/purchase_orders/{po_id}/status` | Update status of a purchase order (`Pending`, `Sent`, `Completed`, `Cancelled`). | Yes |
+| `DELETE` | `/api/purchase_orders/{po_id}` | Permanently delete a purchase order from the database ledger. | Yes |
+
+### 💼 Cash Flow & B2B Campaigns
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/financials/summary` | Calculate retail portfolio values, tied-up COGS capital, predicted sales at risk, and historical PO spends. | Yes |
+| `POST` | `/api/promotions` | Schedule a new promotion/marketing campaign to model demand impacts. | Yes |
+| `GET` | `/api/promotions` | Fetch all scheduled promotions for the organization. | Yes |
+| `DELETE` | `/api/promotions/{id}` | Cancel/delete a scheduled promotion by ID. | Yes |
 
 ### 💬 AI Interactive Chat Assistant
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/chat` | Query the model regarding specific SKU warnings or optimizations. | Yes |
 | `GET` | `/api/chat/history` | Retrieve local contextual conversation history. | Yes |
+| `DELETE` | `/api/chat/history` | Reset the user's conversational chat history. | Yes |
 
 ---
 
