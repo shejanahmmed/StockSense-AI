@@ -1646,6 +1646,7 @@
                 </div>
 
                 <!-- ── STEP-BY-STEP TIMELINE ── -->
+                <!-- ── STEP-BY-STEP TIMELINE ── -->
                 <div class="hiw-steps-section">
                     <h2 class="hiw-section-label"><i class="fa-solid fa-list-ol"></i> Getting Started in 5 Steps</h2>
 
@@ -1683,8 +1684,8 @@
                                     <i class="fa-solid fa-file-csv"></i>
                                 </div>
                                 <div class="hiw-step-content">
-                                    <h3>Upload Your Sales CSV</h3>
-                                    <p>On the <strong>Dashboard</strong>, click the <strong>"Upload CSV Data"</strong> button in the top-right corner. Select a CSV file containing your historical transactions. For fully optimized AI forecasts and replenishment models, your file should include the following 10 fields: <em>date</em>, <em>product_id</em>, <em>product_name</em>, <em>category</em>, <em>sales_qty</em>, <em>unit_price</em>, <em>stock_on_hand</em>, <em>reorder_point</em>, <em>promo</em>, and <em>supplier_lead_days</em>.</p>
+                                    <h3>Upload &amp; Stage CSV Data</h3>
+                                    <p>On the <strong>Dashboard</strong>, click the <strong>"Upload CSV Data"</strong> button in the top-right corner. This opens the intelligent <strong>CSV Import Staging &amp; Validation Console</strong>. Drag and drop your sales history file to load it. Our heuristic schema mapper will attempt to auto-detect and map your columns to the required database fields. If there are validation warnings (e.g., negative values, missing categories, empty fields), the system highlights them. You can click on any cell in the preview grid to correct details inline before final database ingestion.</p>
                                      
                                      <!-- Premium Download Sample CSV Callout -->
                                      <div class="sample-download-callout glass-panel" style="margin: 1rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: rgba(139, 92, 246, 0.04); border: 1px solid rgba(139, 92, 246, 0.15);">
@@ -1800,52 +1801,52 @@
                             </div>
                             <div class="hiw-step-body">
                                 <div class="hiw-step-icon-wrap hiw-icon-purple">
-                                    <i class="fa-solid fa-brain"></i>
+                                    <i class="fa-solid fa-chart-pie"></i>
                                 </div>
                                 <div class="hiw-step-content">
-                                    <h3>Review AI Dashboard Insights</h3>
-                                    <p>Once the CSV is processed, the <strong>Dashboard</strong> populates with live intelligence. Here is what each section tells you:</p>
+                                    <h3>Track Stock Health &amp; Financial KPIs</h3>
+                                    <p>Once your CSV is imported, the <strong>Dashboard</strong> populates with live operational intelligence and B2B SaaS financial analytics. Here is what each metric helps you monitor:</p>
                                     <div class="hiw-features-grid">
                                         <div class="hiw-feature-chip">
-                                            <i class="fa-solid fa-layer-group" style="color: var(--accent-primary);"></i>
+                                            <i class="fa-solid fa-heart-pulse" style="color: var(--status-success);"></i>
                                             <div>
-                                                <strong>Total SKUs</strong>
-                                                <span>Number of unique products tracked</span>
+                                                <strong>Stock Health Index</strong>
+                                                <span>A weighted percentage metric of inventory reliability</span>
                                             </div>
                                         </div>
                                         <div class="hiw-feature-chip">
-                                            <i class="fa-solid fa-arrow-trend-up" style="color: var(--status-success);"></i>
+                                            <i class="fa-solid fa-triangle-exclamation" style="color: var(--status-error);"></i>
                                             <div>
-                                                <strong>Forecasted Demand</strong>
-                                                <span>AI-predicted units sold in the next 7 days</span>
+                                                <strong>Active Stockouts</strong>
+                                                <span>Immediate count of items with zero units on hand</span>
                                             </div>
                                         </div>
                                         <div class="hiw-feature-chip">
-                                            <i class="fa-solid fa-cart-plus" style="color: var(--status-warning);"></i>
+                                            <i class="fa-solid fa-vault" style="color: var(--accent-secondary);"></i>
                                             <div>
-                                                <strong>At-Risk Products</strong>
-                                                <span>Items projected to run out before restock</span>
+                                                <strong>Dead Capital Tracker</strong>
+                                                <span>Wholesale cost (COGS) tied up in slow-moving items</span>
                                             </div>
                                         </div>
                                         <div class="hiw-feature-chip">
-                                            <i class="fa-solid fa-clock" style="color: var(--accent-secondary);"></i>
+                                            <i class="fa-solid fa-scale-unbalanced" style="color: var(--status-warning);"></i>
                                             <div>
-                                                <strong>Inventory Health</strong>
-                                                <span>Overall stock reliability score</span>
+                                                <strong>Reorder Urgency Index</strong>
+                                                <span>Items that have dropped below critical reorder points</span>
                                             </div>
                                         </div>
                                         <div class="hiw-feature-chip">
-                                            <i class="fa-solid fa-circle-nodes" style="color: var(--accent-primary);"></i>
+                                            <i class="fa-solid fa-dollar-sign" style="color: var(--accent-primary);"></i>
                                             <div>
-                                                <strong>SHAP Demand Drivers</strong>
-                                                <span>Which factors most influence your demand</span>
+                                                <strong>Cash Flow &amp; Capital Hub</strong>
+                                                <span>COGS-based capital allocations and projected sales-at-risk</span>
                                             </div>
                                         </div>
                                         <div class="hiw-feature-chip">
                                             <i class="fa-solid fa-chart-line" style="color: var(--status-info);"></i>
                                             <div>
-                                                <strong>Forecast Chart</strong>
-                                                <span>Historical vs. AI-predicted sales over time</span>
+                                                <strong>Prophet Forecasting Chart</strong>
+                                                <span>Historical vs. AI-predicted sales over time (7, 14, 30 days)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1861,20 +1862,20 @@
                             </div>
                             <div class="hiw-step-body">
                                 <div class="hiw-step-icon-wrap hiw-icon-orange">
-                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                    <i class="fa-solid fa-table-cells"></i>
                                 </div>
                                 <div class="hiw-step-content">
-                                    <h3>Manage Your Inventory</h3>
-                                    <p>Navigate to the <strong>Inventory</strong> tab to see a full live table of all your SKUs. You can:</p>
+                                    <h3>Manage via the Interactive Power-Grid</h3>
+                                    <p>Navigate to the <strong>Inventory</strong> tab to access our high-performance Power-Grid. It gives you advanced control over your catalogs:</p>
                                     <ul class="hiw-bullet-list">
-                                        <li><i class="fa-solid fa-plus"></i> <strong>Add new products</strong> manually via the "Add Item" button</li>
-                                        <li><i class="fa-solid fa-filter"></i> <strong>Filter by category or status</strong> (In Stock / Low Stock / Out of Stock)</li>
-                                        <li><i class="fa-solid fa-download"></i> <strong>Export to CSV</strong> for offline reporting or sharing</li>
-                                        <li><i class="fa-solid fa-trash-can"></i> <strong>Delete SKUs</strong> that are no longer stocked</li>
+                                        <li><i class="fa-solid fa-magnifying-glass"></i> <strong>Fuzzy Search:</strong> Real-time filtering with amber-colored text highlights on matches.</li>
+                                        <li><i class="fa-solid fa-tags"></i> <strong>Capsule Filtering:</strong> Quick-filter by product categories and stock statuses (In Stock, Low Stock, Out of Stock).</li>
+                                        <li><i class="fa-solid fa-list-check"></i> <strong>Telemetry Drawers:</strong> Single-click any SKU to slide open a detailed side drawer showing complete product metrics, forecast charts, and lead time stats.</li>
+                                        <li><i class="fa-solid fa-trash-can"></i> <strong>Interactive Actions:</strong> Manually add, edit, or delete items, and export catalogs directly to CSV.</li>
                                     </ul>
                                     <div class="hiw-step-tip">
                                         <i class="fa-solid fa-triangle-exclamation" style="color: var(--status-warning);"></i>
-                                        <span>The <strong>7-Day Forecast</strong> column in the inventory table shows how many units the AI predicts each product will sell — helping you prioritize restocking orders.</span>
+                                        <span>Use the checkboxes in the Power-Grid to select multiple items when preparing restock orders.</span>
                                     </div>
                                 </div>
                             </div>
@@ -1887,17 +1888,21 @@
                             </div>
                             <div class="hiw-step-body">
                                 <div class="hiw-step-icon-wrap hiw-icon-teal">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    <i class="fa-solid fa-cart-flatbed-suitcase"></i>
                                 </div>
                                 <div class="hiw-step-content">
-                                    <h3>Chat with the AI Assistant &amp; Plan Promotions</h3>
-                                    <p>Head to the <strong>AI Insights</strong> tab to chat directly with the StockSense AI co-pilot. Ask it questions like:</p>
+                                    <h3>Consolidated PO Planner &amp; AI Co-Pilot</h3>
+                                    <p>Optimize your procurement and get strategic advice in the B2B suite:</p>
+                                    <ul class="hiw-bullet-list">
+                                        <li><i class="fa-solid fa-file-invoice-dollar"></i> <strong>Consolidated PO Planner:</strong> Multi-select low-stock items from the main grid and open a spreadsheet-style PO modal. Set dynamic max lead-times, view real-time cost recalculations, and generate draft purchase orders.</li>
+                                        <li><i class="fa-solid fa-envelope-open-text"></i> <strong>Supplier Email Generator:</strong> The PO Planner automatically compiles procurement tables into professional email drafts, ready to copy and send to suppliers.</li>
+                                        <li><i class="fa-solid fa-comments"></i> <strong>AI Co-Pilot:</strong> Ask our edge-private assistant direct queries like <em>"Which orders should I place to prevent stockouts?"</em> or <em>"Analyze my dead capital trends."</em></li>
+                                    </ul>
                                     <div class="hiw-chat-examples">
                                         <div class="hiw-chat-bubble">"Which products are at risk of stockout this week?"</div>
-                                        <div class="hiw-chat-bubble">"What should I reorder first given my lead times?"</div>
-                                        <div class="hiw-chat-bubble">"How will the upcoming holiday affect my top 5 SKUs?"</div>
+                                        <div class="hiw-chat-bubble">"Generate a supplier email outline for SKU-001 and SKU-005."</div>
+                                        <div class="hiw-chat-bubble">"What factors are contributing to dead capital in Accessories category?"</div>
                                     </div>
-                                    <p style="margin-top: 1rem;">Back on the Dashboard, the <strong>AI Promotional Planner</strong> automatically generates campaign cards — pairing slow-moving stock with upcoming local holidays to suggest optimal discount brackets and promo timings.</p>
                                 </div>
                             </div>
                         </div>
@@ -1911,8 +1916,8 @@
                     <div class="hiw-arch-grid">
                         <div class="hiw-arch-card glass-panel">
                             <div class="hiw-arch-icon"><i class="fa-solid fa-file-csv"></i></div>
-                            <h4>1. CSV Ingestion</h4>
-                            <p>Your sales CSV is parsed by the FastAPI backend. Dates, SKUs, and quantities are auto-detected, cleaned, and stored in a local SQLite database — no cloud upload required.</p>
+                            <h4>1. CSV Ingestion &amp; Staging</h4>
+                            <p>Your sales CSV is parsed on the client, mapped using our heuristic column mapper, validated for negative/missing values, and edited inline prior to DB ingestion.</p>
                         </div>
                         <div class="hiw-arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
                         <div class="hiw-arch-card glass-panel">
@@ -1929,8 +1934,8 @@
                         <div class="hiw-arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
                         <div class="hiw-arch-card glass-panel">
                             <div class="hiw-arch-icon"><i class="fa-solid fa-brain"></i></div>
-                            <h4>4. LLaMA 3.3 Insights</h4>
-                            <p>A local LLaMA 3.3 language model receives a safe, anonymized snapshot of your inventory context. It writes human-readable strategic summaries and responds to your chat questions in real-time.</p>
+                            <h4>4. Edge LLaMA 3.3 / Groq</h4>
+                            <p>Our language assistant feeds safe, anonymized snapshots of your database context. In offline/local mode, it runs local LLaMA models, and in production, it routes to Groq's high-speed cloud endpoint.</p>
                         </div>
                     </div>
                 </div>
@@ -1946,7 +1951,7 @@
                                 <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
                             </button>
                             <div class="hiw-faq-answer">
-                                <p>Any CSV with columns containing <strong>date</strong>, <strong>SKU / product ID</strong>, and <strong>quantity sold</strong> will work. Column names are auto-detected. Optionally include <em>price</em>, <em>category</em>, and <em>product name</em> for richer insights. There is no strict header naming requirement.</p>
+                                <p>Any CSV file is accepted! The Staging Console features an interactive header mapper that allows you to match your own column names to our expected fields. It checks for dates, SKUs, and sales quantities, and lets you resolve errors inline before committing data.</p>
                             </div>
                         </div>
 
@@ -1956,7 +1961,37 @@
                                 <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
                             </button>
                             <div class="hiw-faq-answer">
-                                <p><strong>No.</strong> StockSense AI is a local-first platform. All data — your CSV, inventory records, and authentication credentials — are stored in a local SQLite database on the machine running the app. No data is sent to any external server. The LLaMA 3.3 model also runs locally.</p>
+                                <p><strong>No.</strong> StockSense AI is a local-first platform. All data — your CSV, inventory records, and authentication credentials — are stored in a local SQLite database on the machine running the app. No data is sent to any external server. The LLaMA 3.3 model can also run locally.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>How does the Consolidated PO Planner calculate costs and lead-times?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>The PO Planner groups selected items and calculates their total order quantities based on safety stock levels. It uses the maximum supplier lead days among the selected items as the delivery bottleneck, automatically estimating the delivery date, summing total costs in real-time, and generating a professional email order template.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>What is the CSV Staging Console and why is it useful?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>Instead of failing on incorrectly formatted CSV files, the Staging Console allows you to map your own column headers in real-time. It then validates your data client-side for issues like negative stock or empty fields, letting you click any cell to fix the data inline before saving it to the local SQLite database.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>How do the Cash Flow &amp; Capital Hub metrics help my business?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>The hub calculates financial KPIs based on your Cost of Goods Sold (COGS) and daily burn rate. It highlights "Dead Capital" (capital locked in slow-moving/overstocked items) and "Sales-at-Risk" (projected revenue loss from upcoming stockouts), giving supply chain managers actionable metrics to optimize inventory purchasing.</p>
                             </div>
                         </div>
 
@@ -1977,16 +2012,6 @@
                             </button>
                             <div class="hiw-faq-answer">
                                 <p>Yes. Go to the <strong>Inventory</strong> tab and click <strong>"Add Item"</strong>. You can manually enter all product details. If a CSV has already been uploaded, you can also provide the product's average daily sales and the system will generate synthetic historical rows to append to the CSV, enabling AI forecasting for that product on the next run.</p>
-                            </div>
-                        </div>
-
-                        <div class="hiw-faq-item glass-panel">
-                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
-                                <span>What does the AI Promotional Planner actually suggest?</span>
-                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
-                            </button>
-                            <div class="hiw-faq-answer">
-                                <p>The Promotional Planner identifies <strong>slow-moving or overstocked products</strong> and pairs them with <strong>upcoming public holidays or high-demand periods</strong> in your selected region. It then generates campaign cards with a recommended discount bracket and suggested campaign window — helping you clear excess stock at the most profitable time.</p>
                             </div>
                         </div>
 
