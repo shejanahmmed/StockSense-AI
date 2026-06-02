@@ -675,7 +675,7 @@ async function loadInventoryData() {
         if (result.status === 'success' && result.data) {
             fullInventoryData = result.data;
             currentInventoryContext = result.data;
-            renderInventoryTable(fullInventoryData);
+            filterAndSortInventory();
             // Dynamically populate category filter from real data
             populateCategoryFilter(fullInventoryData);
             enhanceNextStepBannerWithSku();
@@ -767,9 +767,102 @@ function enhanceNextStepBannerWithSku() {
     }
 }
 
+let gridSortField = null;
+let gridSortOrder = 'asc';
+let gridSearchQuery = '';
+let gridCapsuleFilter = 'all';
 let currentInventoryPage = 1;
 const itemsPerPage = 15;
 let currentFilteredData = [];
+
+function highlightText(text, query) {
+    if (!text) return '';
+    const textStr = String(text);
+    if (!query) return textStr;
+    const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+    return textStr.replace(regex, '<mark class="highlight-match">$1</mark>');
+}
+
+function filterAndSortInventory() {
+    let processed = [...fullInventoryData];
+
+    // 1. Apply Capsule Filter (All, Low Stock, Out of Stock, High Value/Capital)
+    if (gridCapsuleFilter === 'low-stock') {
+        processed = processed.filter(item => item.status === 'Low Stock');
+    } else if (gridCapsuleFilter === 'out-of-stock') {
+        processed = processed.filter(item => item.status === 'Out of Stock');
+    } else if (gridCapsuleFilter === 'high-value') {
+        // High Capital value = stock * price >= 100,000 BDT or equivalent
+        processed = processed.filter(item => (item.stock * item.price) >= 100000);
+    }
+
+    // 2. Apply Dropdown Filters
+    const category = document.getElementById('filterCategory')?.value || 'all';
+    const status = document.getElementById('filterStatus')?.value || 'all';
+
+    if (category !== 'all') {
+        processed = processed.filter(item => item.category === category);
+    }
+    if (status !== 'all') {
+        processed = processed.filter(item => item.status === status);
+    }
+
+    // 3. Apply Text Search (Sku, Name, Category)
+    if (gridSearchQuery) {
+        const query = gridSearchQuery.toLowerCase().trim();
+        processed = processed.filter(item => 
+            (item.name && item.name.toLowerCase().includes(query)) ||
+            (item.sku && item.sku.toLowerCase().includes(query)) ||
+            (item.category && item.category.toLowerCase().includes(query))
+        );
+    }
+
+    // 4. Apply Header Column Sorting
+    if (gridSortField) {
+        processed.sort((a, b) => {
+            let valA = a[gridSortField];
+            let valB = b[gridSortField];
+
+            // Normalize missing or undefined values
+            if (valA === undefined || valA === null) valA = '';
+            if (valB === undefined || valB === null) valB = '';
+
+            // Handle numbers vs strings
+            const isNumA = typeof valA === 'number';
+            const isNumB = typeof valB === 'number';
+
+            if (isNumA && isNumB) {
+                return gridSortOrder === 'asc' ? valA - valB : valB - valA;
+            } else {
+                // Case-insensitive string comparison
+                const strA = String(valA).toLowerCase();
+                const strB = String(valB).toLowerCase();
+                if (strA < strB) return gridSortOrder === 'asc' ? -1 : 1;
+                if (strA > strB) return gridSortOrder === 'asc' ? 1 : -1;
+                return 0;
+            }
+        });
+    }
+
+    // 5. Update sort chevrons in the table headers (DOM manipulation)
+    document.querySelectorAll('.sortable-header').forEach(th => {
+        const field = th.getAttribute('data-sort');
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        const icon = th.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-sort'; // Reset icon
+        
+        if (field === gridSortField) {
+            th.classList.add(gridSortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            if (icon) {
+                icon.className = gridSortOrder === 'asc' ? 'fa-solid fa-caret-up' : 'fa-solid fa-caret-down';
+            }
+        }
+    });
+
+    // 6. Finally, render the processed table on page 1
+    renderInventoryTable(processed, 1);
+}
 
 function renderInventoryTable(data, page = 1) {
     currentFilteredData = data;
@@ -816,13 +909,17 @@ function renderInventoryTable(data, page = 1) {
         const leadDays = item.supplier_lead_days !== undefined ? item.supplier_lead_days : '—';
         const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
 
+        // Apply real-time search string highlighting
+        const highlightedSku = highlightText(item.sku, gridSearchQuery);
+        const highlightedName = highlightText(item.name, gridSearchQuery);
+
         tr.innerHTML = `
-            <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${item.sku}</td>
+            <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${highlightedSku}</td>
             <td>
                 <div class="product-cell">
                     <div class="product-icon"><i class="fa-solid ${icon}"></i></div>
                     <div class="product-details">
-                        <span class="product-name">${item.name}</span>
+                        <span class="product-name">${highlightedName}</span>
                         <span class="product-category">${item.category}</span>
                     </div>
                 </div>
@@ -1449,31 +1546,70 @@ function initInventoryActions() {
         }
     });
 
-    // Apply filters
-    applyBtn.addEventListener('click', () => {
-        const category = document.getElementById('filterCategory').value;
-        const status = document.getElementById('filterStatus').value;
+    // Live Search Listening
+    const searchInput = document.getElementById('inventorySearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            gridSearchQuery = e.target.value;
+            filterAndSortInventory();
+        });
+    }
 
-        let filtered = fullInventoryData;
-
-        if (category !== 'all') {
-            filtered = filtered.filter(item => item.category === category);
-        }
-
-        if (status !== 'all') {
-            filtered = filtered.filter(item => item.status === status);
-        }
-
-        renderInventoryTable(filtered);
-        dropdown.style.display = 'none';
-        addNotification('Filters Applied', `Showing ${filtered.length} matching products.`, 'info');
+    // Capsule Filter Buttons Listening
+    document.querySelectorAll('.capsule-filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.capsule-filter-btn').forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            gridCapsuleFilter = e.currentTarget.getAttribute('data-filter');
+            filterAndSortInventory();
+        });
     });
 
-    // Reset filters
+    // Column Header Sorting Triggers Listening
+    document.querySelectorAll('.sortable-header').forEach(th => {
+        th.addEventListener('click', (e) => {
+            const field = e.currentTarget.getAttribute('data-sort');
+            if (gridSortField === field) {
+                if (gridSortOrder === 'asc') {
+                    gridSortOrder = 'desc';
+                } else {
+                    gridSortField = null;
+                    gridSortOrder = 'asc';
+                }
+            } else {
+                gridSortField = field;
+                gridSortOrder = 'asc';
+            }
+            filterAndSortInventory();
+        });
+    });
+
+    // Apply Dropdown Filters
+    applyBtn.addEventListener('click', () => {
+        filterAndSortInventory();
+        dropdown.style.display = 'none';
+        addNotification('Filters Applied', 'Custom grid options compiled successfully.', 'info');
+    });
+
+    // Reset All Grid Filters
     resetBtn.addEventListener('click', () => {
         document.getElementById('filterCategory').value = 'all';
         document.getElementById('filterStatus').value = 'all';
-        renderInventoryTable(fullInventoryData);
+        
+        // Reset interactive grid states
+        gridSearchQuery = '';
+        if (searchInput) searchInput.value = '';
+        
+        gridCapsuleFilter = 'all';
+        document.querySelectorAll('.capsule-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-filter') === 'all') btn.classList.add('active');
+        });
+        
+        gridSortField = null;
+        gridSortOrder = 'asc';
+        
+        filterAndSortInventory();
         dropdown.style.display = 'none';
     });
 
@@ -2023,15 +2159,12 @@ function initSearch() {
             const navInventory = document.getElementById('navInventory');
             if (navInventory) navInventory.click();
 
-            // Perform filtering inside inventory table
-            const query = suggestion.productName.toLowerCase();
-            if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
-                const filteredInventory = fullInventoryData.filter(item => {
-                    return (item.name && item.name.toLowerCase().includes(query)) ||
-                           (item.sku && item.sku.toLowerCase().includes(query));
-                });
-                renderInventoryTable(filteredInventory);
-            }
+            // Perform filtering inside inventory table and sync search inputs
+            const query = suggestion.productName;
+            const searchInputEl = document.getElementById('inventorySearchInput');
+            if (searchInputEl) searchInputEl.value = query;
+            gridSearchQuery = query;
+            filterAndSortInventory();
 
             // Scroll to the inventory table container
             setTimeout(() => {
@@ -2089,13 +2222,10 @@ function initSearch() {
 
         // Filter global inventory
         if (typeof fullInventoryData !== 'undefined' && fullInventoryData.length > 0) {
-            const filteredInventory = fullInventoryData.filter(item => {
-                return (item.name && item.name.toLowerCase().includes(query)) ||
-                       (item.sku && item.sku.toLowerCase().includes(query)) ||
-                       (item.category && item.category.toLowerCase().includes(query)) ||
-                       (item.supplier && item.supplier.toLowerCase().includes(query));
-            });
-            renderInventoryTable(filteredInventory);
+            gridSearchQuery = query;
+            const searchInputEl = document.getElementById('inventorySearchInput');
+            if (searchInputEl) searchInputEl.value = query;
+            filterAndSortInventory();
         }
     });
 
@@ -2169,6 +2299,614 @@ function initSearch() {
     });
 }
 
+// =========================================================
+// CSV Import Staging & Validation Console State & Operations
+// =========================================================
+let stagedCSVRows = [];
+let stagedCSVHeaders = [];
+let stagedCSVFileName = '';
+let columnMappingState = {};
+let cellValidationErrors = {};
+
+const REQUIRED_SCHEMA_COLUMNS = [
+    { key: 'date', label: 'Transaction Date', required: true, aliases: ['date', 'transaction_date', 'sales_date'] },
+    { key: 'product_id', label: 'Product SKU / ID', required: true, aliases: ['product_id', 'sku', 'product_sku', 'id', 'item_id'] },
+    { key: 'product_name', label: 'Product Name', required: true, aliases: ['product_name', 'name', 'product_title', 'title', 'item_name'] },
+    { key: 'category', label: 'Product Category', required: true, aliases: ['category', 'product_category', 'item_category', 'dept', 'department'] },
+    { key: 'sales_qty', label: 'Daily Units Sold', required: true, aliases: ['sales_qty', 'units_sold', 'sales', 'qty', 'quantity', 'sales_volume'] },
+    { key: 'stock_on_hand', label: 'Stock On Hand', required: true, aliases: ['stock_on_hand', 'stock', 'inventory', 'quantity_on_hand', 'units_in_stock'] },
+    { key: 'reorder_point', label: 'Reorder Point', required: true, aliases: ['reorder_point', 'reorder', 'reorder_pt', 'safety_stock', 'trigger_point'] },
+    { key: 'unit_price', label: 'Unit Price', required: false, aliases: ['unit_price', 'price', 'wholesale_price', 'cost', 'rate'] },
+    { key: 'supplier_lead_days', label: 'Supplier Lead Days', required: false, aliases: ['supplier_lead_days', 'lead_days', 'lead_time', 'supplier_lead'] }
+];
+
+function parseRawCSV(text) {
+    const lines = [];
+    let row = [""];
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i+1];
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                row[row.length - 1] += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            row.push('');
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') {
+                i++;
+            }
+            if (row.length > 1 || row[0] !== '') {
+                lines.push(row.map(c => c.trim()));
+            }
+            row = [''];
+        } else {
+            row[row.length - 1] += char;
+        }
+    }
+    if (row.length > 1 || row[0] !== '') {
+        lines.push(row.map(c => c.trim()));
+    }
+    return lines;
+}
+
+function initializeCSVStaging(csvText, fileName) {
+    const parsed = parseRawCSV(csvText);
+    if (parsed.length < 2) {
+        addNotification('Invalid CSV file', 'The uploaded file is empty or malformed.', 'error');
+        return;
+    }
+    
+    stagedCSVHeaders = parsed[0];
+    stagedCSVRows = parsed.slice(1);
+    stagedCSVFileName = fileName;
+    columnMappingState = {};
+    cellValidationErrors = {};
+    
+    // Heuristic Mapping
+    REQUIRED_SCHEMA_COLUMNS.forEach(col => {
+        let matchFound = '';
+        for (let i = 0; i < stagedCSVHeaders.length; i++) {
+            const header = stagedCSVHeaders[i].toLowerCase().trim().replace(/[\s_-]+/g, '');
+            const matchAliases = col.aliases.map(a => a.toLowerCase().trim().replace(/[\s_-]+/g, ''));
+            if (matchAliases.includes(header)) {
+                matchFound = stagedCSVHeaders[i];
+                break;
+            }
+        }
+        columnMappingState[col.key] = matchFound;
+    });
+    
+    // Open Staging Modal Overlay
+    const modal = document.getElementById('csvValidationModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    
+    // Wire up Cancel buttons
+    const closeBtn = document.getElementById('closeStagingModalBtn');
+    const cancelBtn = document.getElementById('cancelStagingBtn');
+    const dismissModal = () => {
+        modal.style.display = 'none';
+        stagedCSVRows = [];
+        stagedCSVHeaders = [];
+        cellValidationErrors = {};
+        columnMappingState = {};
+    };
+    
+    if (closeBtn) closeBtn.onclick = dismissModal;
+    if (cancelBtn) cancelBtn.onclick = dismissModal;
+    
+    // Wire up Commit button
+    const commitBtn = document.getElementById('commitStagingBtn');
+    if (commitBtn) {
+        commitBtn.onclick = commitStagedCSV;
+    }
+    
+    renderColumnMappingGrid();
+    validateStagedData();
+}
+
+function renderColumnMappingGrid() {
+    const grid = document.getElementById('columnMappingGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    REQUIRED_SCHEMA_COLUMNS.forEach(col => {
+        const card = document.createElement('div');
+        const isMapped = !!columnMappingState[col.key];
+        card.className = `mapping-card ${isMapped ? 'mapped' : 'unmapped'}`;
+        
+        card.innerHTML = `
+            <span>${col.label} ${col.required ? '<b style="color:var(--status-danger);">*</b>' : ''}</span>
+            <select class="mapping-select" data-colkey="${col.key}">
+                <option value="">-- Unmapped --</option>
+                ${stagedCSVHeaders.map(header => `
+                    <option value="${header}" ${columnMappingState[col.key] === header ? 'selected' : ''}>${header}</option>
+                `).join('')}
+            </select>
+        `;
+        
+        const select = card.querySelector('.mapping-select');
+        select.addEventListener('change', (e) => {
+            const selectedHeader = e.target.value;
+            columnMappingState[col.key] = selectedHeader;
+            
+            // Re-evaluate mapping card color immediately
+            if (selectedHeader) {
+                card.className = 'mapping-card mapped';
+                card.querySelector('span').style.color = '#a7f3d0';
+            } else {
+                card.className = col.required ? 'mapping-card unmapped' : 'mapping-card mapped';
+                card.querySelector('span').style.color = col.required ? '#fca5a5' : '#94a3b8';
+            }
+            
+            validateStagedData();
+        });
+        
+        grid.appendChild(card);
+    });
+}
+
+function validateStagedData() {
+    cellValidationErrors = {};
+    
+    // Check if required columns are mapped
+    let mappingComplete = true;
+    REQUIRED_SCHEMA_COLUMNS.forEach(col => {
+        if (col.required && !columnMappingState[col.key]) {
+            mappingComplete = false;
+        }
+    });
+    
+    let erroneousRows = new Set();
+    
+    if (mappingComplete) {
+        stagedCSVRows.forEach((row, rowIdx) => {
+            REQUIRED_SCHEMA_COLUMNS.forEach(col => {
+                const headerName = columnMappingState[col.key];
+                if (!headerName) {
+                    if (col.required) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = `Mapping missing for required field ${col.label}`;
+                        erroneousRows.add(rowIdx);
+                    }
+                    return;
+                }
+                
+                const headerIdx = stagedCSVHeaders.indexOf(headerName);
+                if (headerIdx === -1) return;
+                
+                const val = (row[headerIdx] || '').trim();
+                
+                // Specific field validations
+                if (col.key === 'date') {
+                    const parsedDate = Date.parse(val);
+                    if (isNaN(parsedDate)) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Invalid Date Format (use YYYY-MM-DD)';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'product_id') {
+                    if (!val) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Product SKU / ID is required';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'product_name') {
+                    if (!val) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Product name is required';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'category') {
+                    if (!val) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Category is required';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'sales_qty') {
+                    const parsed = parseInt(val);
+                    if (isNaN(parsed) || parsed < 0) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Sales Qty must be an integer >= 0';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'stock_on_hand') {
+                    const parsed = parseInt(val);
+                    if (isNaN(parsed) || parsed < 0) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Stock On Hand must be an integer >= 0';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'reorder_point') {
+                    const parsed = parseInt(val);
+                    if (isNaN(parsed) || parsed < 0) {
+                        cellValidationErrors[`${rowIdx}-${col.key}`] = 'Reorder Point must be an integer >= 0';
+                        erroneousRows.add(rowIdx);
+                    }
+                } else if (col.key === 'unit_price') {
+                    if (val !== '') {
+                        const parsed = parseFloat(val);
+                        if (isNaN(parsed) || parsed < 0) {
+                            cellValidationErrors[`${rowIdx}-${col.key}`] = 'Unit Price must be a float >= 0.0';
+                            erroneousRows.add(rowIdx);
+                        }
+                    }
+                } else if (col.key === 'supplier_lead_days') {
+                    if (val !== '') {
+                        const parsed = parseInt(val);
+                        if (isNaN(parsed) || parsed < 0) {
+                            cellValidationErrors[`${rowIdx}-${col.key}`] = 'Supplier Lead Days must be an integer >= 0';
+                            erroneousRows.add(rowIdx);
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    const totalRows = stagedCSVRows.length;
+    const errorCount = Object.keys(cellValidationErrors).length;
+    const cleanRowsCount = totalRows - erroneousRows.size;
+    const erroneousRowsCount = erroneousRows.size;
+    
+    // Update stats bar
+    const statsContainer = document.getElementById('stagingTableStats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <span class="staging-badge total"><i class="fa-solid fa-file-csv"></i> Total Rows: ${totalRows}</span>
+            <span class="staging-badge clean"><i class="fa-solid fa-circle-check"></i> Clean Rows: ${cleanRowsCount}</span>
+            <span class="staging-badge errors" style="${erroneousRowsCount > 0 ? '' : 'display:none;'}"><i class="fa-solid fa-triangle-exclamation"></i> Row Errors: ${erroneousRowsCount} (${errorCount} cell issues)</span>
+        `;
+    }
+    
+    // Update footer message and button active state
+    const footerStats = document.getElementById('stagingValidationFooterStats');
+    const commitBtn = document.getElementById('commitStagingBtn');
+    
+    if (!mappingComplete) {
+        if (footerStats) {
+            footerStats.innerHTML = `<span class="indicator-dot error"></span> Map all required headers marked with an asterisk (*) to trigger row analysis.`;
+        }
+        if (commitBtn) commitBtn.disabled = true;
+    } else if (errorCount > 0) {
+        if (footerStats) {
+            footerStats.innerHTML = `<span class="indicator-dot warning"></span> Detected ${errorCount} data validation anomalies. Fix them by double-clicking red cells.`;
+        }
+        if (commitBtn) commitBtn.disabled = true;
+    } else {
+        if (footerStats) {
+            footerStats.innerHTML = `<span class="indicator-dot success"></span> All rows verified successfully. Sanitized and ready to reconcile with DB.`;
+        }
+        if (commitBtn) commitBtn.disabled = false;
+    }
+    
+    renderStagingDataTable();
+}
+
+function renderStagingDataTable() {
+    const thead = document.getElementById('stagingTableHeader');
+    const tbody = document.getElementById('stagingTableBody');
+    if (!thead || !tbody) return;
+    
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+    
+    // 1. Render Table Headers
+    const thr = document.createElement('tr');
+    thr.innerHTML = `
+        <th style="width:50px; text-align:center;">Status</th>
+        <th style="width:60px; text-align:center;">Index</th>
+        ${REQUIRED_SCHEMA_COLUMNS.map(col => {
+            const mappedHeader = columnMappingState[col.key];
+            return `
+                <th style="white-space:nowrap;">
+                    ${col.label}
+                    ${col.required ? ' <b style="color:var(--status-danger);">*</b>' : ''}
+                    <div style="font-size:0.65rem; color:var(--text-muted); font-weight:normal; margin-top:2px;">
+                        ${mappedHeader ? `→ [${mappedHeader}]` : '(Unmapped)'}
+                    </div>
+                </th>
+            `;
+        }).join('')}
+    `;
+    thead.appendChild(thr);
+    
+    // 2. Render Table Body (limit preview to 100 rows for high responsiveness)
+    const previewRows = stagedCSVRows.slice(0, 100);
+    
+    previewRows.forEach((row, rowIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'staging-row';
+        
+        let rowHasError = false;
+        REQUIRED_SCHEMA_COLUMNS.forEach(col => {
+            if (cellValidationErrors[`${rowIdx}-${col.key}`]) {
+                rowHasError = true;
+            }
+        });
+        
+        if (rowHasError) {
+            tr.classList.add('has-error');
+        }
+        
+        // Status column
+        let statusTdHtml = `<td style="text-align:center; font-size: 1rem;">
+            ${rowHasError 
+                ? '<i class="fa-solid fa-triangle-exclamation" style="color: var(--status-danger);" title="Row contains validation errors. Double-click cell to fix."></i>'
+                : '<i class="fa-solid fa-circle-check" style="color: var(--status-success);"></i>'
+            }
+        </td>`;
+        
+        // Index column
+        let indexTdHtml = `<td style="text-align:center; color:var(--text-muted); font-weight: 500;">${rowIdx + 1}</td>`;
+        
+        let fieldsHtml = REQUIRED_SCHEMA_COLUMNS.map(col => {
+            const mappedHeader = columnMappingState[col.key];
+            let cellVal = '';
+            let csvHeaderIdx = -1;
+            
+            if (mappedHeader) {
+                csvHeaderIdx = stagedCSVHeaders.indexOf(mappedHeader);
+                if (csvHeaderIdx !== -1) {
+                    cellVal = row[csvHeaderIdx] || '';
+                }
+            }
+            
+            const cellError = cellValidationErrors[`${rowIdx}-${col.key}`];
+            const errorClass = cellError ? 'cell-error' : '';
+            const errorTooltip = cellError ? `title="${cellError}"` : '';
+            
+            return `
+                <td class="editable-cell ${errorClass}" ${errorTooltip} 
+                    data-rowidx="${rowIdx}" 
+                    data-colkey="${col.key}" 
+                    data-headeridx="${csvHeaderIdx}">
+                    ${cellVal || '<span style="color:rgba(255,255,255,0.15); font-style:italic;">Empty</span>'}
+                </td>
+            `;
+        }).join('');
+        
+        tr.innerHTML = statusTdHtml + indexTdHtml + fieldsHtml;
+        tbody.appendChild(tr);
+    });
+    
+    // Add warning row at bottom if rows exceed 100
+    if (stagedCSVRows.length > 100) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td colspan="${REQUIRED_SCHEMA_COLUMNS.length + 2}" style="text-align:center; padding:1rem; color:var(--text-muted); background:rgba(255,255,255,0.01);">
+                <i class="fa-solid fa-ellipsis"></i> Showing the first 100 rows. The remaining ${stagedCSVRows.length - 100} rows are fully validated and sanitised in the background.
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+    
+    // 3. Attach Inline Edit Event Listeners
+    const editableCells = tbody.querySelectorAll('.editable-cell');
+    editableCells.forEach(cell => {
+        cell.addEventListener('dblclick', function() {
+            // Check if already editing
+            if (cell.querySelector('input')) return;
+            
+            const rowIdx = parseInt(cell.getAttribute('data-rowidx'));
+            const colKey = cell.getAttribute('data-colkey');
+            const csvHeaderIdx = parseInt(cell.getAttribute('data-headeridx'));
+            
+            if (csvHeaderIdx === -1 || isNaN(csvHeaderIdx)) {
+                addNotification('Unmapped column', 'Please map this column header at the top before editing cells.', 'warning');
+                return;
+            }
+            
+            const currentVal = stagedCSVRows[rowIdx][csvHeaderIdx] || '';
+            cell.innerHTML = `<input type="text" class="editable-cell-input" value="${currentVal.replace(/"/g, '&quot;')}">`;
+            
+            const input = cell.querySelector('input');
+            input.focus();
+            
+            // Save value on blur or Enter
+            const saveValue = () => {
+                const newVal = input.value.trim();
+                stagedCSVRows[rowIdx][csvHeaderIdx] = newVal;
+                
+                // Re-validate immediately
+                validateStagedData();
+            };
+            
+            input.addEventListener('blur', saveValue);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveValue();
+                } else if (e.key === 'Escape') {
+                    // Restore original value
+                    cell.innerHTML = currentVal || '<span style="color:rgba(255,255,255,0.15); font-style:italic;">Empty</span>';
+                }
+            });
+        });
+    });
+}
+
+async function commitStagedCSV() {
+    const modal = document.getElementById('csvValidationModal');
+    const uploadBtn = document.getElementById('uploadCsvBtn');
+    if (!modal || !uploadBtn) return;
+    
+    // Close Validation Modal
+    modal.style.display = 'none';
+    
+    // Show standard loader in the upload button
+    const originalText = uploadBtn.innerHTML;
+    uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reconciling &amp; Forecasting...';
+    uploadBtn.disabled = true;
+    
+    // Add Notification
+    addNotification('Ingesting sanitized data', 'Reconciling mapping cells with prediction pipeline...', 'info');
+    
+    // 1. Serialize staged rows back into standard clean CSV string format
+    const cleanHeaders = ['date', 'product_id', 'product_name', 'category', 'sales_qty', 'stock_on_hand', 'reorder_point', 'promo', 'holiday', 'unit_price', 'supplier_lead_days'];
+    
+    let csvString = cleanHeaders.join(',') + '\n';
+    
+    stagedCSVRows.forEach(row => {
+        const rowVals = cleanHeaders.map(colKey => {
+            const mappedHeader = columnMappingState[colKey];
+            let cellVal = '';
+            if (mappedHeader) {
+                const headerIdx = stagedCSVHeaders.indexOf(mappedHeader);
+                if (headerIdx !== -1) {
+                    cellVal = row[headerIdx] || '';
+                }
+            }
+            
+            // Fill defaults for empty optional fields
+            if (cellVal === '') {
+                if (colKey === 'promo' || colKey === 'holiday') {
+                    return '0';
+                } else if (colKey === 'unit_price') {
+                    return '0.0';
+                } else if (colKey === 'supplier_lead_days') {
+                    return '7';
+                }
+            }
+            
+            // Escape cells containing commas or quotes
+            if (cellVal.includes(',') || cellVal.includes('"') || cellVal.includes('\n')) {
+                return `"${cellVal.replace(/"/g, '""')}"`;
+            }
+            return cellVal;
+        });
+        
+        csvString += rowVals.join(',') + '\n';
+    });
+    
+    // 2. Convert CSV string into Blob and add to FormData
+    const csvBlob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const formData = new FormData();
+    formData.append('file', new File([csvBlob], stagedCSVFileName, { type: 'text/csv' }));
+    
+    // 3. Post to predict API
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+        const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+        const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+        
+        const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}&region=${region}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const detail  = errData.detail || {};
+            
+            if (detail.error === 'INSUFFICIENT_DATA') {
+                const days = detail.data_span_days || '?';
+                addNotification(
+                    '⚠ Not Enough Data',
+                    `Your CSV covers only ${days} day(s). Upload at least 90 days to enable forecasting.`,
+                    'warning'
+                );
+                return;
+            }
+            throw new Error(typeof detail === 'string' ? detail : (errData.detail?.message || 'Prediction failed'));
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            const fileIndicator = document.getElementById('uploadedFileIndicator');
+            const fileNameDisplay = document.getElementById('uploadedFileName');
+            const newUserCsvGuide = document.getElementById('newUserCsvGuide');
+            
+            if (fileIndicator && fileNameDisplay) {
+                fileNameDisplay.textContent = stagedCSVFileName;
+                fileIndicator.style.display = 'flex';
+                localStorage.setItem('stockSense_uploadedFile', stagedCSVFileName);
+            }
+            if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
+            
+            // Update chart title with actual forecast horizon from server
+            const chartTitle = document.getElementById('forecastChartTitle');
+            if (chartTitle && data.forecast_label) {
+                chartTitle.textContent = `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+            }
+            
+            updateFooterCsvStatus(stagedCSVFileName);
+            
+            // Cache the full result
+            localStorage.setItem('stockSense_lastResult', JSON.stringify({
+                historical:  data.historical,
+                forecast:    data.forecast,
+                insight:     data.insight,
+                drivers:     data.drivers,
+                kpis:        data.kpis,
+                bi_metrics:  data.bi_metrics,
+                promo_suggestions: data.promo_suggestions,
+                holidays:    data.holidays
+            }));
+            
+            updateChartWithData(data.historical, data.forecast);
+            
+            if (data.insight && data.drivers) {
+                renderInsight(data.insight);
+                renderDrivers(data.drivers);
+            }
+            
+            if (data.promo_suggestions) {
+                renderPromoSuggestions(data.promo_suggestions);
+            }
+            
+            _showAllTimeline = false;
+            _showAllDrivers = false;
+            
+            if (data.kpis)        updateKPIs(data.kpis);
+            if (data.bi_metrics)  updateBIMetrics(data.bi_metrics);
+            
+            // Auto-refresh the inventory table
+            loadInventoryData();
+            
+            const productCount = data.products ? data.products.length : 0;
+            const atRisk = data.kpis ? (data.kpis.at_risk_products || 0) : 0;
+            
+            addNotification(
+                'Multi-Product Forecast Complete',
+                `Successfully analysed ${productCount} SKUs. ${atRisk > 0 ? `⚠ ${atRisk} products need attention.` : 'All products look healthy.'}`,
+                atRisk > 0 ? 'warning' : 'success'
+            );
+            
+            if (data.products) {
+                data.products
+                    .filter(p => p.status === 'Out of Stock')
+                    .forEach(p => addNotification(
+                        '🚨 Out of Stock',
+                        `${p.product_name} (${p.product_id}) has zero inventory.`,
+                        'error'
+                    ));
+                data.products
+                    .filter(p => p.status === 'Low Stock')
+                    .slice(0, 3)
+                    .forEach(p => addNotification(
+                        '⚠ Low Stock Alert',
+                        `${p.product_name}: Only ${p.current_stock} units left.`,
+                        'warning'
+                    ));
+            }
+        }
+    } catch (error) {
+        console.error("Upload error:", error);
+        addNotification('Upload Failed', error.message || 'Could not process CSV file.', 'error');
+    } finally {
+        uploadBtn.innerHTML = originalText;
+        uploadBtn.disabled = false;
+        stagedCSVRows = [];
+        stagedCSVHeaders = [];
+        cellValidationErrors = {};
+        columnMappingState = {};
+    }
+}
+
 function setupCsvUpload() {
     const fileInput = document.getElementById('csvFileInput');
     const uploadBtn = document.getElementById('uploadCsvBtn');
@@ -2239,177 +2977,15 @@ function setupCsvUpload() {
         if (fileIndicator) fileIndicator.style.display = 'none';
         if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
         
-        const originalText = uploadBtn.innerHTML;
-        uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analysing Products...';
-        uploadBtn.disabled = true;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const csvText = evt.target.result;
+            initializeCSVStaging(csvText, file.name);
+        };
+        reader.readAsText(file);
         
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        try {
-            const token = localStorage.getItem('stockSense_jwt');
-            const strategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
-            const dl = localStorage.getItem('stockSense_cfgDL') !== 'false';
-            const region = localStorage.getItem('stockSense_cfgRegion') || 'BD';
-            
-            const response = await fetch(`/api/predict?strategy=${strategy}&deep_learning=${dl}&region=${region}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-            
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                const detail  = errData.detail || {};
-
-                // Special case: not enough data in the CSV
-                if (detail.error === 'INSUFFICIENT_DATA') {
-                    const days    = detail.data_span_days || '?';
-                    const errMsg  = detail.message || 'Insufficient data.';
-                    addNotification(
-                        '⚠ Not Enough Data',
-                        `Your CSV covers only ${days} day(s). Upload at least 90 days to enable forecasting.`,
-                        'warning'
-                    );
-                    // Show a prominent blocking banner in the AI Insight panel
-                    const insightContainer = document.getElementById('ai-insight-text');
-                    if (insightContainer) {
-                        insightContainer.innerHTML = `
-                            <div style="display:flex;flex-direction:column;gap:1rem;">
-                                <div style="display:flex;align-items:flex-start;gap:0.75rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;">
-                                    <i class="fa-solid fa-circle-xmark" style="color:var(--status-danger);font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;"></i>
-                                    <div>
-                                        <strong style="color:var(--status-danger);font-size:1rem;">Forecast Blocked — Insufficient Data</strong>
-                                        <p style="margin:0.4rem 0 0;font-size:0.88rem;color:var(--text-secondary);line-height:1.6;">Your CSV covers only <strong>${days} day(s)</strong> of sales history. StockSense AI requires a minimum of <strong>90 days</strong> to produce a reliable forecast.</p>
-                                    </div>
-                                </div>
-                                <table style="width:100%;border-collapse:collapse;font-size:0.84rem;">
-                                    <thead>
-                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
-                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Historical Data Provided</th>
-                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Forecast Window Unlocked</th>
-                                            <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--text-muted);font-weight:600;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">90 – 179 days</td>
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">7-Day Forecast</td>
-                                            <td style="padding:0.5rem 0.75rem;">${days >= 90 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
-                                        </tr>
-                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">180 – 359 days</td>
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">14-Day Forecast</td>
-                                            <td style="padding:0.5rem 0.75rem;">${days >= 180 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-secondary);">360+ days</td>
-                                            <td style="padding:0.5rem 0.75rem;color:var(--text-primary);font-weight:500;">30-Day Forecast</td>
-                                            <td style="padding:0.5rem 0.75rem;">${days >= 360 ? '<span style="color:var(--status-success);"><i class="fa-solid fa-check"></i> Unlocked</span>' : '<span style="color:var(--status-danger);"><i class="fa-solid fa-lock"></i> Locked</span>'}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <p style="font-size:0.8rem;color:var(--text-muted);margin:0;"><i class="fa-solid fa-circle-info" style="color:var(--accent-primary);"></i> Please upload a CSV with at least 90 days of daily sales data to enable AI forecasting.</p>
-                            </div>`;
-                    }
-                    return; // Don't throw — we handled it
-                }
-
-                throw new Error(typeof detail === 'string' ? detail : (errData.detail?.message || 'Prediction failed'));
-            }
-            const data = await response.json();
-            
-            if (data.status === 'success') {
-                if (fileIndicator && fileNameDisplay) {
-                    fileNameDisplay.textContent = file.name;
-                    fileIndicator.style.display = 'flex';
-                    localStorage.setItem('stockSense_uploadedFile', file.name);
-                }
-                if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
-
-                // Update chart title with actual forecast horizon from server
-                const chartTitle = document.getElementById('forecastChartTitle');
-                if (chartTitle && data.forecast_label) {
-                    chartTitle.textContent =
-                        `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
-                }
-
-                // Update footer CSV status indicator
-                updateFooterCsvStatus(file.name);
-
-                // Cache the full result so it survives page refreshes
-                localStorage.setItem('stockSense_lastResult', JSON.stringify({
-                    historical:  data.historical,
-                    forecast:    data.forecast,
-                    insight:     data.insight,
-                    drivers:     data.drivers,
-                    kpis:        data.kpis,
-                    bi_metrics:  data.bi_metrics,
-                    promo_suggestions: data.promo_suggestions,
-                    holidays:    data.holidays
-                }));
-
-                // Update main chart
-                updateChartWithData(data.historical, data.forecast);
-                
-                // Update AI insight panel
-                if (data.insight && data.drivers) {
-                    renderInsight(data.insight);
-                    renderDrivers(data.drivers);
-                }
-
-                // Update promotional planner
-                if (data.promo_suggestions) {
-                    renderPromoSuggestions(data.promo_suggestions);
-                }
-                
-                // Reset View All toggles for the new upload dataset
-                _showAllTimeline = false;
-                _showAllDrivers = false;
-
-                // Update dashboard KPIs
-                if (data.kpis)        updateKPIs(data.kpis);
-                if (data.bi_metrics)  updateBIMetrics(data.bi_metrics);
-
-                // Auto-refresh the inventory table from the DB (now populated from CSV)
-                loadInventoryData();
-                
-                const productCount = data.products ? data.products.length : 0;
-                const atRisk = data.kpis ? (data.kpis.at_risk_products || 0) : 0;
-                
-                addNotification(
-                    'Multi-Product Forecast Complete',
-                    `Successfully analysed ${productCount} SKUs. ${atRisk > 0 ? `⚠ ${atRisk} products need attention.` : 'All products look healthy.'}`,
-                    atRisk > 0 ? 'warning' : 'success'
-                );
-
-                // If any products are at risk, fire individual alerts
-                if (data.products) {
-                    data.products
-                        .filter(p => p.status === 'Out of Stock')
-                        .forEach(p => addNotification(
-                            '🚨 Out of Stock',
-                            `${p.product_name} (${p.product_id}) has zero inventory.`,
-                            'error'
-                        ));
-                    data.products
-                        .filter(p => p.status === 'Low Stock')
-                        .slice(0, 3) // Limit to 3 alerts max
-                        .forEach(p => addNotification(
-                            '⚠ Low Stock Alert',
-                            `${p.product_name}: Only ${p.current_stock} units left (reorder at ${p.reorder_point}).`,
-                            'warning'
-                        ));
-                }
-            }
-        } catch (error) {
-            console.error("Upload error:", error);
-            addNotification('Upload Failed', error.message || 'Could not process CSV file. Check the column format.', 'error');
-        } finally {
-            uploadBtn.innerHTML = originalText;
-            uploadBtn.disabled = false;
-            fileInput.value = '';
-        }
+        // Reset file input value so uploading the same file again triggers change event
+        fileInput.value = '';
     });
 }
 
@@ -3946,9 +4522,7 @@ function initUserProfile() {
                 // Update pricing currency based on saved settings
                 updatePricingCurrency();
                 
-                if (typeof currentFilteredData !== 'undefined' && currentFilteredData.length > 0) {
-                    renderInventoryTable(currentFilteredData, currentInventoryPage);
-                }
+                filterAndSortInventory();
                 
                 updateUserProfileUI(newName, newRole, newAvatar);
                 addNotification('Settings Saved', 'Your preferences have been successfully updated in SQLite.', 'success');

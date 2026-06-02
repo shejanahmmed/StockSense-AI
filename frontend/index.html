@@ -773,9 +773,22 @@
                 </div>
 
                 <section class="inventory-table-container glass-panel">
-                    <div class="table-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3>All Products <span class="badge" id="inventoryCountBadge" style="background: rgba(255,255,255,0.1); display: inline-flex;">0</span></h3>
-                        <div class="table-filters" style="display: flex; gap: 0.5rem; position: relative;">
+                    <div class="table-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">All Products <span class="badge" id="inventoryCountBadge" style="background: rgba(255,255,255,0.1); display: inline-flex;">0</span></h3>
+                            <!-- Glassmorphic Live Table Search -->
+                            <div class="table-search-wrapper" style="position: relative; display: flex; align-items: center;">
+                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; color: var(--text-muted); font-size: 0.85rem;"></i>
+                                <input type="text" id="inventorySearchInput" placeholder="Search SKU or product..." style="padding: 0 1rem 0 2.25rem; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.85rem; width: 240px; outline: none; transition: all 0.3s ease; box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);">
+                            </div>
+                        </div>
+                        <div class="table-filters" style="display: flex; gap: 0.5rem; position: relative; align-items: center; flex-wrap: wrap;">
+                            <div class="capsule-filters" style="display: flex; gap: 0.35rem; margin-right: 0.5rem;">
+                                <button class="capsule-filter-btn active" data-filter="all"><i class="fa-solid fa-border-all"></i> All</button>
+                                <button class="capsule-filter-btn" data-filter="low-stock"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock</button>
+                                <button class="capsule-filter-btn" data-filter="out-of-stock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</button>
+                                <button class="capsule-filter-btn" data-filter="high-value"><i class="fa-solid fa-dollar-sign"></i> High Capital</button>
+                            </div>
                             <button class="secondary-btn" id="inventorySyncBtn" style="height: 36px; padding: 0 1rem; font-size: 0.85rem; border: 1px solid rgba(139, 92, 246, 0.35); color: #a78bfa; background: rgba(139, 92, 246, 0.06); display: none; align-items: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.05);" onmouseover="this.style.background='rgba(139, 92, 246, 0.12)'; this.style.borderColor='rgba(139, 92, 246, 0.55)';" onmouseout="this.style.background='rgba(139, 92, 246, 0.06)'; this.style.borderColor='rgba(139, 92, 246, 0.35)';"><i class="fa-solid fa-rotate"></i> Update Data</button>
                             <button class="primary-btn" id="inventoryAddBtn" style="height: 36px; padding: 0 1rem; font-size: 0.85rem;"><i class="fa-solid fa-plus"></i> Add Item</button>
                             <button class="icon-btn glass-panel" id="inventoryFilterBtn" title="Filter Inventory" style="width: 36px; height: 36px;"><i class="fa-solid fa-filter"></i></button>
@@ -814,16 +827,16 @@
                         <table class="inventory-table">
                             <thead>
                                 <tr>
-                                    <th>SKU</th>
-                                    <th>Product / Category</th>
-                                    <th>Unit Price</th>
-                                    <th>Stock</th>
-                                    <th>Reorder Pt.</th>
-                                    <th>Lead Days</th>
-                                    <th>7-Day Forecast</th>
-                                    <th>Status</th>
-                                    <th>Draft PO</th>
-                                    <th style="text-align: right;">Actions</th>
+                                    <th class="sortable-header" data-sort="sku" style="white-space: nowrap;">SKU <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="name" style="white-space: nowrap;">Product / Category <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="price" style="white-space: nowrap;">Unit Price <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="stock" style="white-space: nowrap;">Stock <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="reorder_point" style="white-space: nowrap;">Reorder Pt. <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="supplier_lead_days" style="white-space: nowrap;">Lead Days <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="forecasted_demand" style="white-space: nowrap;">7-Day Forecast <i class="fa-solid fa-sort"></i></th>
+                                    <th class="sortable-header" data-sort="status" style="white-space: nowrap;">Status <i class="fa-solid fa-sort"></i></th>
+                                    <th style="white-space: nowrap;">Draft PO</th>
+                                    <th style="text-align: right; white-space: nowrap;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
@@ -2736,6 +2749,71 @@
                 <button class="secondary-btn" id="downloadPoCsvBtn" style="padding: 0.6rem 1.4rem; gap: 0.5rem; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
                 <button class="primary-btn" id="downloadPoPdfBtn" style="padding: 0.6rem 1.6rem; gap: 0.5rem; background: linear-gradient(135deg, var(--accent-primary), #6d28d9); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);"><i class="fa-solid fa-file-pdf"></i> Export PO PDF</button>
                 <button class="primary-btn" id="confirmDraftPoBtn" style="padding: 0.6rem 1.6rem; gap: 0.5rem; background: linear-gradient(135deg, var(--status-success), #047857); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-check"></i> Confirm &amp; Log PO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Staging & Validation Modal -->
+    <div id="csvValidationModal" class="modal-backdrop-overlay" style="display: none;">
+        <div class="staging-modal-card glass-panel animated fade-in">
+            <div class="staging-modal-header">
+                <div class="header-left">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--accent-primary); font-size: 1.4rem;"></i>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.25rem;">CSV Import &amp; Validation Console</h2>
+                        <p class="subtitle" style="margin: 2px 0 0 0; font-size: 0.82rem;">Sanitize, map columns, and correct data anomalies before committing to database.</p>
+                    </div>
+                </div>
+                <button class="close-modal-btn" id="closeStagingModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="staging-modal-body">
+                <!-- 1. Header Column Mapping Section -->
+                <div class="mapping-section-container">
+                    <h4 style="margin: 0 0 0.75rem 0; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; color: #fff;">
+                        <i class="fa-solid fa-arrows-split-up-and-left" style="color: var(--accent-primary);"></i> 
+                        Column Mapping Matrix
+                    </h4>
+                    <div class="column-mapping-grid" id="columnMappingGrid">
+                        <!-- Dynamic mapping dropdown cards will be injected here -->
+                    </div>
+                </div>
+
+                <!-- 2. Staging Data Table Container -->
+                <div class="staging-table-section">
+                    <div class="table-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 style="margin: 0; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; color: #fff;">
+                            <i class="fa-solid fa-table-list" style="color: var(--accent-primary);"></i> 
+                            Staging Data Preview <span style="font-size:0.75rem; color: var(--text-muted); font-weight: normal;">(Double-click any cell to edit details inline)</span>
+                        </h4>
+                        <div id="stagingTableStats" class="staging-badge-row">
+                            <!-- Stats injected via JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="staging-table-wrapper">
+                        <table class="staging-data-table">
+                            <thead id="stagingTableHeader">
+                                <!-- Injected headers -->
+                            </thead>
+                            <tbody id="stagingTableBody">
+                                <!-- Staged rows of CSV -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="staging-modal-footer">
+                <div class="footer-left-stats" id="stagingValidationFooterStats">
+                    <span class="indicator-dot success"></span> All mapping aligned. Ready to validate rows.
+                </div>
+                <div class="footer-actions">
+                    <button class="secondary-btn" id="cancelStagingBtn" style="height: 38px;">Cancel Import</button>
+                    <button class="primary-btn" id="commitStagingBtn" style="height: 38px; display: inline-flex; align-items: center; gap: 0.5rem;" disabled>
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Reconcile &amp; Commit
+                    </button>
+                </div>
             </div>
         </div>
     </div>
