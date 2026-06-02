@@ -10,7 +10,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
 from src.api.database import init_db
-from src.api.routers import auth, inventory, chat, analytics, docs, po
+from src.api.routers import auth, inventory, chat, analytics, docs, po, financials
 
 # Standard Logging Setup
 logging.basicConfig(
@@ -46,6 +46,7 @@ app.include_router(chat.router)
 app.include_router(analytics.router)
 app.include_router(docs.router)
 app.include_router(po.router)
+app.include_router(financials.router)
 
 # Mount the frontend directory to serve the UI at the root
 frontend_path = project_root / "frontend"

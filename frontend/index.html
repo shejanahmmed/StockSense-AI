@@ -132,6 +132,10 @@
                     <i class="fa-solid fa-boxes-stacked"></i> 
                     <span>Inventory</span>
                 </a>
+                <a href="#" class="nav-item" id="navFinancials">
+                    <i class="fa-solid fa-sack-dollar"></i> 
+                    <span>Financials</span>
+                </a>
                 <a href="#" class="nav-item" id="navInsights">
                     <i class="fa-solid fa-brain"></i> 
                     <span>AI Insights</span>
@@ -517,6 +521,177 @@
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file to see top profit drivers.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+
+            <!-- Executive Financial & ROI View -->
+            <div class="financials-content" id="financialsView" style="display: none;">
+                <header class="page-header">
+                    <h1>Financial Control Tower</h1>
+                    <p class="subtitle">Real-time capital efficiency, procurement spends, and predictive ROI analytics.</p>
+                </header>
+
+                <!-- Financial KPIs Grid -->
+                <div class="financials-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- KPI 1: Capital Tied Up (COGS) -->
+                    <div class="kpi-card glass-panel interactive" id="kpiCapitalTiedCard">
+                        <div class="kpi-icon action-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-primary);"><i class="fa-solid fa-vault"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Total wholesale monetary capital currently tied up in physical inventory. Calculated as: Stock * Wholesale Cost.</span>
+                                </div>
+                                Capital Tied Up (Wholesale)
+                            </span>
+                            <h3 class="kpi-value" id="financial-capital-tied">৳—</h3>
+                            <span class="trend neutral">Active capital on hand</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Retail Portfolio Value -->
+                    <div class="kpi-card glass-panel interactive" id="kpiRetailValCard">
+                        <div class="kpi-icon success-icon"><i class="fa-solid fa-coins"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Total potential retail revenue value of current inventory if sold at current market prices.</span>
+                                </div>
+                                Retail Valuation
+                            </span>
+                            <h3 class="kpi-value" id="financial-retail-value">৳—</h3>
+                            <span class="trend neutral" id="financial-margin-percentage">Estimated 30% margin</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: AI Revenue at Risk -->
+                    <div class="kpi-card glass-panel interactive" id="kpiRevAtRiskCard" style="border-color: rgba(239, 68, 68, 0.2);">
+                        <div class="kpi-icon warning-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--status-danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Potential sales revenue that will be lost in the next forecast period if low-stock products are not replenished before stockout.</span>
+                                </div>
+                                AI Revenue at Risk
+                            </span>
+                            <h3 class="kpi-value" id="financial-revenue-at-risk" style="color: var(--status-danger);">৳—</h3>
+                            <span class="trend negative" id="financial-risk-skus">0 SKUs under-stocked</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Committed PO Spend -->
+                    <div class="kpi-card glass-panel interactive" id="kpiPoSpendCard">
+                        <div class="kpi-icon info-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--status-info);"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                        <div class="kpi-details">
+                            <span class="kpi-label">
+                                <div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span class="tooltip-text">Cumulative capital routed through drafted or finalized purchase orders across all suppliers.</span>
+                                </div>
+                                Committed PO Spend
+                            </span>
+                            <h3 class="kpi-value" id="financial-total-spend">৳—</h3>
+                            <span class="trend neutral">Across logistics channels</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Charts Section -->
+                <div class="financials-charts-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Chart 1: Category Capital Allocation -->
+                    <section class="chart-section glass-panel" style="padding: 1.5rem;">
+                        <div class="section-header" style="margin-bottom: 1.5rem;">
+                            <h2 style="font-size: 1.1rem; margin: 0;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-primary);"></i> Capital Allocation</h2>
+                        </div>
+                        <div style="position: relative; height: 260px; display: flex; align-items: center; justify-content: center;">
+                            <canvas id="financialsCategoryChart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Chart 2: Spend Velocity by Month -->
+                    <section class="chart-section glass-panel" style="padding: 1.5rem;">
+                        <div class="section-header" style="margin-bottom: 1.5rem;">
+                            <h2 style="font-size: 1.1rem; margin: 0;"><i class="fa-solid fa-chart-simple" style="color: var(--status-success);"></i> Supplier Spend Velocity</h2>
+                        </div>
+                        <div style="position: relative; height: 260px;">
+                            <canvas id="financialsSpendChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Category Asset Allocation Matrix & ROI Slider -->
+                <div class="financials-bottom-grid" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    
+                    <!-- Table: Category Asset Allocation -->
+                    <section class="glass-panel" style="padding: 1.5rem;">
+                        <div class="section-header" style="margin-bottom: 1.5rem;">
+                            <h2 style="font-size: 1.1rem; margin: 0;"><i class="fa-solid fa-table-list" style="color: var(--accent-secondary);"></i> Category Cost vs Value Matrix</h2>
+                        </div>
+                        <div class="table-wrapper" style="max-height: 310px; overflow-y: auto;">
+                            <table class="inventory-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 0.75rem 0.5rem; text-align: left;">Category</th>
+                                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Units Hand</th>
+                                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Tied Wholesale</th>
+                                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Est. Retail</th>
+                                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Gross Margin</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="financialsCategoryTableBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Awaiting sales data to compute matrix...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Widget: ROI Buffer Optimizer -->
+                    <section class="glass-panel premium-glow" style="padding: 1.5rem; border-color: rgba(139, 92, 246, 0.25); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="section-header" style="margin-bottom: 1rem;">
+                                <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-primary);"></i> AI ROI Buffer Optimizer</h2>
+                                <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border-color: rgba(139, 92, 246, 0.3);">Simulation Active</span>
+                            </div>
+                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.5rem;">
+                                Adjust your safety buffer target. The simulation projects the wholesale capital required vs the retail revenue saved by eliminating stockout risks.
+                            </p>
+
+                            <!-- Slider Input -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                                    <span>Procurement Safety Buffer</span>
+                                    <span style="font-weight: 600; color: var(--accent-primary);" id="roiSliderVal">1.4x</span>
+                                </div>
+                                <input type="range" id="roiBufferSlider" min="1.0" max="2.0" step="0.1" value="1.4" style="width: 100%; accent-color: var(--accent-primary); cursor: pointer; height: 6px; background: rgba(255,255,255,0.06); border-radius: var(--radius-full); border: none;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                    <span>Aggressive (1.0x)</span>
+                                    <span>Balanced (1.4x)</span>
+                                    <span>Conservative (2.0x)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time balance changes -->
+                        <div class="glass-panel" style="padding: 1rem; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; gap: 0.75rem; border-color: rgba(255,255,255,0.04); margin-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;">
+                                <span style="color: var(--text-muted);"><i class="fa-solid fa-plus-circle" style="color: var(--status-info); margin-right: 0.35rem;"></i> Capital Required:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" id="roiCapitalRequired">৳0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;">
+                                <span style="color: var(--text-muted);"><i class="fa-solid fa-shield-halved" style="color: var(--status-success); margin-right: 0.35rem;"></i> Recovered Revenue:</span>
+                                <span style="font-weight: 600; color: var(--status-success); font-size: 0.95rem;" id="roiRecoveredRevenue">৳0.00</span>
+                            </div>
+                            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+                                <span>Net ROI Projection:</span>
+                                <span style="font-weight: 700; color: var(--accent-primary);" id="roiNetProjection">0.0% Return</span>
+                            </div>
                         </div>
                     </section>
                 </div>

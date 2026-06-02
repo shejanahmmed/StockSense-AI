@@ -793,6 +793,8 @@ h1, h2, h3, h4 {
 
 .inventory-content,
 
+.financials-content,
+
 .settings-content {
 
     display: flex;
@@ -7740,3 +7742,76 @@ input:checked + .slider:before {
         transform: translateX(-100vw);
     }
 }
+
+/* Executive Financial View Styles */
+.financials-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.financials-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.financials-bottom-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Custom layout responsiveness for financials grid */
+@media (max-width: 1024px) {
+    .financials-charts-grid,
+    .financials-bottom-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Slider aesthetic styling */
+#roiBufferSlider {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    border-radius: var(--radius-full);
+    transition: background 0.3s;
+}
+
+#roiBufferSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#roiBufferSlider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 1);
+}
+
+#roiBufferSlider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+}
+
+#roiBufferSlider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 1);
+}
+

@@ -256,11 +256,13 @@ function updatePricingCurrency() {
 function setupNavigation() {
     const navDashboard = document.getElementById('navDashboard');
     const navInventory = document.getElementById('navInventory');
+    const navFinancials = document.getElementById('navFinancials');
     const navInsights = document.getElementById('navInsights');
     const navSettings = document.getElementById('navSettings');
 
     const dashboardView = document.getElementById('dashboardView');
     const inventoryView = document.getElementById('inventoryView');
+    const financialsView = document.getElementById('financialsView');
     const insightsView = document.getElementById('insightsView');
     const settingsView = document.getElementById('settingsView');
     const privacyView = document.getElementById('privacyView');
@@ -276,6 +278,7 @@ function setupNavigation() {
     function hideAll() {
         dashboardView.style.display = 'none';
         inventoryView.style.display = 'none';
+        if (financialsView) financialsView.style.display = 'none';
         insightsView.style.display = 'none';
         settingsView.style.display = 'none';
         if (privacyView) privacyView.style.display = 'none';
@@ -326,6 +329,10 @@ function setupNavigation() {
             const tbody = document.getElementById('inventoryTableBody');
             if (tbody.children.length === 0) loadInventoryData();
             loadPoLedger(); // Persistently sync and load PO ledger
+        } else if (view === 'financials') {
+            if (navFinancials) navFinancials.classList.add('active');
+            if (financialsView) financialsView.style.display = 'flex';
+            loadFinancialsData();
         } else if (view === 'insights') {
             navInsights.classList.add('active');
             insightsView.style.display = 'flex';
@@ -373,6 +380,7 @@ function setupNavigation() {
 
     navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
     navInventory.addEventListener('click', (e) => { e.preventDefault(); switchView('inventory'); });
+    if (navFinancials) navFinancials.addEventListener('click', (e) => { e.preventDefault(); switchView('financials'); });
     navInsights.addEventListener('click',  (e) => { e.preventDefault(); switchView('insights');  });
     navSettings.addEventListener('click',  (e) => { e.preventDefault(); switchView('settings');  });
 
@@ -8246,11 +8254,279 @@ async function deletePo(poId) {
     }
 }
 
+// --- Financial Control Tower Methods ---
+let _financialsCache = null;
+let financialsCategoryChartInstance = null;
+let financialsSpendChartInstance = null;
+
+async function loadFinancialsData() {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch('/api/financials/summary', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+            _financialsCache = result;
+            updateFinancialsUI();
+        } else {
+            console.error("Failed to load financials summary:", result.message);
+        }
+    } catch (err) {
+        console.error("Error loading financials:", err);
+    }
+}
+
+function updateFinancialsUI() {
+    if (!_financialsCache) return;
+    
+    const kpis = _financialsCache.kpis;
+    const catAlloc = _financialsCache.category_allocation;
+    const spendVel = _financialsCache.spend_velocity;
+    
+    // Set KPI values
+    const capTiedElem = document.getElementById('financial-capital-tied');
+    const retValElem = document.getElementById('financial-retail-value');
+    const revRiskElem = document.getElementById('financial-revenue-at-risk');
+    const totalSpendElem = document.getElementById('financial-total-spend');
+    
+    if (capTiedElem) capTiedElem.innerText = formatCurrency(kpis.capital_tied_up);
+    if (retValElem) retValElem.innerText = formatCurrency(kpis.retail_value);
+    if (revRiskElem) revRiskElem.innerText = formatCurrency(kpis.revenue_at_risk);
+    if (totalSpendElem) totalSpendElem.innerText = formatCurrency(kpis.total_spend);
+    
+    const marginSubElem = document.getElementById('financial-margin-percentage');
+    if (marginSubElem && kpis.retail_value > 0) {
+        const grossMargin = ((kpis.retail_value - kpis.capital_tied_up) / kpis.retail_value) * 100.0;
+        marginSubElem.innerText = `Portfolio Margin: ${grossMargin.toFixed(1)}%`;
+    }
+    
+    // Update Category Table
+    const tableBody = document.getElementById('financialsCategoryTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = '';
+        if (catAlloc.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No category data available. Upload inventory CSV.</td></tr>';
+        } else {
+            catAlloc.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 500; color: var(--text-primary);"><i class="fa-solid fa-folder-open" style="color: var(--accent-primary); margin-right: 0.5rem; font-size: 0.85rem;"></i> ${c.category}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: var(--text-secondary);">${c.units.toLocaleString()}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: var(--text-primary); font-weight: 600;">${formatCurrency(c.capital_tied_up)}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: var(--status-success); font-weight: 500;">${formatCurrency(c.retail_value)}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: var(--accent-secondary); font-weight: 600;">${c.margin_pct.toFixed(1)}%</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    }
+    
+    // ----------------------------------------
+    // RENDER CHART 1: Category Capital allocation
+    // ----------------------------------------
+    const categoryCanvas = document.getElementById('financialsCategoryChart');
+    if (categoryCanvas) {
+        const categoryCtx = categoryCanvas.getContext('2d');
+        if (financialsCategoryChartInstance) financialsCategoryChartInstance.destroy();
+        
+        const categoryLabels = catAlloc.map(c => c.category);
+        const categoryData = catAlloc.map(c => c.capital_tied_up);
+        
+        if (categoryLabels.length === 0) {
+            categoryLabels.push("Awaiting Data");
+            categoryData.push(0);
+        }
+        
+        financialsCategoryChartInstance = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: [
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(239, 68, 68, 0.7)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: { family: "'Outfit', sans-serif", size: 10 },
+                            boxWidth: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // ----------------------------------------
+    // RENDER CHART 2: Spend Velocity Bar Chart
+    // ----------------------------------------
+    const spendCanvas = document.getElementById('financialsSpendChart');
+    if (spendCanvas) {
+        const spendCtx = spendCanvas.getContext('2d');
+        if (financialsSpendChartInstance) financialsSpendChartInstance.destroy();
+        
+        const spendLabels = spendVel.map(s => s.month);
+        const spendData = spendVel.map(s => s.amount);
+        
+        if (spendLabels.length === 0) {
+            spendLabels.push("Awaiting Data");
+            spendData.push(0);
+        }
+        
+        financialsSpendChartInstance = new Chart(spendCtx, {
+            type: 'bar',
+            data: {
+                labels: spendLabels,
+                datasets: [{
+                    label: 'Procurement Outflow',
+                    data: spendData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.55)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            font: { family: "'Outfit', sans-serif" },
+                            callback: function(value) {
+                                return getCurrencySymbol() + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            font: { family: "'Outfit', sans-serif" }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` Spend: ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Setup Slider listener once if not already bound
+    const slider = document.getElementById('roiBufferSlider');
+    if (slider && !slider.dataset.bound) {
+        slider.addEventListener('input', simulateROI);
+        slider.dataset.bound = "true";
+    }
+    
+    simulateROI();
+}
+
+function simulateROI() {
+    const slider = document.getElementById('roiBufferSlider');
+    if (!slider) return;
+    
+    const M = parseFloat(slider.value);
+    const sliderVal = document.getElementById('roiSliderVal');
+    if (sliderVal) sliderVal.innerText = M.toFixed(1) + 'x';
+    
+    if (!_financialsCache || !_financialsCache.kpis) return;
+    
+    const baseRisk = _financialsCache.kpis.revenue_at_risk;
+    const baseCapital = _financialsCache.kpis.capital_tied_up;
+    
+    let additionalCapital = 0;
+    if (M > 1.4) {
+        additionalCapital = baseCapital * (M - 1.4) * 0.45;
+    } else {
+        additionalCapital = -baseCapital * (1.4 - M) * 0.25;
+    }
+    
+    if (additionalCapital < 0) additionalCapital = Math.max(-baseCapital * 0.3, additionalCapital);
+    
+    let recoveredRevenue = 0;
+    if (baseRisk > 0) {
+        recoveredRevenue = baseRisk * Math.min(1.0, Math.max(0.0, (M - 1.0) / 0.6));
+    }
+    
+    let roiPct = 0;
+    const profitGenerated = recoveredRevenue * 0.3;
+    if (additionalCapital > 0) {
+        roiPct = (profitGenerated / additionalCapital) * 100.0;
+    } else if (additionalCapital < 0) {
+        roiPct = (profitGenerated / Math.abs(additionalCapital)) * 100.0;
+    } else {
+        roiPct = 42.8; 
+    }
+    
+    const capReqElem = document.getElementById('roiCapitalRequired');
+    if (capReqElem) {
+        if (additionalCapital >= 0) {
+            capReqElem.innerText = `+${formatCurrency(additionalCapital)}`;
+            capReqElem.style.color = 'var(--text-primary)';
+        } else {
+            capReqElem.innerText = `-${formatCurrency(Math.abs(additionalCapital))}`;
+            capReqElem.style.color = 'var(--status-info)';
+        }
+    }
+    
+    const recRevElem = document.getElementById('roiRecoveredRevenue');
+    if (recRevElem) recRevElem.innerText = formatCurrency(recoveredRevenue);
+    
+    const netRoiElem = document.getElementById('roiNetProjection');
+    if (netRoiElem) {
+        if (roiPct > 0) {
+            netRoiElem.innerText = `${roiPct.toFixed(1)}% Return`;
+            netRoiElem.style.color = 'var(--accent-primary)';
+        } else {
+            netRoiElem.innerText = `0.0% Return`;
+            netRoiElem.style.color = 'var(--text-muted)';
+        }
+    }
+}
+
 // Expose bindings to global window object
 window.openTelemetryDrawer = openTelemetryDrawer;
 window.closeTelemetryDrawer = closeTelemetryDrawer;
 window.loadPoLedger = loadPoLedger;
 window.markPoAsReceived = markPoAsReceived;
 window.deletePo = deletePo;
+window.loadFinancialsData = loadFinancialsData;
+window.simulateROI = simulateROI;
+
 
 
