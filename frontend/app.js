@@ -21,6 +21,7 @@ let _activeBIMetrics = null;
 let _showAllTimeline = false;
 let _showAllDrivers = false;
 let scheduledPromoIds = new Set();
+let selectedInventorySKUs = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
     // 0. Initialize Authentication
@@ -913,7 +914,12 @@ function renderInventoryTable(data, page = 1) {
         const highlightedSku = highlightText(item.sku, gridSearchQuery);
         const highlightedName = highlightText(item.name, gridSearchQuery);
 
+        const isChecked = selectedInventorySKUs.has(item.sku) ? 'checked' : '';
+
         tr.innerHTML = `
+            <td style="text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">
+                <input type="checkbox" class="inventory-select-row" data-sku="${item.sku}" data-name="${item.name.replace(/'/g, "\\'")}" data-stock="${item.stock}" style="cursor: pointer;" ${isChecked}>
+            </td>
             <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${highlightedSku}</td>
             <td>
                 <div class="product-cell">
@@ -950,7 +956,7 @@ function renderInventoryTable(data, page = 1) {
         `;
         tr.style.cursor = 'pointer';
         tr.addEventListener('click', (e) => {
-            if (e.target.closest('.action-delete') || e.target.closest('.action-draft-po') || e.target.closest('button')) {
+            if (e.target.closest('.action-delete') || e.target.closest('.action-draft-po') || e.target.closest('button') || e.target.closest('input[type="checkbox"]')) {
                 return;
             }
             openTelemetryDrawer(item);
@@ -959,13 +965,27 @@ function renderInventoryTable(data, page = 1) {
         tbody.appendChild(tr);
     });
 
+    // Attach row checkbox select listeners
+    document.querySelectorAll('.inventory-select-row').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const sku = e.currentTarget.getAttribute('data-sku');
+            if (e.currentTarget.checked) {
+                selectedInventorySKUs.add(sku);
+            } else {
+                selectedInventorySKUs.delete(sku);
+            }
+            updateSelectAllCheckboxState();
+            updateConsolidatedPoButtonState();
+        });
+    });
+
     // Attach draft PO listeners
     document.querySelectorAll('.action-draft-po').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const sku = e.currentTarget.getAttribute('data-sku');
             const name = e.currentTarget.getAttribute('data-name');
             const stock = parseInt(e.currentTarget.getAttribute('data-stock')) || 0;
-            openDraftPO(sku, name, stock);
+            openDraftPO([sku], name, stock);
         });
     });
 
@@ -998,6 +1018,8 @@ function renderInventoryTable(data, page = 1) {
     });
 
     renderPagination(data.length, page);
+    updateSelectAllCheckboxState();
+    updateConsolidatedPoButtonState();
 }
 
 function updateInventoryMetrics(items) {
@@ -1521,10 +1543,37 @@ function initInventoryActions() {
     const resetBtn = document.getElementById('resetFilters');
     const addBtn = document.getElementById('inventoryAddBtn');
     const syncBtn = document.getElementById('inventorySyncBtn');
+    const consPoBtn = document.getElementById('createConsolidatedPoBtn');
+    const selectAllCb = document.getElementById('selectAllInventory');
 
     if (syncBtn) {
         syncBtn.addEventListener('click', () => reforecastFromInventory());
         updateSyncButtonVisibility();
+    }
+
+    if (consPoBtn) {
+        consPoBtn.addEventListener('click', () => {
+            if (selectedInventorySKUs.size === 0) return;
+            openDraftPO(Array.from(selectedInventorySKUs));
+        });
+    }
+
+    if (selectAllCb) {
+        selectAllCb.addEventListener('change', (e) => {
+            const checked = e.currentTarget.checked;
+            const pageCbs = document.querySelectorAll('.inventory-select-row');
+            
+            pageCbs.forEach(cb => {
+                const sku = cb.getAttribute('data-sku');
+                cb.checked = checked;
+                if (checked) {
+                    selectedInventorySKUs.add(sku);
+                } else {
+                    selectedInventorySKUs.delete(sku);
+                }
+            });
+            updateConsolidatedPoButtonState();
+        });
     }
 
     if (addBtn) {
@@ -8133,19 +8182,12 @@ function initHelpChat() {
             }
             
             localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
-
         } catch (error) {
-            console.error('Chat help streaming failed:', error);
-            typingIndicator.remove();
-            appendHelpMessage('assistant', "I'm sorry, I've encountered a connection error. Please verify that the StockSense AI backend server is running and try again!");
+            console.error('Error in sendHelpMessage:', error);
+            addNotification('Chat Error', 'An error occurred while communicating with the helper agent.', 'error');
         }
     }
 }
-
-
-// ====================================================
-// Closed-Loop Actionability Operations (PO & Promos)
-// ====================================================
 
 function initPoModal() {
     const modal = document.getElementById('draftPoModal');
@@ -8155,9 +8197,8 @@ function initPoModal() {
     const downloadPdfBtn = document.getElementById('downloadPoPdfBtn');
     const confirmBtn = document.getElementById('confirmDraftPoBtn');
     const copyBtn = document.getElementById('copyPoEmailBtn');
-    const qtyInput = document.getElementById('poReorderQty');
 
-    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !downloadPdfBtn || !confirmBtn || !copyBtn || !qtyInput) return;
+    if (!modal || !closeBtn || !cancelBtn || !downloadBtn || !downloadPdfBtn || !confirmBtn || !copyBtn) return;
 
     const closeModal = () => {
         modal.classList.remove('open');
@@ -8170,59 +8211,23 @@ function initPoModal() {
         if (e.target === modal) closeModal();
     });
 
-    // Handle interactive quantity changes
-    qtyInput.addEventListener('input', () => {
-        const qty = parseInt(qtyInput.value) || 0;
-        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
-        const total = qty * price;
+    // Handle interactive quantity changes (Event Delegation)
+    const poTableBody = document.getElementById('poItemsTableBody');
+    if (poTableBody) {
+        poTableBody.addEventListener('input', (e) => {
+            if (e.target.classList.contains('po-item-qty-input')) {
+                recalculatePoTotalsAndEmail();
+            }
+        });
+    }
 
-        // Update total cost element
-        const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
-        const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
-        const symbol = symbols[currency.toUpperCase()] || '৳';
-        
-        document.getElementById('poTotalCost').textContent = symbol + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        
-        // Update Email body text dynamically
-        const emailBodyEl = document.getElementById('poEmailBody');
-        const sku = document.getElementById('poSku').textContent;
-        const name = document.getElementById('poProdName').textContent;
-        const category = qtyInput.getAttribute('data-category');
-        const leadDays = qtyInput.getAttribute('data-lead-days');
-        const orgName = localStorage.getItem('stockSense_storeName') || 'Store 12';
-
-        emailBodyEl.value = `Dear Sales and Logistics Team,
-
-I hope this message finds you well.
-
-Based on our automated StockSense AI predictive demand models for ${orgName}, we are projecting a significant sales surge for '${name}' over the coming week. To prevent out-of-stock events and satisfy our customers, we would like to immediately place a replenishment purchase order.
-
-Please find the structured order details below:
-
-• Product Name: {name}
-• Product SKU: {sku}
-• Product Category: {category}
-• Quantity Requested: ${qty.toLocaleString()} units
-• Target Unit Price: ${symbol}${price.toFixed(2)} (Wholesale rate)
-• Estimated Lead Time: {leadDays} days
-
-Please confirm receipt of this purchase order and reply with a formal invoice and estimated dispatch date at your earliest convenience. If you have any questions regarding these quantities, feel free to contact our inventory desk.
-
-Thank you for your continued support as a valued supply partner.
-
-Best regards,
-Procurement Officer
-{orgName} — {category} Desk
-Powered by StockSense AI`;
-
-        // String replacements to fill templates properly
-        emailBodyEl.value = emailBodyEl.value
-            .replace(/{name}/g, name)
-            .replace(/{sku}/g, sku)
-            .replace(/{category}/g, category)
-            .replace(/{leadDays}/g, leadDays)
-            .replace(/{orgName}/g, orgName);
-    });
+    // Trigger recalculation when supplier name changes too (updates email)
+    const supplierInput = document.getElementById('poSupplierName');
+    if (supplierInput) {
+        supplierInput.addEventListener('input', () => {
+            recalculatePoTotalsAndEmail();
+        });
+    }
 
     // Copy to clipboard
     copyBtn.addEventListener('click', () => {
@@ -8243,63 +8248,97 @@ Powered by StockSense AI`;
 
     // Download CSV
     downloadBtn.addEventListener('click', () => {
-        const sku = document.getElementById('poSku').textContent;
-        const name = document.getElementById('poProdName').textContent;
-        const qty = parseInt(qtyInput.value) || 0;
-        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
-        const total = qty * price;
-        const supplier = document.getElementById('poSupplierName').textContent;
-        const leadDays = qtyInput.getAttribute('data-lead-days');
+        const supplier = document.getElementById('poSupplierName').value || 'Supplier Global Logistics';
+        const leadDaysText = document.getElementById('poLeadDays').textContent;
         
-        const csvContent = [
+        const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+        const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+        const symbol = symbols[currency.toUpperCase()] || '৳';
+        
+        const rowsData = [
             ["StockSense AI - Replenishment Purchase Order Draft"],
             ["Store Name", localStorage.getItem('stockSense_storeName') || 'Store 12'],
             ["Supplier Name", supplier],
-            ["Estimated Lead Days", leadDays],
+            ["Lead Information", leadDaysText],
             ["Generated At", new Date().toLocaleString()],
             [],
-            ["SKU Code", "Product Name", "Order Quantity", "Wholesale Unit Price", "Total Cost Projection"],
-            [sku, name, qty, price, total]
-        ].map(row => row.map(val => typeof val === 'string' && val.includes(',') ? `"${val}"` : val).join(',')).join('\n');
+            ["SKU Code", "Product Name", "Order Quantity", "Wholesale Unit Price", "Total Cost Projection"]
+        ];
 
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+        const tbody = document.getElementById('poItemsTableBody');
+        let totalOrderCost = 0;
+        if (tbody) {
+            const rows = tbody.querySelectorAll('tr.po-draft-row');
+            rows.forEach(row => {
+                const sku = row.getAttribute('data-sku');
+                const name = row.getAttribute('data-name');
+                const price = parseFloat(row.getAttribute('data-wholesale-price')) || 0;
+                const qtyInput = row.querySelector('.po-item-qty-input');
+                const qty = parseInt(qtyInput.value) || 0;
+                const total = qty * price;
+                totalOrderCost += total;
+                rowsData.push([sku, name, qty, price, total]);
+            });
+        }
+        rowsData.push([]);
+        rowsData.push(["Grand Total", "", "", "", totalOrderCost]);
+
+        const csvContent = rowsData.map(row => row.map(val => typeof val === 'string' && val.includes(',') ? `"${val}"` : val).join(',')).join('\n');
+        const encodedUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `StockSense_PurchaseOrder_${sku}.csv`);
+        link.setAttribute("download", `StockSense_PurchaseOrder_Consolidated.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        addNotification('PO Export Successful', `CSV Purchase Order for ${sku} downloaded.`, 'success');
+        addNotification('PO Export Successful', `Consolidated CSV Purchase Order downloaded.`, 'success');
         modal.classList.remove('open');
     });
 
     // Download PDF
     downloadPdfBtn.addEventListener('click', () => {
-        const sku = document.getElementById('poSku').textContent;
-        const name = document.getElementById('poProdName').textContent;
-        const qty = parseInt(qtyInput.value) || 0;
-        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
-        const total = qty * price;
-        const supplier = document.getElementById('poSupplierName').textContent;
-        const leadDays = qtyInput.getAttribute('data-lead-days');
-        const category = qtyInput.getAttribute('data-category') || 'Inventory';
+        const supplier = document.getElementById('poSupplierName').value || 'Supplier Global Logistics';
+        const leadDaysText = document.getElementById('poLeadDays').textContent;
         const orgName = localStorage.getItem('stockSense_storeName') || 'Store 12';
         
         const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
         const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
         const symbol = symbols[currency.toUpperCase()] || '৳';
 
-        // Show generating indicator on button
         const originalHTML = downloadPdfBtn.innerHTML;
         downloadPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
         downloadPdfBtn.disabled = true;
 
-        // Construct HTML content for the PDF template in a virtual element
+        let tableRowsHtml = '';
+        let totalOrderCost = 0;
+        const tbody = document.getElementById('poItemsTableBody');
+        if (tbody) {
+            const rows = tbody.querySelectorAll('tr.po-draft-row');
+            rows.forEach(row => {
+                const sku = row.getAttribute('data-sku');
+                const name = row.getAttribute('data-name');
+                const price = parseFloat(row.getAttribute('data-wholesale-price')) || 0;
+                const qtyInput = row.querySelector('.po-item-qty-input');
+                const qty = parseInt(qtyInput.value) || 0;
+                const total = qty * price;
+                totalOrderCost += total;
+                
+                tableRowsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #475569;">${sku}</td>
+                        <td style="padding: 10px 12px; font-weight: 600; color: #0f172a;">${name}</td>
+                        <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #0f172a;">${qty.toLocaleString()}</td>
+                        <td style="padding: 10px 12px; text-align: right; color: #475569;">${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #10b981;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
+            });
+        }
+
         const element = document.createElement('div');
         element.innerHTML = `
             <div style="font-family: 'Outfit', sans-serif; color: #1e293b; padding: 40px; background: #ffffff; line-height: 1.5; box-sizing: border-box;">
-                <!-- Brand & Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 25px;">
                     <div>
                         <h1 style="margin: 0; color: #8b5cf6; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">StockSense AI</h1>
@@ -8307,156 +8346,158 @@ Powered by StockSense AI`;
                     </div>
                     <div style="text-align: right;">
                         <h2 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;">Purchase Order</h2>
-                        <p style="margin: 3px 0 0 0; font-size: 12px; color: #64748b;">PO Ref: <span style="font-family: monospace; font-weight: 600; color: #1e293b;">PO-${sku}-${Math.floor(1000 + Math.random() * 9000)}</span></p>
+                        <p style="margin: 3px 0 0 0; font-size: 12px; color: #64748b;">PO Ref: <span style="font-family: monospace; font-weight: 600; color: #1e293b;">PO-CONS-${Math.floor(1000 + Math.random() * 9000)}</span></p>
                     </div>
                 </div>
 
-                <!-- From & To Metadata Grid -->
                 <div style="display: flex; justify-content: space-between; gap: 30px; margin-bottom: 30px;">
                     <div style="flex: 1;">
                         <h3 style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Buyer Information</h3>
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; font-size: 13px; min-height: 80px;">
                             <p style="margin: 0; font-weight: 700; color: #0f172a;">${orgName}</p>
                             <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Procurement Department</p>
-                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Inventory Desk: ${category}</p>
+                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Consolidated Replenishment Order</p>
                         </div>
-                    </div>
-                    <div style="flex: 1;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Supplier Information</h3>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; font-size: 13px; min-height: 80px;">
-                            <p style="margin: 0; font-weight: 700; color: #0f172a;">${supplier}</p>
-                            <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">Lead Time: ${leadDays} Days</p>
-                            <p style="margin: 4px 0 0 0; color: #7c3aed; font-size: 12px; font-weight: 600;">Status: Draft Replenishment</p>
-                        </div>
-                    </div>
-                </div>
+                   </div>
+                   <div style="flex: 1;">
+                       <h3 style="margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Supplier Information</h3>
+                       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 15px; font-size: 13px; min-height: 80px;">
+                           <p style="margin: 0; font-weight: 700; color: #0f172a;">${supplier}</p>
+                           <p style="margin: 4px 0 0 0; color: #475569; font-size: 12px;">${leadDaysText}</p>
+                           <p style="margin: 4px 0 0 0; color: #7c3aed; font-size: 12px; font-weight: 600;">Status: Draft Replenishment</p>
+                       </div>
+                   </div>
+               </div>
 
-                <!-- Date & System Stats Banner -->
-                <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 12px 15px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 12px; color: #7c3aed;">
-                    <div><strong>Order Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
-                    <div><strong>AI Model Authority:</strong> Weekly Prophet ML Core & SHAP</div>
-                </div>
+               <div style="background: #faf5ff; border: 1px solid #f3e8ff; border-radius: 8px; padding: 12px 15px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 12px; color: #7c3aed;">
+                   <div><strong>Order Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
+                   <div><strong>AI Model Authority:</strong> Weekly Prophet ML Core & SHAP</div>
+               </div>
 
-                <!-- Structured Item Table -->
-                <h3 style="margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Order Line Items</h3>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                            <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">SKU Code</th>
-                            <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">Product Description</th>
-                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Quantity</th>
-                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Unit Cost</th>
-                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Total Cost</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 12px; font-family: monospace; font-weight: 600; color: #475569;">${sku}</td>
-                            <td style="padding: 12px; font-weight: 600; color: #0f172a;">${name}</td>
-                            <td style="padding: 12px; text-align: right; font-weight: 700; color: #0f172a;">${qty.toLocaleString()}</td>
-                            <td style="padding: 12px; text-align: right; color: #475569;">${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td style="padding: 12px; text-align: right; font-weight: 700; color: #10b981;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        </tr>
-                    </tbody>
-                </table>
+               <h3 style="margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Order Line Items</h3>
+               <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
+                   <thead>
+                       <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                           <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">SKU Code</th>
+                           <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">Product Description</th>
+                           <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Quantity</th>
+                           <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Unit Cost</th>
+                           <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Total Cost</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       ${tableRowsHtml}
+                   </tbody>
+               </table>
 
-                <!-- Summary Breakdown -->
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
-                    <div style="width: 250px; font-size: 13px;">
-                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
-                            <span>Subtotal</span>
-                            <span>${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
-                            <span>Shipping/Handling</span>
-                            <span>Free / Included</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; font-weight: 700; color: #0f172a;">
-                            <span>Total Amount Due</span>
-                            <span style="color: #8b5cf6;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                    </div>
-                </div>
+               <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
+                   <div style="width: 250px; font-size: 13px;">
+                       <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
+                           <span>Subtotal</span>
+                           <span>${symbol}${totalOrderCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                       </div>
+                       <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; color: #64748b;">
+                           <span>Shipping/Handling</span>
+                           <span>Free / Included</span>
+                       </div>
+                       <div style="display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; font-weight: 700; color: #0f172a;">
+                           <span>Total Amount Due</span>
+                           <span style="color: #8b5cf6;">${symbol}${totalOrderCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                       </div>
+                   </div>
+               </div>
 
-                <!-- Signatures & Verifications -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 25px; font-size: 12px; color: #64748b;">
-                    <div>
-                        <div style="border-bottom: 1px solid #cbd5e1; width: 180px; height: 35px;"></div>
-                        <p style="margin: 8px 0 0 0; font-weight: 500;">Buyer Procurement Officer</p>
-                    </div>
-                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                        <div style="border: 1px solid rgba(139, 92, 246, 0.2); background: rgba(139, 92, 246, 0.05); color: #8b5cf6; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">
-                            StockSense AI Verified
-                        </div>
-                        <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Automated Replenishment Optimization</p>
-                    </div>
-                </div>
+               <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 25px; font-size: 12px; color: #64748b;">
+                   <div>
+                       <div style="border-bottom: 1px solid #cbd5e1; width: 180px; height: 35px;"></div>
+                       <p style="margin: 8px 0 0 0; font-weight: 500;">Buyer Procurement Officer</p>
+                   </div>
+                   <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                       <div style="border: 1px solid rgba(139, 92, 246, 0.2); background: rgba(139, 92, 246, 0.05); color: #8b5cf6; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;">
+                           StockSense AI Verified
+                       </div>
+                       <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Automated Replenishment Optimization</p>
+                   </div>
+               </div>
 
-                <!-- Footer Disclaimer -->
-                <div style="margin-top: 60px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 9px; color: #94a3b8; line-height: 1.4;">
-                    Important Notice: This purchase order has been generated automatically via StockSense AI inventory demand planning suite. Recommended order counts ensure optimal inventory coverage and mitigate stockout frequencies.
-                </div>
-            </div>
-        `;
+               <div style="margin-top: 60px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 9px; color: #94a3b8; line-height: 1.4;">
+                   Important Notice: This purchase order has been generated automatically via StockSense AI inventory demand planning suite. Recommended order counts ensure optimal inventory coverage and mitigate stockout frequencies.
+               </div>
+           </div>
+       `;
 
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: `StockSense_PurchaseOrder_${sku}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+       const opt = {
+           margin: [10, 10, 10, 10],
+           filename: `StockSense_PurchaseOrder_Consolidated.pdf`,
+           image: { type: 'jpeg', quality: 0.98 },
+           html2canvas: { scale: 2, useCORS: true, logging: false },
+           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+       };
 
-        // Render PDF and save
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Restore button state
-            downloadPdfBtn.innerHTML = originalHTML;
-            downloadPdfBtn.disabled = false;
-            
-            // Add success alert
-            addNotification('PO PDF Downloaded', `Structured Purchase Order PDF for ${sku} is downloaded.`, 'success');
-            
-            // Close the PO modal elegantly
-            closeModal();
-        }).catch(err => {
-            console.error('PDF Generation failed: ', err);
-            downloadPdfBtn.innerHTML = originalHTML;
-            downloadPdfBtn.disabled = false;
-            addNotification('PDF Export Failed', 'An error occurred during PDF generation.', 'danger');
-        });
-    });
+       html2pdf().set(opt).from(element).save().then(() => {
+           downloadPdfBtn.innerHTML = originalHTML;
+           downloadPdfBtn.disabled = false;
+           addNotification('PO PDF Downloaded', `Consolidated Purchase Order PDF is downloaded.`, 'success');
+           closeModal();
+       }).catch(err => {
+           console.error('PDF Generation failed: ', err);
+           downloadPdfBtn.innerHTML = originalHTML;
+           downloadPdfBtn.disabled = false;
+           addNotification('PDF Export Failed', 'An error occurred during PDF generation.', 'danger');
+       });
+   });
 
     // Confirm & Log PO in local SQLite database
     confirmBtn.addEventListener('click', async () => {
-        const sku = document.getElementById('poSku').textContent;
-        const name = document.getElementById('poProdName').textContent;
-        const qty = parseInt(qtyInput.value) || 0;
-        const price = parseFloat(qtyInput.getAttribute('data-wholesale-price')) || 0;
-        const supplier = document.getElementById('poSupplierName').textContent;
-        const leadDays = parseInt(qtyInput.getAttribute('data-lead-days')) || 7;
-        const category = qtyInput.getAttribute('data-category') || 'General';
+        const supplier = document.getElementById('poSupplierName').value || 'Supplier Global Logistics';
+        const tbody = document.getElementById('poItemsTableBody');
+        if (!tbody) return;
+
+        const items = [];
+        let maxLeadDays = 7;
+        
+        const rows = tbody.querySelectorAll('tr.po-draft-row');
+        rows.forEach(row => {
+            const sku = row.getAttribute('data-sku');
+            const name = row.getAttribute('data-name');
+            const price = parseFloat(row.getAttribute('data-wholesale-price')) || 0;
+            const leadDays = parseInt(row.getAttribute('data-lead-days')) || 7;
+            
+            const qtyInput = row.querySelector('.po-item-qty-input');
+            const qty = parseInt(qtyInput.value) || 0;
+            
+            if (leadDays > maxLeadDays) {
+                maxLeadDays = leadDays;
+            }
+
+            items.push({
+                sku: sku,
+                name: name,
+                quantity: qty,
+                unit_price: price
+            });
+        });
+
+        if (items.length === 0) {
+            addNotification('Empty Order', 'Please select at least one item to log a PO.', 'warning');
+            return;
+        }
 
         const today = new Date();
         const orderDateStr = today.toISOString().split('T')[0];
         const deliveryDate = new Date(today);
-        deliveryDate.setDate(today.getDate() + leadDays);
+        deliveryDate.setDate(today.getDate() + maxLeadDays);
         const deliveryDateStr = deliveryDate.toISOString().split('T')[0];
 
-        const poId = `PO-${sku}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const refSuffix = items.length === 1 ? items[0].sku : 'CONS';
+        const poId = `PO-${refSuffix}-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const poPayload = {
             id: poId,
             supplier: supplier,
             order_date: orderDateStr,
             delivery_date: deliveryDateStr,
-            items: [
-                {
-                    sku: sku,
-                    name: name,
-                    quantity: qty,
-                    unit_price: price
-                }
-            ]
+            items: items
         };
 
         try {
@@ -8475,6 +8516,20 @@ Powered by StockSense AI`;
                 addNotification('PO Saved & Logged', `Purchase Order ${poId} was created and logged as Draft.`, 'success');
                 modal.classList.remove('open');
                 modal.style.pointerEvents = 'none';
+                
+                // Clear checkboxes and selection
+                selectedInventorySKUs.clear();
+                const selectAllCb = document.getElementById('selectAllInventory');
+                if (selectAllCb) selectAllCb.checked = false;
+                
+                // Re-render inventory to clear checkbox visuals
+                const activeTab = document.querySelector('.nav-item.active');
+                if (activeTab && activeTab.id === 'navInventory') {
+                    renderInventoryTable(currentFilteredData, currentInventoryPage);
+                } else {
+                    updateConsolidatedPoButtonState();
+                }
+
                 loadPoLedger(); // Refresh the ledger list
             } else {
                 addNotification('PO Draft Failed', data.message || 'Could not draft Purchase Order.', 'warning');
@@ -8486,49 +8541,149 @@ Powered by StockSense AI`;
     });
 }
 
-async function openDraftPO(sku, name, stock) {
+function recalculatePoTotalsAndEmail() {
+    const tbody = document.getElementById('poItemsTableBody');
+    if (!tbody) return;
+
+    const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+    const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
+    const symbol = symbols[currency.toUpperCase()] || '৳';
+
+    let grandTotal = 0;
+    const items = [];
+
+    const rows = tbody.querySelectorAll('tr.po-draft-row');
+    rows.forEach(row => {
+        const sku = row.getAttribute('data-sku');
+        const name = row.getAttribute('data-name');
+        const price = parseFloat(row.getAttribute('data-wholesale-price')) || 0;
+        const leadDays = parseInt(row.getAttribute('data-lead-days')) || 7;
+        const category = row.getAttribute('data-category') || 'General';
+        
+        const qtyInput = row.querySelector('.po-item-qty-input');
+        const qty = parseInt(qtyInput.value) || 0;
+        const total = qty * price;
+        grandTotal += total;
+
+        const totalCostCell = row.querySelector('.po-item-total-cost');
+        if (totalCostCell) {
+            totalCostCell.textContent = symbol + total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        items.push({ sku, name, qty, price, category, leadDays });
+    });
+
+    const grandTotalEl = document.getElementById('poGrandTotal');
+    if (grandTotalEl) {
+        grandTotalEl.textContent = symbol + grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    const orgName = localStorage.getItem('stockSense_storeName') || 'Store 12';
+    const emailSubjectEl = document.getElementById('poEmailSubject');
+    const emailBodyEl = document.getElementById('poEmailBody');
+
+    if (emailSubjectEl && emailBodyEl) {
+        if (items.length === 1) {
+            emailSubjectEl.textContent = `Urgent Stock Procurement Request: ${items[0].name} (SKU: ${items[0].sku})`;
+        } else {
+            emailSubjectEl.textContent = `Urgent Stock Procurement Request: Consolidated Order (${items.length} SKUs)`;
+        }
+
+        let itemBullets = '';
+        items.forEach(item => {
+            itemBullets += `• Product Name: ${item.name}\n  SKU Code: ${item.sku}\n  Category: ${item.category}\n  Quantity: ${item.qty.toLocaleString()} units\n  Unit Price: ${symbol}${item.price.toFixed(2)} (Wholesale rate)\n  Lead Time: ${item.leadDays} days\n\n`;
+        });
+
+        emailBodyEl.value = `Dear Sales and Logistics Team,
+
+I hope this message finds you well.
+
+Based on our automated StockSense AI predictive demand models for ${orgName}, we are projecting a significant sales surge for our products over the coming week. To prevent out-of-stock events and satisfy our customers, we would like to immediately place a consolidated replenishment purchase order.
+
+Please find the structured order details below:
+
+${itemBullets}Please confirm receipt of this purchase order and reply with a formal invoice and estimated dispatch date at your earliest convenience. If you have any questions regarding these quantities, feel free to contact our inventory desk.
+
+Thank you for your continued support as a valued supply partner.
+
+Best regards,
+Procurement Officer
+${orgName}
+Powered by StockSense AI`;
+    }
+}
+
+async function openDraftPO(skuOrSkus, name, stock) {
     const modal = document.getElementById('draftPoModal');
     if (!modal) return;
 
+    const skus = Array.isArray(skuOrSkus) ? skuOrSkus : [skuOrSkus];
+    if (skus.length === 0) return;
+
     try {
         const token = localStorage.getItem('stockSense_jwt');
-        const res = await fetch(`/api/purchase_order/draft?sku=${encodeURIComponent(sku)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
         
-        if (data.status === 'success') {
+        // Fetch draft details for all SKUs in parallel
+        const promises = skus.map(sku => 
+            fetch(`/api/purchase_order/draft?sku=${encodeURIComponent(sku)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch draft for SKU ${sku}`);
+                return res.json();
+            })
+        );
+        
+        const results = await Promise.all(promises);
+        const validResults = results.filter(r => r.status === 'success');
+        
+        if (validResults.length > 0) {
             const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
             const symbols = { 'USD': '$', 'CAD': 'C$', 'CNY': '¥', 'BDT': '৳' };
             const symbol = symbols[currency.toUpperCase()] || '৳';
 
-            // Populate static text elements
-            document.getElementById('poSupplierName').textContent = data.supplier;
-            document.getElementById('poLeadDays').textContent = `${data.lead_days} Days Lead`;
-            document.getElementById('poSku').textContent = data.sku;
-            document.getElementById('poProdName').textContent = data.name;
-            document.getElementById('poCurrentStock').textContent = data.current_stock.toLocaleString();
-            document.getElementById('poForecast').textContent = data.forecasted_demand.toLocaleString();
-            
-            document.getElementById('poUnitCost').textContent = symbol + data.wholesale_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('poTotalCost').textContent = symbol + data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            
-            // Populate email assistant
-            document.getElementById('poEmailSubject').textContent = data.email_subject;
-            document.getElementById('poEmailBody').value = data.email_body;
+            // Find max lead days among all selected products
+            const maxLeadDays = Math.max(...validResults.map(r => r.lead_days || 7));
+            document.getElementById('poLeadDays').textContent = `${maxLeadDays} Days Lead (Max)`;
 
-            // Configure input attributes for live edits
-            const qtyInput = document.getElementById('poReorderQty');
-            qtyInput.value = data.recommended_qty;
-            qtyInput.setAttribute('data-wholesale-price', data.wholesale_price);
-            qtyInput.setAttribute('data-category', data.category);
-            qtyInput.setAttribute('data-lead-days', data.lead_days);
+            // Set default supplier (first item's supplier or general default)
+            const defaultSupplier = validResults[0].supplier || 'Supplier Global Logistics';
+            document.getElementById('poSupplierName').value = defaultSupplier;
+
+            // Render line items
+            const tbody = document.getElementById('poItemsTableBody');
+            tbody.innerHTML = '';
+            
+            validResults.forEach(data => {
+                const tr = document.createElement('tr');
+                tr.className = 'po-draft-row';
+                tr.setAttribute('data-sku', data.sku);
+                tr.setAttribute('data-name', data.name);
+                tr.setAttribute('data-wholesale-price', data.wholesale_price);
+                tr.setAttribute('data-category', data.category);
+                tr.setAttribute('data-lead-days', data.lead_days);
+
+                tr.innerHTML = `
+                    <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${data.sku}</td>
+                    <td style="font-weight: 600; color: var(--text-primary);">${data.name}</td>
+                    <td style="text-align: right;">${data.current_stock.toLocaleString()}</td>
+                    <td style="text-align: right;">${data.forecasted_demand.toLocaleString()}</td>
+                    <td style="text-align: right;">
+                        <input type="number" class="po-item-qty-input settings-input" style="width: 80px; padding: 0.35rem 0.5rem; text-align: right; font-weight: 700; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.4); margin: 0; display: inline-block; font-size: 0.9rem;" value="${data.recommended_qty}" min="0">
+                    </td>
+                    <td style="text-align: right;">${symbol}${data.wholesale_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="po-item-total-cost" style="text-align: right; font-weight: 700; color: var(--status-success);">${symbol}${data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Perform initial total calculation and email generation
+            recalculatePoTotalsAndEmail();
 
             // Open modal
             modal.style.pointerEvents = 'auto';
             modal.classList.add('open');
         } else {
-            addNotification('Draft Failed', data.message || 'Could not fetch draft details.', 'warning');
+            addNotification('Draft Failed', 'Could not fetch draft details for the selected products.', 'warning');
         }
     } catch (e) {
         console.error("Failed to load PO draft details:", e);
@@ -9178,6 +9333,49 @@ function simulateROI() {
             netRoiElem.innerText = `0.0% Return`;
             netRoiElem.style.color = 'var(--text-muted)';
         }
+    }
+}
+
+function updateSelectAllCheckboxState() {
+    const selectAllCb = document.getElementById('selectAllInventory');
+    if (!selectAllCb) return;
+
+    const pageCbs = document.querySelectorAll('.inventory-select-row');
+    if (pageCbs.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        return;
+    }
+
+    let checkedCount = 0;
+    pageCbs.forEach(cb => {
+        if (cb.checked) checkedCount++;
+    });
+
+    if (checkedCount === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+    } else if (checkedCount === pageCbs.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+    } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+    }
+}
+
+function updateConsolidatedPoButtonState() {
+    const btn = document.getElementById('createConsolidatedPoBtn');
+    const countEl = document.getElementById('consolidatedPoCount');
+    if (!btn || !countEl) return;
+
+    const count = selectedInventorySKUs.size;
+    countEl.innerText = count;
+    
+    if (count > 0) {
+        btn.style.display = 'inline-flex';
+    } else {
+        btn.style.display = 'none';
     }
 }
 
