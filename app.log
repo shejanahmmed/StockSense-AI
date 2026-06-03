@@ -2791,3 +2791,87 @@
 2026-06-03 07:55:32,781 - cmdstanpy - INFO - Chain [1] start processing
 2026-06-03 07:55:32,816 - cmdstanpy - INFO - Chain [1] done processing
 2026-06-03 07:55:33,779 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-03 08:55:21,203 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:21,238 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:21,758 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:21,945 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:21,978 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:22,022 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:22,182 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:22,208 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:22,245 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:22,389 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:22,418 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:22,453 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:22,597 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:22,617 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:22,645 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:22,772 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:22,793 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:22,827 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:22,965 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:22,992 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:23,034 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:23,162 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:23,181 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:23,229 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:23,347 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:55:23,363 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:55:23,416 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:55:24,476 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-03 08:57:00,169 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:00,190 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:00,246 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:00,430 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:00,463 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:00,501 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:00,660 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:00,694 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:00,726 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:00,857 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:00,873 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:00,916 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:01,044 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:01,070 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:01,115 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:01,265 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:01,286 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:01,331 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:01,492 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:01,528 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:01,580 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:01,718 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:01,746 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:01,787 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:01,935 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:57:01,954 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:57:01,995 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:57:03,068 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-03 08:58:45,808 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:45,831 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:45,873 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:46,082 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:46,111 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:46,145 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:46,317 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:46,345 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:46,383 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:46,516 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:46,535 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:46,566 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:46,700 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:46,723 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:46,750 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:46,922 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:46,945 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:46,983 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:47,130 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:47,152 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:47,186 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:47,341 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:47,369 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:47,399 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:47,525 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-03 08:58:47,551 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-03 08:58:47,577 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-03 08:58:48,661 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"

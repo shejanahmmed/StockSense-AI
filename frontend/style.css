@@ -7974,7 +7974,7 @@ input:checked + .slider:before {
 
 .staging-modal-card {
     width: 100%;
-    max-width: 1250px;
+    max-width: 1600px;
     height: 88vh;
     display: flex;
     flex-direction: column;
@@ -8253,6 +8253,87 @@ input:checked + .slider:before {
     background: var(--status-danger);
     box-shadow: 0 0 8px var(--status-danger);
 }
+
+.staging-modal-footer .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#cancelStagingBtn {
+    height: 40px;
+    padding: 0 1.5rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+#cancelStagingBtn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    transform: translateY(-1.5px);
+}
+
+#cancelStagingBtn:active {
+    transform: translateY(0);
+}
+
+#commitStagingBtn {
+    height: 40px;
+    padding: 0 1.5rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--accent-primary), #6d28d9);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+    transition: var(--transition-smooth);
+}
+
+#commitStagingBtn:not(:disabled):hover {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5), 0 0 12px rgba(109, 40, 217, 0.3);
+    transform: translateY(-1.5px);
+}
+
+#commitStagingBtn:not(:disabled):active {
+    transform: translateY(0);
+}
+
+#commitStagingBtn:disabled {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Compact styling for the PO Draft Table to prevent horizontal scrolling */
+#poDraftTable th {
+    padding: 0.65rem 0.5rem !important;
+    font-size: 0.78rem !important;
+}
+
+#poDraftTable td {
+    padding: 0.65rem 0.5rem !important;
+}
+
 
 
 

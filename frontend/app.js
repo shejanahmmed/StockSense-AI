@@ -2445,6 +2445,18 @@ function initializeCSVStaging(csvText, fileName) {
         stagedCSVHeaders = [];
         cellValidationErrors = {};
         columnMappingState = {};
+        
+        // Restore CSV Guide badge or file indicator if no active uploaded CSV is loaded
+        const savedFile = localStorage.getItem('stockSense_uploadedFile');
+        const newUserCsvGuide = document.getElementById('newUserCsvGuide');
+        const fileIndicator = document.getElementById('uploadedFileIndicator');
+        if (!savedFile) {
+            if (newUserCsvGuide) newUserCsvGuide.style.display = 'flex';
+            if (fileIndicator) fileIndicator.style.display = 'none';
+        } else {
+            if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
+            if (fileIndicator) fileIndicator.style.display = 'flex';
+        }
     };
     
     if (closeBtn) closeBtn.onclick = dismissModal;
@@ -8326,9 +8338,9 @@ function initPoModal() {
                 
                 tableRowsHtml += `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #475569;">${sku}</td>
+                        <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #475569; text-align: center;">${sku}</td>
                         <td style="padding: 10px 12px; font-weight: 600; color: #0f172a;">${name}</td>
-                        <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #0f172a;">${qty.toLocaleString()}</td>
+                        <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: #0f172a;">${qty.toLocaleString()}</td>
                         <td style="padding: 10px 12px; text-align: right; color: #475569;">${symbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #10b981;">${symbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
@@ -8340,9 +8352,19 @@ function initPoModal() {
         element.innerHTML = `
             <div style="font-family: 'Outfit', sans-serif; color: #1e293b; padding: 40px; background: #ffffff; line-height: 1.5; box-sizing: border-box;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 25px;">
-                    <div>
-                        <h1 style="margin: 0; color: #8b5cf6; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">StockSense AI</h1>
-                        <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Intelligent Replenishment Engine</p>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg width="34" height="34" viewBox="0 0 1517 1517" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="587.006" y="481.033" width="150" height="150" rx="10" transform="rotate(135 587.006 481.033)" fill="#1F1F1F"/>
+                            <rect x="864.285" y="1312.59" width="150" height="150" rx="10" transform="rotate(135 864.285 1312.59)" fill="#1F1F1F"/>
+                            <rect x="1418.66" y="758.219" width="150" height="150" rx="10" transform="rotate(135 1418.66 758.219)" fill="#1F1F1F"/>
+                            <rect x="864.285" y="203.847" width="150" height="150" rx="10" transform="rotate(135 864.285 203.847)" fill="#1F1F1F"/>
+                            <path d="M488.104 1134.4C484.199 1138.31 477.868 1138.3 473.963 1134.4L382.039 1042.48C378.134 1038.57 378.134 1032.24 382.039 1028.33L473.963 936.41C477.868 932.505 484.199 932.505 488.104 936.41L549.062 997.368C567.816 1016.12 593.251 1026.66 619.773 1026.66H896.572C923.094 1026.66 948.529 1016.12 967.283 997.368L997.368 967.283C1016.12 948.529 1026.66 923.094 1026.66 896.572V619.773C1026.66 593.251 1016.12 567.816 997.368 549.062L936.41 488.104C932.505 484.199 932.505 477.868 936.41 473.963L1028.33 382.039C1032.24 378.134 1038.57 378.134 1042.48 382.039L1134.4 473.963C1138.3 477.868 1138.31 484.199 1134.4 488.104L1074.95 547.558C1056.19 566.312 1045.66 591.747 1045.66 618.269V898.263C1045.66 924.785 1056.19 950.22 1074.95 968.974L1134.31 1028.33C1138.21 1032.24 1138.21 1038.57 1134.31 1042.48L1042.38 1134.4C1038.48 1138.3 1032.15 1138.3 1028.24 1134.4L968.787 1074.95C950.033 1056.19 924.598 1045.66 898.076 1045.66H618.269C591.747 1045.66 566.312 1056.19 547.558 1074.95L488.104 1134.4Z" fill="#1F1F1F"/>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M210.919 857.214C207.013 861.119 200.681 861.119 196.776 857.214L104.852 765.29C100.947 761.384 100.947 755.053 104.852 751.148L196.776 659.224C200.681 655.319 207.013 655.319 210.919 659.224L272.062 720.368C290.816 739.121 316.251 749.657 342.773 749.657H619.2C645.722 749.657 671.157 739.121 689.911 720.368L751.054 659.224C754.96 655.319 761.292 655.319 765.197 659.224L857.121 751.148C861.026 755.053 861.026 761.384 857.121 765.29L765.197 857.214C761.292 861.119 754.96 861.119 751.054 857.214L691.787 797.946C673.033 779.193 647.598 768.657 621.076 768.657H340.897C314.375 768.657 288.94 779.193 270.186 797.946L210.919 857.214Z" fill="#1F1F1F"/>
+                        </svg>
+                        <div>
+                            <h1 style="margin: 0; color: #8b5cf6; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">StockSense AI</h1>
+                            <p style="margin: 2px 0 0 0; font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Intelligent Replenishment Engine</p>
+                        </div>
                     </div>
                     <div style="text-align: right;">
                         <h2 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;">Purchase Order</h2>
@@ -8374,13 +8396,13 @@ function initPoModal() {
                    <div><strong>AI Model Authority:</strong> Weekly Prophet ML Core & SHAP</div>
                </div>
 
-               <h3 style="margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em;">Order Line Items</h3>
+               <h3 style="margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em; text-align: center;">Order Line Items</h3>
                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
                    <thead>
                        <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                           <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">SKU Code</th>
+                           <th style="text-align: center; padding: 12px; color: #475569; font-weight: 600;">SKU Code</th>
                            <th style="text-align: left; padding: 12px; color: #475569; font-weight: 600;">Product Description</th>
-                           <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Quantity</th>
+                           <th style="text-align: center; padding: 12px; color: #475569; font-weight: 600;">Quantity</th>
                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Unit Cost</th>
                            <th style="text-align: right; padding: 12px; color: #475569; font-weight: 600;">Total Cost</th>
                        </tr>
@@ -8663,15 +8685,15 @@ async function openDraftPO(skuOrSkus, name, stock) {
                 tr.setAttribute('data-lead-days', data.lead_days);
 
                 tr.innerHTML = `
-                    <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${data.sku}</td>
-                    <td style="font-weight: 600; color: var(--text-primary);">${data.name}</td>
-                    <td style="text-align: right;">${data.current_stock.toLocaleString()}</td>
-                    <td style="text-align: right;">${data.forecasted_demand.toLocaleString()}</td>
-                    <td style="text-align: right;">
-                        <input type="number" class="po-item-qty-input settings-input" style="width: 80px; padding: 0.35rem 0.5rem; text-align: right; font-weight: 700; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.4); margin: 0; display: inline-block; font-size: 0.9rem;" value="${data.recommended_qty}" min="0">
+                    <td style="font-family: monospace; font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; text-align: center;">${data.sku}</td>
+                    <td style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">${data.name}</td>
+                    <td style="font-size: 0.82rem; text-align: center; white-space: nowrap;">${data.current_stock.toLocaleString()}</td>
+                    <td style="font-size: 0.82rem; text-align: center; white-space: nowrap;">${data.forecasted_demand.toLocaleString()}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <input type="number" class="po-item-qty-input settings-input" style="width: 68px; padding: 0.25rem 0.4rem; text-align: center; font-weight: 700; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.4); margin: 0; display: inline-block; font-size: 0.8rem;" value="${data.recommended_qty}" min="0">
                     </td>
-                    <td style="text-align: right;">${symbol}${data.wholesale_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="po-item-total-cost" style="text-align: right; font-weight: 700; color: var(--status-success);">${symbol}${data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="font-size: 0.82rem; text-align: right; white-space: nowrap;">${symbol}${data.wholesale_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="po-item-total-cost" style="font-size: 0.82rem; text-align: right; font-weight: 700; color: var(--status-success); white-space: nowrap;">${symbol}${data.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 `;
                 tbody.appendChild(tr);
             });
