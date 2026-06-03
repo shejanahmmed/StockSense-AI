@@ -154,6 +154,11 @@ async def purge_org_data(user: dict = Depends(get_current_user)):
         cursor.execute("DELETE FROM chat_history WHERE org_name = ?", (org_name,))
         deleted_chat = cursor.rowcount
 
+        # Delete PO items and purchase orders
+        cursor.execute("DELETE FROM po_items WHERE po_id IN (SELECT id FROM purchase_orders WHERE org_name = ?)", (org_name,))
+        cursor.execute("DELETE FROM purchase_orders WHERE org_name = ?", (org_name,))
+        deleted_pos = cursor.rowcount
+
         conn.commit()
         conn.close()
 
@@ -170,7 +175,8 @@ async def purge_org_data(user: dict = Depends(get_current_user)):
             "status": "success",
             "message": (
                 f"Purged {deleted_inventory} inventory items, "
-                f"{deleted_forecasts} forecast rows, and "
+                f"{deleted_forecasts} forecast rows, "
+                f"{deleted_pos} purchase orders, and "
                 f"{deleted_chat} chat messages for '{org_name}'."
             )
         }
