@@ -920,7 +920,7 @@ function renderInventoryTable(data, page = 1) {
             <td style="text-align: center; vertical-align: middle;" onclick="event.stopPropagation()">
                 <input type="checkbox" class="inventory-select-row" data-sku="${item.sku}" data-name="${item.name.replace(/'/g, "\\'")}" data-stock="${item.stock}" style="cursor: pointer;" ${isChecked}>
             </td>
-            <td style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem;">${highlightedSku}</td>
+            <td style="color: var(--text-muted); font-family: monospace; font-size: 0.8rem;">${highlightedSku}</td>
             <td>
                 <div class="product-cell">
                     <div class="product-icon"><i class="fa-solid ${icon}"></i></div>
@@ -933,8 +933,8 @@ function renderInventoryTable(data, page = 1) {
             <td style="font-weight: 500;">${price}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 600; font-size: 1.05rem;">${item.stock}</span>
-                    <span style="color: var(--text-muted); font-size: 0.8rem;">units</span>
+                    <span style="font-weight: 600; font-size: 0.92rem;">${item.stock}</span>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">units</span>
                 </div>
             </td>
             <td style="color: var(--text-secondary);">${reorderPt}</td>
@@ -948,7 +948,7 @@ function renderInventoryTable(data, page = 1) {
                     </button>
                 ` : `<span style="color: var(--text-muted); font-size: 0.85rem; padding-left: 0.5rem;">—</span>`}
             </td>
-            <td style="text-align: right; white-space: nowrap;">
+            <td style="text-align: center; white-space: nowrap;">
                 <button class="icon-btn action-delete" data-sku="${item.sku}" title="Delete SKU ${item.sku}" style="color: var(--status-danger); width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
