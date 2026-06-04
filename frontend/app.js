@@ -4895,405 +4895,56 @@ function toggleFaq(btn) {
 }
 
 // ==========================================
-// Total SKUs Interactive Dialog
+// Unified KPI Overview Dialog
 // ==========================================
 function setupKpiSkuTrigger() {
     const kpiCard = document.getElementById('kpiSKUsCard');
     if (kpiCard) {
         kpiCard.addEventListener('click', () => {
-            showModalSKUList();
+            showUnifiedKpiModal();
         });
     }
 }
 
-async function showModalSKUList() {
-    // 1. Remove old modal if it exists
-    const old = document.getElementById('skuListModal');
-    if (old) old.remove();
-
-    // 2. Load latest product/SKU data if available
-    let skus = [];
-    if (fullInventoryData && fullInventoryData.length > 0) {
-        skus = fullInventoryData;
-    } else {
-        // Fetch on-the-fly from database
-        try {
-            const token = localStorage.getItem('stockSense_jwt');
-            const res = await fetch('/api/inventory', {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (res.ok) {
-                const json = await res.json();
-                if (json.status === 'success' && json.data) {
-                    fullInventoryData = json.data;
-                    skus = json.data;
-                }
-            }
-        } catch (e) {
-            console.error("Failed to fetch SKU data on-the-fly:", e);
-        }
-    }
-
-    // 3. Create modal overlay and container
-    const overlay = document.createElement('div');
-    overlay.className = 'sku-modal-overlay';
-    overlay.id = 'skuListModal';
-
-    // Construct glassmorphic contents
-    overlay.innerHTML = `
-        <div class="sku-modal-container">
-            <div class="sku-modal-header">
-                <div>
-                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
-                        <i class="fa-solid fa-list-check" style="color:var(--accent-primary);"></i> Unique Products (SKUs)
-                    </h3>
-                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="skuModalSub">
-                        Tracked total of ${skus.length} active unique products in inventory.
-                    </p>
-                </div>
-                <button class="sku-modal-close" id="closeSkuModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="sku-modal-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="skuModalSearchInput" placeholder="Search by SKU / Product ID or Name..." autocomplete="off">
-            </div>
-
-            <div class="sku-table-wrapper">
-                <table class="sku-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%;">Product ID / SKU</th>
-                            <th style="width: 50%;">Product Details</th>
-                            <th style="width: 25%;">Price per Unit</th>
-                        </tr>
-                    </thead>
-                    <tbody id="skuModalTableBody">
-                        ${renderSkuModalRows(skus)}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
-    setTimeout(() => {
-        overlay.classList.add('open');
-    }, 10);
-
-    // Focus search input automatically
-    const searchInput = document.getElementById('skuModalSearchInput');
-    if (searchInput) searchInput.focus();
-
-    // 4. Modal Close Logic
-    const closeModal = () => {
-        overlay.classList.remove('open');
-        setTimeout(() => overlay.remove(), 250);
-    };
-
-    document.getElementById('closeSkuModal').addEventListener('click', closeModal);
-
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
-    });
-
-    const escapeHandler = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escapeHandler);
-        }
-    };
-    document.addEventListener('keydown', escapeHandler);
-
-    // 5. Search Filtering Logic
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const filtered = skus.filter(item => {
-                return (item.sku && item.sku.toLowerCase().includes(query)) ||
-                       (item.name && item.name.toLowerCase().includes(query)) ||
-                       (item.category && item.category.toLowerCase().includes(query));
-            });
-            
-            const tbody = document.getElementById('skuModalTableBody');
-            if (tbody) {
-                tbody.innerHTML = renderSkuModalRows(filtered);
-            }
-
-            const sub = document.getElementById('skuModalSub');
-            if (sub) {
-                if (query.length > 0) {
-                    sub.textContent = `Showing ${filtered.length} of ${skus.length} matched products.`;
-                } else {
-                    sub.textContent = `Tracked total of ${skus.length} active unique products in inventory.`;
-                }
-            }
-        });
-    }
-}
-
-function renderSkuModalRows(items) {
-    if (!items || items.length === 0) {
-        return `
-            <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
-                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
-                    No matching products found.
-                </td>
-            </tr>
-        `;
-    }
-
-    return items.map(item => {
-        const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
-        return `
-            <tr>
-                <td>
-                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
-                </td>
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
-                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
-                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
-                    </div>
-                </td>
-                <td style="font-weight: 600; color: var(--accent-primary); font-size: 0.95rem;">
-                    ${price}
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-
-// ==========================================
-// Total Units Interactive Dialog
-// ==========================================
 function setupKpiTotalUnitsTrigger() {
     const kpiCard = document.getElementById('kpiTotalUnitsCard');
     if (kpiCard) {
         kpiCard.addEventListener('click', () => {
-            showModalTotalUnitsList();
+            showUnifiedKpiModal();
         });
     }
 }
 
-async function showModalTotalUnitsList() {
-    // 1. Remove old modal if it exists
-    const old = document.getElementById('unitsListModal');
-    if (old) old.remove();
-
-    // 2. Load latest product/SKU data if available
-    let items = [];
-    if (fullInventoryData && fullInventoryData.length > 0) {
-        items = fullInventoryData;
-    } else {
-        // Fetch on-the-fly from database
-        try {
-            const token = localStorage.getItem('stockSense_jwt');
-            const res = await fetch('/api/inventory', {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (res.ok) {
-                const json = await res.json();
-                if (json && json.status === 'success' && json.data) {
-                    fullInventoryData = json.data;
-                    items = json.data;
-                }
-            }
-        } catch (e) {
-            console.error("Failed to fetch Inventory data on-the-fly:", e);
-        }
-    }
-
-    // 3. Create modal overlay and container
-    const overlay = document.createElement('div');
-    overlay.className = 'sku-modal-overlay';
-    overlay.id = 'unitsListModal';
-
-    // Construct glassmorphic contents
-    overlay.innerHTML = `
-        <div class="sku-modal-container">
-            <div class="sku-modal-header">
-                <div>
-                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
-                        <i class="fa-solid fa-box-open" style="color:var(--accent-primary);"></i> Total Inventory Units
-                    </h3>
-                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="unitsModalSub">
-                        Breakdown of units sold and stock remaining across all ${items.length} products.
-                    </p>
-                </div>
-                <button class="sku-modal-close" id="closeUnitsModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="sku-modal-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="unitsModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
-            </div>
-
-            <div class="sku-table-wrapper">
-                <table class="sku-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%;">SKU / ID</th>
-                            <th style="width: 33%;">Product Details</th>
-                            <th style="width: 13%; text-align: center;">Total Units</th>
-                            <th style="width: 13%; text-align: center;">Units Sold</th>
-                            <th style="width: 13%; text-align: center;">Remaining</th>
-                            <th style="width: 16%; text-align: center;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="unitsModalTableBody">
-                        ${renderUnitsModalRows(items)}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
-    setTimeout(() => {
-        overlay.classList.add('open');
-    }, 10);
-
-    // Focus search input automatically
-    const searchInput = document.getElementById('unitsModalSearchInput');
-    if (searchInput) searchInput.focus();
-
-    // 4. Modal Close Logic
-    const closeModal = () => {
-        overlay.classList.remove('open');
-        setTimeout(() => overlay.remove(), 250);
-    };
-
-    document.getElementById('closeUnitsModal').addEventListener('click', closeModal);
-
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
-    });
-
-    const escapeHandler = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escapeHandler);
-        }
-    };
-    document.addEventListener('keydown', escapeHandler);
-
-    // 5. Search Filtering Logic
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const filtered = items.filter(item => {
-                return (item.sku && item.sku.toLowerCase().includes(query)) ||
-                       (item.name && item.name.toLowerCase().includes(query)) ||
-                       (item.category && item.category.toLowerCase().includes(query));
-            });
-            
-            const tbody = document.getElementById('unitsModalTableBody');
-            if (tbody) {
-                tbody.innerHTML = renderUnitsModalRows(filtered);
-            }
-
-            const sub = document.getElementById('unitsModalSub');
-            if (sub) {
-                if (query.length > 0) {
-                    sub.textContent = `Showing ${filtered.length} of ${items.length} matched products.`;
-                } else {
-                    sub.textContent = `Breakdown of units sold and stock remaining across all ${items.length} products.`;
-                }
-            }
-        });
-    }
-}
-
-function renderUnitsModalRows(items) {
-    if (!items || items.length === 0) {
-        return `
-            <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
-                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
-                    No matching products found.
-                </td>
-            </tr>
-        `;
-    }
-
-    return items.map(item => {
-        const sold = item.units_sold || 0;
-        const left = item.stock || 0;
-        const total = sold + left;
-        const reorderPoint = item.reorder_point || 50;
-
-        // Determine stock status beautifully
-        let statusText = 'Healthy';
-        let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
-        let remainingColor = 'var(--text-primary)';
-
-        if (left === 0) {
-            statusText = 'Out of Stock';
-            badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
-            remainingColor = 'var(--status-danger)';
-        } else if (left <= reorderPoint) {
-            statusText = 'Low Stock';
-            badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
-            remainingColor = 'var(--status-warning)';
-        } else if (left >= reorderPoint * 3) {
-            statusText = 'Overstocked';
-            badgeStyle = 'background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.25);';
-            remainingColor = 'var(--accent-primary)';
-        }
-
-        const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
-
-        return `
-            <tr>
-                <td>
-                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
-                </td>
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
-                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
-                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
-                    </div>
-                </td>
-                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
-                    ${total.toLocaleString()}
-                </td>
-                <td style="color: var(--text-secondary); text-align: center;">
-                    ${sold.toLocaleString()}
-                </td>
-                <td style="text-align: center; font-weight: 600; color: ${remainingColor};">
-                    ${left.toLocaleString()}
-                </td>
-                <td style="text-align: center; vertical-align: middle;">
-                    ${statusBadge}
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-
-// ==========================================
-// At-Risk Products Interactive Dialog
-// ==========================================
 function setupKpiAtRiskTrigger() {
     const kpiCard = document.getElementById('kpiAtRiskCard');
     if (kpiCard) {
         kpiCard.addEventListener('click', () => {
-            showModalAtRiskList();
+            showUnifiedKpiModal();
         });
     }
 }
 
-async function showModalAtRiskList() {
+function setupKpiInventoryHealthTrigger() {
+    const kpiCard = document.getElementById('kpiInventoryHealthCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showUnifiedKpiModal();
+        });
+    }
+}
+
+function setupKpiForecastDemandTrigger() {
+    const kpiCard = document.getElementById('kpiForecastDemandCard');
+    if (kpiCard) {
+        kpiCard.addEventListener('click', () => {
+            showUnifiedKpiModal();
+        });
+    }
+}
+
+async function showUnifiedKpiModal() {
     // 1. Remove old modal if it exists
-    const old = document.getElementById('atRiskListModal');
+    const old = document.getElementById('unifiedKpiModal');
     if (old) old.remove();
 
     // 2. Load latest product/SKU data if available
@@ -5315,56 +4966,49 @@ async function showModalAtRiskList() {
                 }
             }
         } catch (e) {
-            console.error("Failed to fetch Inventory data for At-Risk list:", e);
+            console.error("Failed to fetch Inventory data on-the-fly for KPI Overview:", e);
         }
     }
-
-    // Filter to only get At-Risk products: stock <= reorder_point
-    const atRiskItems = items.filter(item => {
-        const left = item.stock || 0;
-        const reorderPoint = item.reorder_point || 50;
-        return left <= reorderPoint;
-    });
 
     // 3. Create modal overlay and container
     const overlay = document.createElement('div');
     overlay.className = 'sku-modal-overlay';
-    overlay.id = 'atRiskListModal';
+    overlay.id = 'unifiedKpiModal';
 
-    // Construct glassmorphic contents
     overlay.innerHTML = `
-        <div class="sku-modal-container">
+        <div class="sku-modal-container" style="width: 1000px; max-width: 95vw;">
             <div class="sku-modal-header">
                 <div>
                     <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
-                        <i class="fa-solid fa-triangle-exclamation" style="color:var(--status-danger);"></i> At-Risk Products
+                        <i class="fa-solid fa-chart-simple" style="color:var(--accent-primary);"></i> KPI Inventory Overview
                     </h3>
-                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="atRiskModalSub">
-                        Tracked total of ${atRiskItems.length} products with critical or low stock levels.
+                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="unifiedKpiModalSub">
+                        Detailed breakdown of SKU details, total and available units, sales, and replenishment status for all ${items.length} products.
                     </p>
                 </div>
-                <button class="sku-modal-close" id="closeAtRiskModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+                <button class="sku-modal-close" id="closeUnifiedKpiModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="sku-modal-search">
                 <i class="fa-solid fa-search"></i>
-                <input type="text" id="atRiskModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
+                <input type="text" id="unifiedKpiModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
             </div>
 
             <div class="sku-table-wrapper">
                 <table class="sku-table">
                     <thead>
                         <tr>
-                            <th style="width: 12%;">SKU / ID</th>
-                            <th style="width: 38%;">Product Details</th>
-                            <th style="width: 14%; text-align: center;">Unit Price</th>
-                            <th style="width: 11%; text-align: center;">Total Units</th>
-                            <th style="width: 11%; text-align: center;">Units Left</th>
-                            <th style="width: 14%; text-align: center;">Status</th>
+                            <th style="width: 15%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">SKU / ID</th>
+                            <th style="width: 30%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Product Details</th>
+                            <th style="width: 11%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Total Units</th>
+                            <th style="width: 11%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Stock Available</th>
+                            <th style="width: 11%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Unit Sold</th>
+                            <th style="width: 11%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Unit Price</th>
+                            <th style="width: 11%; text-align: center; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="atRiskModalTableBody">
-                        ${renderAtRiskModalRows(atRiskItems)}
+                    <tbody id="unifiedKpiModalTableBody">
+                        ${renderUnifiedKpiModalRows(items)}
                     </tbody>
                 </table>
             </div>
@@ -5379,7 +5023,7 @@ async function showModalAtRiskList() {
     }, 10);
 
     // Focus search input automatically
-    const searchInput = document.getElementById('atRiskModalSearchInput');
+    const searchInput = document.getElementById('unifiedKpiModalSearchInput');
     if (searchInput) searchInput.focus();
 
     // 4. Modal Close Logic
@@ -5388,7 +5032,7 @@ async function showModalAtRiskList() {
         setTimeout(() => overlay.remove(), 250);
     };
 
-    document.getElementById('closeAtRiskModal').addEventListener('click', closeModal);
+    document.getElementById('closeUnifiedKpiModal').addEventListener('click', closeModal);
 
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeModal();
@@ -5406,36 +5050,36 @@ async function showModalAtRiskList() {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
-            const filtered = atRiskItems.filter(item => {
+            const filtered = items.filter(item => {
                 return (item.sku && item.sku.toLowerCase().includes(query)) ||
                        (item.name && item.name.toLowerCase().includes(query)) ||
                        (item.category && item.category.toLowerCase().includes(query));
             });
             
-            const tbody = document.getElementById('atRiskModalTableBody');
+            const tbody = document.getElementById('unifiedKpiModalTableBody');
             if (tbody) {
-                tbody.innerHTML = renderAtRiskModalRows(filtered);
+                tbody.innerHTML = renderUnifiedKpiModalRows(filtered);
             }
 
-            const sub = document.getElementById('atRiskModalSub');
+            const sub = document.getElementById('unifiedKpiModalSub');
             if (sub) {
                 if (query.length > 0) {
-                    sub.textContent = `Showing ${filtered.length} of ${atRiskItems.length} matched at-risk products.`;
+                    sub.textContent = `Showing ${filtered.length} of ${items.length} matched products.`;
                 } else {
-                    sub.textContent = `Tracked total of ${atRiskItems.length} products with critical or low stock levels.`;
+                    sub.textContent = `Detailed breakdown of SKU details, total and available units, sales, and replenishment status for all ${items.length} products.`;
                 }
             }
         });
     }
 }
 
-function renderAtRiskModalRows(items) {
+function renderUnifiedKpiModalRows(items) {
     if (!items || items.length === 0) {
         return `
             <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.8rem;">
                     <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
-                    No matching at-risk products found.
+                    No matching products found.
                 </td>
             </tr>
         `;
@@ -5452,326 +5096,54 @@ function renderAtRiskModalRows(items) {
         let statusText = 'Healthy';
         let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
         let remainingColor = 'var(--text-primary)';
-        let whyText = '';
-        let whyColor = 'var(--text-muted)';
 
         if (left === 0) {
             statusText = 'Out of Stock';
             badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
             remainingColor = 'var(--status-danger)';
-            whyText = 'Critical: Product is completely out of stock.';
-            whyColor = 'var(--status-danger)';
         } else if (left <= reorderPoint) {
             statusText = 'Low Stock';
             badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
             remainingColor = 'var(--status-warning)';
-            whyText = `Warning: Stock level (${left}) has dropped below the reorder point of ${reorderPoint}.`;
-            whyColor = 'var(--status-warning)';
         } else if (left >= reorderPoint * 3) {
             statusText = 'Overstocked';
             badgeStyle = 'background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.25);';
             remainingColor = 'var(--accent-primary)';
-            whyText = 'Stock is high; demand forecast does not require immediate replenishment.';
-        } else {
-            whyText = 'Normal healthy stock status.';
         }
 
         const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
 
         return `
             <tr>
-                <td>
-                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
+                <td style="text-align: center; font-size: 0.8rem; vertical-align: middle;">
+                    <code style="font-family: monospace; font-size: 0.78rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                <td style="text-align: center; font-size: 0.8rem; vertical-align: middle;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:0.15rem;">
                         <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
-                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
-                        <span style="font-size: 0.75rem; color: ${whyColor}; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
-                            <i class="fa-solid fa-circle-exclamation"></i> ${whyText}
-                        </span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
                     </div>
                 </td>
-                <td style="font-weight: 600; color: var(--accent-primary); text-align: center;">
-                    ${price}
-                </td>
-                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
+                <td style="text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); vertical-align: middle;">
                     ${total.toLocaleString()}
                 </td>
-                <td style="text-align: center; font-weight: 600; color: ${remainingColor};">
+                <td style="text-align: center; font-size: 0.8rem; font-weight: 600; color: ${remainingColor}; vertical-align: middle;">
                     ${left.toLocaleString()}
                 </td>
-                <td style="text-align: center; vertical-align: middle;">
-                    ${statusBadge}
+                <td style="text-align: center; font-size: 0.8rem; color: var(--text-secondary); vertical-align: middle;">
+                    ${sold.toLocaleString()}
                 </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-
-// ==========================================
-// Inventory Health Interactive Dialog
-// ==========================================
-function setupKpiInventoryHealthTrigger() {
-    const kpiCard = document.getElementById('kpiInventoryHealthCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            // Clicking Inventory Health shows risk products at first, meeting user expectations
-            showModalAtRiskList();
-        });
-    }
-}
-
-
-// ==========================================
-// Forecasted Demand Interactive Dialog
-// ==========================================
-function setupKpiForecastDemandTrigger() {
-    const kpiCard = document.getElementById('kpiForecastDemandCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            showModalForecastDemandList();
-        });
-    }
-}
-
-async function showModalForecastDemandList() {
-    // 1. Remove old modal if it exists
-    const old = document.getElementById('forecastDemandListModal');
-    if (old) old.remove();
-
-    // 2. Load latest product/SKU data if available
-    let items = [];
-    if (fullInventoryData && fullInventoryData.length > 0) {
-        items = fullInventoryData;
-    } else {
-        // Fetch on-the-fly from database
-        try {
-            const token = localStorage.getItem('stockSense_jwt');
-            const res = await fetch('/api/inventory', {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            if (res.ok) {
-                const json = await res.json();
-                if (json && json.status === 'success' && json.data) {
-                    fullInventoryData = json.data;
-                    items = json.data;
-                }
-            }
-        } catch (e) {
-            console.error("Failed to fetch Inventory data for Forecast Demand list:", e);
-        }
-    }
-
-    // 3. Aggregate analytical metrics
-    const totalForecastedUnits = items.reduce((sum, item) => sum + (item.forecasted_demand || 0), 0);
-    const projectedRevenue = items.reduce((sum, item) => sum + ((item.forecasted_demand || 0) * (item.price || 0)), 0);
-    const velocity = (totalForecastedUnits / 7).toFixed(1);
-
-    // Peak demand category computation
-    const categoryDemand = {};
-    items.forEach(item => {
-        const cat = item.category || 'Uncategorized';
-        categoryDemand[cat] = (categoryDemand[cat] || 0) + (item.forecasted_demand || 0);
-    });
-    let topCategory = 'N/A';
-    let maxDemand = -1;
-    Object.entries(categoryDemand).forEach(([cat, demand]) => {
-        if (demand > maxDemand && demand > 0) {
-            maxDemand = demand;
-            topCategory = cat;
-        }
-    });
-
-    // 4. Create modal overlay and container
-    const overlay = document.createElement('div');
-    overlay.className = 'sku-modal-overlay';
-    overlay.id = 'forecastDemandListModal';
-
-    overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 950px; max-width: 95vw;">
-            <div class="sku-modal-header">
-                <div>
-                    <h3 style="margin:0; font-size:1.3rem; display:flex; align-items:center; gap:0.6rem; color:var(--text-primary);">
-                        <i class="fa-solid fa-arrow-trend-up" style="color:var(--status-success);"></i> Forecasted Demand Insights
-                    </h3>
-                    <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);" id="forecastModalSub">
-                        7-day demand projections and replenishment analysis for all active products.
-                    </p>
-                </div>
-                <button class="sku-modal-close" id="closeForecastModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <!-- Premium Analytical Summary Grid -->
-            <div class="forecast-summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 0.25rem;">
-                <div class="glass-panel" style="padding: 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.25rem;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Projected Revenue</span>
-                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--status-success);" id="forecastSummaryRevenue">${formatCurrency(projectedRevenue)}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">From 7d forecast demand</span>
-                </div>
-                <div class="glass-panel" style="padding: 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.25rem;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Total Units</span>
-                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--accent-primary);" id="forecastSummaryUnits">${totalForecastedUnits.toLocaleString()}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Predicted sales volume</span>
-                </div>
-                <div class="glass-panel" style="padding: 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.25rem;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Daily Velocity</span>
-                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--status-info);" id="forecastSummaryVelocity">${velocity} / day</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Average sales speed</span>
-                </div>
-                <div class="glass-panel" style="padding: 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.25rem;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Peak Category</span>
-                    <span style="font-size: 1.1rem; font-weight: 700; color: var(--status-warning); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="forecastSummaryCategory" title="${topCategory}">${topCategory}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Highest weekly demand</span>
-                </div>
-            </div>
-            
-            <div class="sku-modal-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="forecastModalSearchInput" placeholder="Search by SKU, Name, or Category..." autocomplete="off">
-            </div>
-
-            <div class="sku-table-wrapper">
-                <table class="sku-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%;">SKU / ID</th>
-                            <th style="width: 32%;">Product Details</th>
-                            <th style="width: 12%; text-align: center;">Unit Price</th>
-                            <th style="width: 12%; text-align: center;">Stock Available</th>
-                            <th style="width: 12%; text-align: center;">7d Forecast</th>
-                            <th style="width: 20%; text-align: center;">Replenishment Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="forecastModalTableBody">
-                        ${renderForecastDemandModalRows(items)}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    // Force reflow and add 'open' class for CSS transition scale-in and fade-in
-    setTimeout(() => {
-        overlay.classList.add('open');
-    }, 10);
-
-    // Focus search input automatically
-    const searchInput = document.getElementById('forecastModalSearchInput');
-    if (searchInput) searchInput.focus();
-
-    // Modal Close Logic
-    const closeModal = () => {
-        overlay.classList.remove('open');
-        setTimeout(() => overlay.remove(), 250);
-    };
-
-    document.getElementById('closeForecastModal').addEventListener('click', closeModal);
-
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
-    });
-
-    const escapeHandler = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escapeHandler);
-        }
-    };
-    document.addEventListener('keydown', escapeHandler);
-
-    // Search Filtering Logic
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const filtered = items.filter(item => {
-                return (item.sku && item.sku.toLowerCase().includes(query)) ||
-                       (item.name && item.name.toLowerCase().includes(query)) ||
-                       (item.category && item.category.toLowerCase().includes(query));
-            });
-            
-            const tbody = document.getElementById('forecastModalTableBody');
-            if (tbody) {
-                tbody.innerHTML = renderForecastDemandModalRows(filtered);
-            }
-
-            const sub = document.getElementById('forecastModalSub');
-            if (sub) {
-                if (query.length > 0) {
-                    sub.textContent = `Showing ${filtered.length} of ${items.length} matched products.`;
-                } else {
-                    sub.textContent = `7-day demand projections and replenishment analysis for all active products.`;
-                }
-            }
-        });
-    }
-}
-
-function renderForecastDemandModalRows(items) {
-    if (!items || items.length === 0) {
-        return `
-            <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
-                    <i class="fa-solid fa-box-open" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
-                    No matching products found.
-                </td>
-            </tr>
-        `;
-    }
-
-    return items.map(item => {
-        const stock = item.stock || 0;
-        const forecast = item.forecasted_demand || 0;
-        const price = (item.price && item.price > 0) ? formatCurrency(item.price) : '—';
-
-        // Calculate stock sufficiency & badge styled perfectly
-        let statusText = 'Sufficient Stock';
-        let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
-        let stockColor = 'var(--text-primary)';
-
-        if (stock === 0) {
-            statusText = `Out of Stock (Reorder ${forecast} units)`;
-            badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
-            stockColor = 'var(--status-danger)';
-        } else if (stock < forecast) {
-            const deficit = forecast - stock;
-            statusText = `Low Stock (Reorder ${deficit} units)`;
-            badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
-            stockColor = 'var(--status-warning)';
-        }
-
-        const statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
-
-        return `
-            <tr>
-                <td>
-                    <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
-                </td>
-                <td>
-                    <div style="display:flex; flex-direction:column; gap:0.15rem;">
-                        <span style="font-weight: 500; color: var(--text-primary);">${item.name}</span>
-                        <span style="font-size: 0.78rem; color: var(--text-muted);">${item.category || 'N/A'}</span>
-                    </div>
-                </td>
-                <td style="font-weight: 600; color: var(--accent-primary); text-align: center;">
+                <td style="text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary); vertical-align: middle;">
                     ${price}
                 </td>
-                <td style="text-align: center; font-weight: 600; color: ${stockColor};">
-                    ${stock.toLocaleString()}
-                </td>
-                <td style="font-weight: 600; color: var(--text-primary); text-align: center;">
-                    ${forecast.toLocaleString()}
-                </td>
-                <td style="text-align: center; vertical-align: middle;">
+                <td style="text-align: center; font-size: 0.8rem; vertical-align: middle;">
                     ${statusBadge}
                 </td>
             </tr>
         `;
     }).join('');
 }
+
 
 // ==========================================
 // Daily vs Forecast Interactive Dialog
