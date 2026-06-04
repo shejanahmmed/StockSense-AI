@@ -65,12 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Pricing Currency based on saved settings
     updatePricingCurrency();
 
-    // 12. Setup KPI SKU Modal Trigger
-    setupKpiSkuTrigger();
-    setupKpiTotalUnitsTrigger();
-    setupKpiAtRiskTrigger();
-    setupKpiInventoryHealthTrigger();
-    setupKpiForecastDemandTrigger();
+    // 12. Setup Unified KPI Overview Card Trigger
+    setupUnifiedKpiCardTrigger();
     setupKpiDailyVsForecastTrigger();
     setupKpiCashFlowTrigger();
     setupKpiDemandTrendTrigger();
@@ -4897,44 +4893,8 @@ function toggleFaq(btn) {
 // ==========================================
 // Unified KPI Overview Dialog
 // ==========================================
-function setupKpiSkuTrigger() {
-    const kpiCard = document.getElementById('kpiSKUsCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            showUnifiedKpiModal();
-        });
-    }
-}
-
-function setupKpiTotalUnitsTrigger() {
-    const kpiCard = document.getElementById('kpiTotalUnitsCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            showUnifiedKpiModal();
-        });
-    }
-}
-
-function setupKpiAtRiskTrigger() {
-    const kpiCard = document.getElementById('kpiAtRiskCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            showUnifiedKpiModal();
-        });
-    }
-}
-
-function setupKpiInventoryHealthTrigger() {
-    const kpiCard = document.getElementById('kpiInventoryHealthCard');
-    if (kpiCard) {
-        kpiCard.addEventListener('click', () => {
-            showUnifiedKpiModal();
-        });
-    }
-}
-
-function setupKpiForecastDemandTrigger() {
-    const kpiCard = document.getElementById('kpiForecastDemandCard');
+function setupUnifiedKpiCardTrigger() {
+    const kpiCard = document.getElementById('kpiUnifiedCard');
     if (kpiCard) {
         kpiCard.addEventListener('click', () => {
             showUnifiedKpiModal();

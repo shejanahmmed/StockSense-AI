@@ -276,54 +276,59 @@
                     </div>
                 </section>
 
-                <!-- KPI Metrics -->
-                <div class="kpi-grid">
-                    <div class="kpi-card glass-panel interactive" id="kpiSKUsCard">
-                        <div class="kpi-icon info-icon"><i class="fa-solid fa-layer-group"></i></div>
-                        <div class="kpi-details">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The total number of unique products currently tracked in your inventory database.</span></div> Total SKUs</span>
-                            <h3 class="kpi-value" id="kpi-stock">0</h3>
-                            <span class="trend neutral">Items tracked</span>
+                <div class="bottom-grid" style="grid-template-columns: 30% 1fr; margin-bottom: 2rem;">
+                    <!-- Left: KPI Inventory Overview (30%) -->
+                    <div class="kpi-unified-card glass-panel interactive" id="kpiUnifiedCard" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem;">
+                        <div class="kpi-unified-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
+                            <h2 class="gradient-text" style="font-size: 1.05rem;"><i class="fa-solid fa-chart-line"></i> Overview & Health</h2>
+                            <span class="badge info-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.2); font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;"><i class="fa-solid fa-circle-info"></i> Details</span>
+                        </div>
+                        <div class="kpi-unified-body-vertical" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                            <div class="kpi-unified-item" style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="kpi-unified-icon" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-layer-group"></i></div>
+                                <div class="kpi-unified-details">
+                                    <span class="kpi-unified-label" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">Total SKUs</span>
+                                    <h3 class="kpi-unified-value" id="kpi-stock" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">0</h3>
+                                    <span class="kpi-unified-sub" style="font-size: 0.7rem; color: var(--text-secondary);">Items tracked</span>
+                                </div>
+                            </div>
+                            <div class="kpi-unified-item" style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="kpi-unified-icon" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fa-solid fa-box-open"></i></div>
+                                <div class="kpi-unified-details">
+                                    <span class="kpi-unified-label" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">Total Units</span>
+                                    <h3 class="kpi-unified-value" id="kpi-total-units" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">0</h3>
+                                    <span class="kpi-unified-sub" style="font-size: 0.7rem; color: var(--text-secondary);">Available in stock</span>
+                                </div>
+                            </div>
+                            <div class="kpi-unified-item" style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="kpi-unified-icon" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                                <div class="kpi-unified-details">
+                                    <span class="kpi-unified-label" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">Forecasted Demand</span>
+                                    <h3 class="kpi-unified-value" id="kpi-demand" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">0</h3>
+                                    <span class="kpi-unified-sub" id="kpi-demand-change" style="font-size: 0.7rem; color: var(--text-secondary);">Awaiting data</span>
+                                </div>
+                            </div>
+                            <div class="kpi-unified-item" style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="kpi-unified-icon" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-cart-plus"></i></div>
+                                <div class="kpi-unified-details">
+                                    <span class="kpi-unified-label" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">At-Risk Products</span>
+                                    <h3 class="kpi-unified-value" id="kpi-order" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">0</h3>
+                                    <span class="kpi-unified-sub" style="font-size: 0.7rem; color: var(--text-secondary);">Awaiting data</span>
+                                </div>
+                            </div>
+                            <div class="kpi-unified-item" style="display: flex; align-items: center; gap: 0.85rem;">
+                                <div class="kpi-unified-icon" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fa-solid fa-clock"></i></div>
+                                <div class="kpi-unified-details">
+                                    <span class="kpi-unified-label" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase;">Inventory Health</span>
+                                    <h3 class="kpi-unified-value" id="kpi-stockout" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">N/A</h3>
+                                    <span class="kpi-unified-sub" id="kpi-stockout-sub" style="font-size: 0.7rem; color: var(--text-secondary);">Awaiting data</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="kpi-card glass-panel interactive" id="kpiTotalUnitsCard">
-                        <div class="kpi-icon info-icon"><i class="fa-solid fa-box-open"></i></div>
-                        <div class="kpi-details">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The total sum of all physical stock currently available across all tracked products.</span></div> Total Units</span>
-                            <h3 class="kpi-value" id="kpi-total-units">0</h3>
-                            <span class="trend neutral">Available in stock</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card glass-panel interactive" id="kpiForecastDemandCard">
-                        <div class="kpi-icon success-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                        <div class="kpi-details">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">The AI's prediction of total units that will be sold over the next 7 days based on historical trends.</span></div> Forecasted Demand</span>
-                            <h3 class="kpi-value" id="kpi-demand">0</h3>
-                            <span class="trend neutral" id="kpi-demand-change">Awaiting data</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card glass-panel interactive" id="kpiAtRiskCard">
-                        <div class="kpi-icon action-icon"><i class="fa-solid fa-cart-plus"></i></div>
-                        <div class="kpi-details">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">Products that are currently out of stock or projected to run out of stock before they can be replenished.</span></div> At-Risk Products</span>
-                            <h3 class="kpi-value" id="kpi-order">0</h3>
-                            <span class="trend neutral">Awaiting data</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card glass-panel interactive" id="kpiInventoryHealthCard">
-                        <div class="kpi-icon warning-icon"><i class="fa-solid fa-clock"></i></div>
-                        <div class="kpi-details">
-                            <span class="kpi-label"><div class="info-tooltip" style="margin-left: 0; margin-right: 0.35rem;"><i class="fa-solid fa-circle-info"></i><span class="tooltip-text">A general indicator of your overall stock reliability and risk of stockouts.</span></div> Inventory Health</span>
-                            <h3 class="kpi-value" id="kpi-stockout">N/A</h3>
-                            <span class="trend neutral" id="kpi-stockout-sub">Awaiting data</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Chart and Drivers Section -->
-                <div class="bottom-grid">
-                    <!-- Forecast Chart -->
-                    <section class="chart-section glass-panel" id="demandForecastCard">
+                    <!-- Right: Demand Forecast (65%) -->
+                    <section class="chart-section glass-panel" id="demandForecastCard" style="height: 100%;">
                         <div class="section-header">
                             <h2 id="forecastChartTitle">Demand Forecast</h2>
                             <div class="chart-header-controls" style="display: none;">
@@ -393,19 +398,6 @@
                         <p class="chart-scroll-hint" id="chartScrollHint" style="display:none;">
                             <i class="fa-solid fa-hand-pointer"></i> Click &amp; drag or use trackpad to scroll
                         </p>
-                    </section>
-
-                    <!-- SHAP Drivers -->
-                    <section class="drivers-section glass-panel" id="demandDriversCard">
-                        <div class="section-header">
-                            <h2>Top Demand Drivers (SHAP)</h2>
-                        </div>
-                        <div class="drivers-list" id="drivers-list">
-                            <div class="empty-state" style="color: var(--text-muted); font-size: 0.88rem; padding: 3rem 1rem; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: 200px;">
-                                <i class="fa-solid fa-brain" style="font-size: 2.25rem; color: var(--accent-primary); opacity: 0.65; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.35));"></i>
-                                <span style="line-height: 1.4; max-width: 200px;">SHAP attribution is computed once historical sales are uploaded.</span>
-                            </div>
-                        </div>
                     </section>
                 </div>
 
@@ -502,18 +494,34 @@
                 </div>
 
                 <div class="bottom-grid timeline-drivers-grid" style="margin-bottom: 2rem;">
-                    <!-- 2 & 8. Low-stock alerts & visual timeline -->
-                    <section class="glass-panel" style="padding: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
-                            <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
-                        </div>
-                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
-                            <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
-                        </ul>
-                    </section>
+                    <!-- Column 1: SHAP Drivers + Alerts Timeline -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- SHAP Drivers -->
+                        <section class="drivers-section glass-panel" id="demandDriversCard">
+                            <div class="section-header">
+                                <h2>Top Demand Drivers (SHAP)</h2>
+                            </div>
+                            <div class="drivers-list" id="drivers-list">
+                                <div class="empty-state" style="color: var(--text-muted); font-size: 0.88rem; padding: 3rem 1rem; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: 200px;">
+                                    <i class="fa-solid fa-brain" style="font-size: 2.25rem; color: var(--accent-primary); opacity: 0.65; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.35));"></i>
+                                    <span style="line-height: 1.4; max-width: 200px;">SHAP attribution is computed once historical sales are uploaded.</span>
+                                </div>
+                            </div>
+                        </section>
 
-                    <!-- 3 & 9. Top 5 products & Profit Drivers -->
+                        <!-- 2 & 8. Low-stock alerts & visual timeline -->
+                        <section class="glass-panel" style="padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
+                                <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
+                            </div>
+                            <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
+                                <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
+                            </ul>
+                        </section>
+                    </div>
+
+                    <!-- Column 2: Top Profit Drivers -->
                     <section class="glass-panel" style="padding: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                             <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>

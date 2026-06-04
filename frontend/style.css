@@ -1027,6 +1027,114 @@ h1, h2, h3, h4 {
 
 
 
+/* Unified KPI Dashboard Card Styling */
+.kpi-unified-container {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.kpi-unified-card {
+    position: relative;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    border-radius: var(--radius-lg);
+}
+
+.kpi-unified-card:hover {
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12), var(--shadow-glass) !important;
+    transform: translateY(-2px);
+}
+
+.kpi-unified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.75rem;
+}
+
+.kpi-unified-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.kpi-unified-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.kpi-unified-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.kpi-unified-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+}
+
+/* Color variations for icons */
+.kpi-unified-item:nth-child(1) .kpi-unified-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; } /* SKUs: Blue */
+.kpi-unified-item:nth-child(3) .kpi-unified-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; } /* Units: Green */
+.kpi-unified-item:nth-child(5) .kpi-unified-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; } /* Forecast: Orange */
+.kpi-unified-item:nth-child(7) .kpi-unified-icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; } /* At-Risk: Purple */
+.kpi-unified-item:nth-child(9) .kpi-unified-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; } /* Health: Red */
+
+.kpi-unified-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.kpi-unified-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kpi-unified-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.kpi-unified-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.kpi-unified-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
 /* KPI Grid */
 
 .kpi-grid {
