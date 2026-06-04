@@ -1047,7 +1047,6 @@ h1, h2, h3, h4 {
 .kpi-unified-card:hover {
     border-color: rgba(139, 92, 246, 0.35) !important;
     box-shadow: 0 12px 30px rgba(139, 92, 246, 0.12), var(--shadow-glass) !important;
-    transform: translateY(-2px);
 }
 
 .kpi-unified-header {
@@ -1291,7 +1290,7 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    min-height: 360px;
+    min-height: auto;
     overflow-y: auto;  /* Drivers list scrolls internally if tall */
     scrollbar-width: thin;
     scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
@@ -8456,6 +8455,95 @@ input:checked + .slider:before {
 #poDraftTable td {
     padding: 0.65rem 0.5rem !important;
 }
+
+/* KPI Inventory Overview (Unified Card Layout) */
+.kpi-unified-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+}
+
+.kpi-unified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.kpi-unified-body-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.kpi-unified-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-unified-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.kpi-unified-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.kpi-unified-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+}
+
+.kpi-unified-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.kpi-unified-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: 2px;
+}
+
+.kpi-unified-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.kpi-unified-sub {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    line-height: 1;
+}
+
 
 
 
