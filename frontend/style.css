@@ -76,6 +76,224 @@
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Clean Solid Theme variables */
+
+    --border-color: rgba(255, 255, 255, 0.06);
+
+    --border-color-muted: rgba(255, 255, 255, 0.03);
+
+    --hover-bg: rgba(139, 92, 246, 0.05);
+
+    --btn-primary-bg: var(--accent-primary);
+
+    --btn-primary-hover: #7c3aed;
+
+    --nav-active-bg: rgba(139, 92, 246, 0.12);
+
+    --card-bg: rgba(20, 22, 36, 0.85);
+
+    --card-bg-holiday: rgba(20, 22, 36, 0.88);
+
+    --card-bg-clearance: rgba(20, 22, 36, 0.88);
+
+    --card-bg-seasonality: rgba(20, 22, 36, 0.88);
+
+    --card-border-holiday: rgba(139, 92, 246, 0.25);
+
+    --card-border-clearance: rgba(239, 68, 68, 0.2);
+
+    --card-border-seasonality: rgba(16, 185, 129, 0.25);
+
+    --card-border-holiday-hover: rgba(139, 92, 246, 0.5);
+
+    --card-border-clearance-hover: rgba(239, 68, 68, 0.5);
+
+    --card-border-seasonality-hover: rgba(16, 185, 129, 0.5);
+
+    --body-bg-image: none;
+
+}
+
+
+
+body.light-mode {
+
+    --bg-base: #f1f5f9;
+
+    --bg-glass: rgba(255, 255, 255, 0.75);
+
+    --bg-glass-hover: rgba(255, 255, 255, 0.9);
+
+    
+
+    --text-primary: #0f172a;
+
+    --text-secondary: #475569;
+
+    --text-muted: #64748b;
+
+    
+
+    --accent-primary: #7c3aed;
+
+    --accent-secondary: #2563eb;
+
+    
+
+    --status-success: #10b981;
+
+    --status-success-bg: rgba(16, 185, 129, 0.1);
+
+    
+
+    --status-warning: #f59e0b;
+
+    --status-warning-bg: rgba(245, 158, 11, 0.1);
+
+    
+
+    --status-danger: #ef4444;
+
+    --status-danger-bg: rgba(239, 68, 68, 0.1);
+
+    
+
+    --status-info: #3b82f6;
+
+    --status-info-bg: rgba(59, 130, 246, 0.1);
+
+
+
+    --border-glass: 1px solid rgba(15, 23, 42, 0.08);
+
+    --shadow-glass: 0 10px 30px -10px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.02);
+
+    
+
+    --border-color: rgba(15, 23, 42, 0.08);
+
+    --border-color-muted: rgba(15, 23, 42, 0.04);
+
+    --hover-bg: rgba(124, 58, 237, 0.04);
+
+    --btn-primary-bg: var(--accent-primary);
+
+    --btn-primary-hover: #6d28d9;
+
+    --nav-active-bg: rgba(124, 58, 237, 0.08);
+
+    --card-bg: #ffffff;
+
+    --card-bg-holiday: #ffffff;
+
+    --card-bg-clearance: #ffffff;
+
+    --card-bg-seasonality: #ffffff;
+
+    --card-border-holiday: rgba(124, 58, 237, 0.15);
+
+    --card-border-clearance: rgba(239, 68, 68, 0.15);
+
+    --card-border-seasonality: rgba(16, 185, 129, 0.15);
+
+    --card-border-holiday-hover: rgba(124, 58, 237, 0.4);
+
+    --card-border-clearance-hover: rgba(239, 68, 68, 0.4);
+
+    --card-border-seasonality-hover: rgba(16, 185, 129, 0.4);
+
+    --body-bg-image: none;
+
+}
+
+
+
+/* Light Mode Input & Selection Contrast Overrides */
+
+body.light-mode .settings-input {
+
+    background: rgba(0, 0, 0, 0.04);
+
+    border-color: rgba(15, 23, 42, 0.1);
+
+    color: var(--text-primary);
+
+}
+
+
+
+body.light-mode .sku-modal-search input {
+
+    background: rgba(0, 0, 0, 0.04);
+
+    border-color: rgba(15, 23, 42, 0.1);
+
+    color: var(--text-primary);
+
+}
+
+
+
+body.light-mode .auth-input {
+
+    background: rgba(0, 0, 0, 0.04);
+
+    border-color: rgba(15, 23, 42, 0.1);
+
+    color: var(--text-primary);
+
+}
+
+
+
+body.light-mode .auth-input::placeholder {
+
+    color: rgba(15, 23, 42, 0.35);
+
+}
+
+
+
+body.light-mode .auth-input:hover {
+
+    background: rgba(0, 0, 0, 0.06);
+
+    border-color: rgba(15, 23, 42, 0.15);
+
+}
+
+
+
+body.light-mode .auth-input:focus {
+
+    background: rgba(0, 0, 0, 0.08);
+
+    border-color: var(--accent-primary);
+
+}
+
+
+
+body.light-mode .ai-help-input {
+
+    background: rgba(0, 0, 0, 0.03);
+
+    border-color: rgba(15, 23, 42, 0.1);
+
+    color: var(--text-primary);
+
+}
+
+
+
+body.light-mode .mapping-select {
+
+    background: rgba(0, 0, 0, 0.04);
+
+    border-color: rgba(15, 23, 42, 0.1);
+
+    color: var(--text-primary);
+
 }
 
 
@@ -94,11 +312,11 @@
 
 ::-webkit-scrollbar-track {
 
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--border-color-muted);
 
     border-radius: 99px;
 
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Thin, elegant light white border */
+    border: 1px solid var(--border-color);
 
 }
 
@@ -176,13 +394,9 @@ body {
 
     overflow-x: hidden;
 
-    /* Subtle background gradient blob */
+    /* Subtle background gradient blob (controlled by theme variables) */
 
-    background-image: 
-
-        radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-
-        radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+    background-image: var(--body-bg-image);
 
 }
 
@@ -220,12 +434,9 @@ h1, h2, h3, h4 {
 
 .gradient-text {
 
-    background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%);
+    color: var(--accent-primary);
 
-    -webkit-background-clip: text;
-    background-clip: text;
-
-    -webkit-text-fill-color: transparent;
+    font-weight: 700;
 
     display: inline-block;
 
@@ -273,15 +484,15 @@ h1, h2, h3, h4 {
 
     flex-shrink: 0;
 
-    background: rgba(10, 11, 20, 0.75);
+    background: var(--bg-glass);
 
     backdrop-filter: blur(16px);
 
     -webkit-backdrop-filter: blur(16px);
 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: var(--border-glass);
 
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
 
@@ -320,7 +531,7 @@ h1, h2, h3, h4 {
 
 .logo-icon {
 
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: var(--accent-primary);
 
     width: 36px;
 
@@ -400,13 +611,13 @@ h1, h2, h3, h4 {
 
 .nav-item.active {
 
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(59, 130, 246, 0.08) 100%);
+    background: var(--nav-active-bg);
 
-    color: #ffffff;
+    color: var(--text-primary);
 
-    border: 1px solid rgba(139, 92, 246, 0.35);
+    border: var(--border-glass);
 
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
     font-weight: 600;
 
@@ -745,7 +956,7 @@ h1, h2, h3, h4 {
 
 .primary-btn {
 
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: var(--btn-primary-bg);
 
     color: white;
 
@@ -773,7 +984,7 @@ h1, h2, h3, h4 {
 
     transition: var(--transition-smooth);
 
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
 
 }
 
@@ -781,7 +992,9 @@ h1, h2, h3, h4 {
 
 .primary-btn:hover {
 
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    background: var(--btn-primary-hover);
+
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
 
 }
 
@@ -2094,9 +2307,9 @@ h1, h2, h3, h4 {
 
     padding: 0.85rem 1rem;
 
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--border-color-muted);
 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
 
     font-weight: 600;
 
@@ -2110,7 +2323,7 @@ h1, h2, h3, h4 {
 
     padding: 0.75rem 1rem;
 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-color-muted);
 
     font-size: 0.88rem;
 
@@ -2153,7 +2366,7 @@ h1, h2, h3, h4 {
 
 .inventory-table tr:hover td {
 
-    background: rgba(139, 92, 246, 0.05);
+    background: var(--hover-bg);
 
 }
 
@@ -3873,37 +4086,36 @@ input:checked + .slider:before {
     position: relative;
     overflow: hidden;
     border-radius: 16px;
-    background: radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.1) 0%, rgba(20, 22, 36, 0) 60%), rgba(20, 22, 36, 0.85);
+    background: var(--card-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-glass);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .promo-card.holiday {
-    background: radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.15) 0%, rgba(20, 22, 36, 0) 65%), rgba(20, 22, 36, 0.88);
-    border-color: rgba(139, 92, 246, 0.18);
+    background: var(--card-bg-holiday);
+    border-color: var(--card-border-holiday);
 }
 
 .promo-card.clearance {
-    background: radial-gradient(circle at 100% 0%, rgba(239, 68, 68, 0.12) 0%, rgba(20, 22, 36, 0) 65%), rgba(20, 22, 36, 0.88);
-    border-color: rgba(239, 68, 68, 0.15);
+    background: var(--card-bg-clearance);
+    border-color: var(--card-border-clearance);
 }
 
 .promo-card.seasonality {
-    background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.12) 0%, rgba(20, 22, 36, 0) 65%), rgba(20, 22, 36, 0.88);
-    border-color: rgba(16, 185, 129, 0.15);
+    background: var(--card-bg-seasonality);
+    border-color: var(--card-border-seasonality);
 }
 
 .promo-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
-.promo-card.holiday:hover { border-color: rgba(139, 92, 246, 0.35); }
-.promo-card.clearance:hover { border-color: rgba(239, 68, 68, 0.35); }
-.promo-card.seasonality:hover { border-color: rgba(16, 185, 129, 0.35); }
+.promo-card.holiday:hover { border-color: var(--card-border-holiday-hover); }
+.promo-card.clearance:hover { border-color: var(--card-border-clearance-hover); }
+.promo-card.seasonality:hover { border-color: var(--card-border-seasonality-hover); }
 
 .promo-card-header {
     display: flex;
@@ -4100,14 +4312,14 @@ input:checked + .slider:before {
 }
 
 .promo-schedule-btn.unscheduled {
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    background: var(--btn-primary-bg);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
 }
 
 .promo-schedule-btn.unscheduled:hover {
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
-    filter: brightness(1.1);
+    background: var(--btn-primary-hover);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
 }
 
 .promo-schedule-btn.unscheduled:active {
@@ -6360,10 +6572,10 @@ input:checked + .slider:before {
 }
 
 .sku-modal-container {
-    background: rgba(25, 28, 41, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-glass);
+    border: var(--border-glass);
     border-radius: var(--radius-lg);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-glass);
     width: 950px;
     max-width: 95vw;
     max-height: 85vh;

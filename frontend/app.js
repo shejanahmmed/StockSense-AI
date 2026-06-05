@@ -3451,20 +3451,104 @@ function initThemeToggle() {
     const storedTheme = localStorage.getItem('theme') || 'dark';
     if (storedTheme === 'light') {
         themeBtn.classList.add('light');
+        document.body.classList.add('light-mode');
+    } else {
+        document.body.classList.remove('light-mode');
     }
+    
+    // Ensure charts match active theme on initial load after short delay
+    setTimeout(() => {
+        updateChartsForTheme();
+    }, 100);
 
     themeBtn.addEventListener('click', () => {
         const isCurrentlyLight = themeBtn.classList.contains('light');
         if (isCurrentlyLight) {
             themeBtn.classList.remove('light');
+            document.body.classList.remove('light-mode');
             localStorage.setItem('theme', 'dark');
             addNotification('Theme Switched', 'Dark mode activated.', 'success');
         } else {
             themeBtn.classList.add('light');
+            document.body.classList.add('light-mode');
             localStorage.setItem('theme', 'light');
-            addNotification('Theme Switched', 'Light mode toggled (styles coming soon!).', 'info');
+            addNotification('Theme Switched', 'Light mode activated.', 'success');
         }
+        updateChartsForTheme();
     });
+}
+
+function updateChartsForTheme() {
+    const isLight = document.body.classList.contains('light-mode');
+    
+    // Choose colors based on theme
+    const textColor = isLight ? '#475569' : '#94a3b8';
+    const gridColor = isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.05)';
+    const tooltipBg = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 17, 26, 0.9)';
+    const tooltipText = isLight ? '#0f172a' : '#ffffff';
+    const tooltipBorder = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.1)';
+    const pointBgColor = isLight ? '#ffffff' : '#0f111a';
+    
+    // Set global Chart.js defaults
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = textColor;
+    }
+    
+    // Helper to update a chart instance's scales and tooltips
+    const updateChartColors = (chart) => {
+        if (!chart) return;
+        
+        // Update scales
+        if (chart.options.scales) {
+            Object.keys(chart.options.scales).forEach(scaleKey => {
+                const scale = chart.options.scales[scaleKey];
+                if (scale.grid) {
+                    scale.grid.color = gridColor;
+                }
+                if (scale.ticks) {
+                    scale.ticks.color = textColor;
+                }
+            });
+        }
+        
+        // Update tooltips
+        if (chart.options.plugins && chart.options.plugins.tooltip) {
+            chart.options.plugins.tooltip.backgroundColor = tooltipBg;
+            chart.options.plugins.tooltip.titleColor = tooltipText;
+            chart.options.plugins.tooltip.bodyColor = isLight ? '#334155' : '#e2e8f0';
+            chart.options.plugins.tooltip.borderColor = tooltipBorder;
+        }
+        
+        // Update point bg colors for lines
+        if (chart.data.datasets) {
+            chart.data.datasets.forEach(ds => {
+                if (ds.pointBackgroundColor && ds.pointBackgroundColor !== 'transparent') {
+                    ds.pointBackgroundColor = pointBgColor;
+                }
+            });
+        }
+        
+        // Update legend label color for Doughnut chart
+        if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+            chart.options.plugins.legend.labels.color = textColor;
+        }
+        
+        // Update border color for Doughnut chart
+        if (chart.config.type === 'doughnut') {
+            chart.data.datasets.forEach(ds => {
+                ds.borderColor = isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.1)';
+            });
+        }
+        
+        chart.update('none'); // Update smoothly without reset animations
+    };
+    
+    // Update all existing charts
+    updateChartColors(forecastChartInstance);
+    updateChartColors(forecastChartYAxisInstance);
+    updateChartColors(drawerChartInstance);
+    updateChartColors(financialsCategoryChartInstance);
+    updateChartColors(financialsSpendChartInstance);
 }
 
 function addNotification(title, message, type = 'info') {
@@ -4024,6 +4108,9 @@ function initChart() {
             }
         });
     }
+
+    // Update chart colors to match current theme
+    updateChartsForTheme();
 }
 
 // ==========================================
@@ -8341,6 +8428,7 @@ async function renderDrawerChart(sku) {
                     }
                 }
             });
+            updateChartsForTheme();
         }
     } catch (e) {
         // Render a clean fallback label if no forecast was loaded
@@ -8678,6 +8766,7 @@ function updateFinancialsUI() {
                 }
             }
         });
+        updateChartsForTheme();
     }
     
     // Setup Slider listener once if not already bound

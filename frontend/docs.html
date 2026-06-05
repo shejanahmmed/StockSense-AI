@@ -1358,6 +1358,204 @@
                 bottom: 70px;
             }
         }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            margin-right: 0.5rem;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.15);
+        }
+        
+        body.light-mode .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: var(--panel-border);
+        }
+        
+        body.light-mode .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            color: var(--text-primary);
+            box-shadow: 0 0 12px rgba(124, 58, 237, 0.1);
+        }
+        
+        .theme-toggle-btn i {
+            font-size: 1.1rem;
+            position: absolute;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+        }
+        
+        .theme-toggle-btn .moon-icon {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+            color: #f59e0b;
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+        }
+        
+        .theme-toggle-btn .sun-icon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0);
+            color: #f59e0b;
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+        }
+        
+        .theme-toggle-btn.light .moon-icon {
+            opacity: 0;
+            transform: rotate(90deg) scale(0);
+        }
+        
+        .theme-toggle-btn.light .sun-icon {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        /* Dark Mode Clean solid text (no gradient) overrides */
+        .logo-area h1 {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+            color: var(--text-primary);
+        }
+        
+        .chapter-header h2 {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+            color: var(--text-primary);
+        }
+        
+        .locked-icon {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+            color: var(--accent-primary);
+        }
+
+        /* Light Mode Theme Overrides */
+        body.light-mode {
+            --bg-dark: #f1f5f9;
+            --panel-dark: rgba(255, 255, 255, 0.75);
+            --panel-border: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent-primary: #7c3aed;
+            --accent-secondary: #2563eb;
+            --shadow-glow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+        }
+        
+        body.light-mode .glow-blobs {
+            display: none !important;
+        }
+        
+        body.light-mode header {
+            background: rgba(255, 255, 255, 0.75) !important;
+            border-bottom: 1px solid var(--panel-border) !important;
+        }
+        
+        body.light-mode .action-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: var(--panel-border);
+            color: var(--text-primary);
+        }
+        
+        body.light-mode .action-btn:hover {
+            background: rgba(0, 0, 0, 0.07);
+        }
+        
+        body.light-mode .action-btn.primary {
+            background: var(--accent-primary);
+            color: #ffffff;
+        }
+        
+        body.light-mode .search-box input {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: var(--panel-border);
+        }
+        
+        body.light-mode .nav-link:hover {
+            background: rgba(0, 0, 0, 0.02);
+            color: var(--text-primary);
+        }
+        
+        body.light-mode .nav-link.active {
+            background: rgba(124, 58, 237, 0.08);
+            color: var(--accent-primary);
+        }
+        
+        body.light-mode .live-card {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: var(--panel-border);
+        }
+        
+        body.light-mode .diagram-container {
+            background: rgba(0, 0, 0, 0.01);
+            border-color: var(--panel-border);
+        }
+        
+        body.light-mode .arch-box {
+            fill: #ffffff;
+            stroke: var(--panel-border);
+        }
+        
+        body.light-mode .arch-box.active {
+            fill: rgba(124, 58, 237, 0.04);
+            stroke: var(--accent-primary);
+        }
+        
+        body.light-mode .arch-text {
+            fill: var(--text-secondary);
+        }
+        
+        body.light-mode .arch-text.title {
+            fill: var(--text-primary);
+        }
+        
+        body.light-mode .team-card {
+            background: #ffffff;
+            border-color: var(--panel-border);
+        }
+        
+        body.light-mode .team-card:hover {
+            background: rgba(124, 58, 237, 0.02);
+        }
+        
+        body.light-mode .admin-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 1px solid var(--panel-border);
+        }
+        
+        body.light-mode .admin-input, 
+        body.light-mode .admin-select, 
+        body.light-mode .admin-textarea {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: var(--panel-border);
+            color: var(--text-primary);
+        }
+        
+        body.light-mode .toggle-switch {
+            background: rgba(0, 0, 0, 0.01);
+            border-color: var(--panel-border);
+        }
     </style>
 </head>
 <body>
@@ -1381,6 +1579,11 @@
         </div>
 
         <div class="header-actions">
+            <!-- Theme Toggle -->
+            <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
+                <i class="fa-solid fa-moon moon-icon"></i>
+                <i class="fa-solid fa-sun sun-icon"></i>
+            </button>
             <a href="/" class="action-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
             <button class="action-btn primary" id="exportMarkdownBtn"><i class="fa-solid fa-file-export"></i> Export</button>
             <button class="action-btn" id="exportPdfBtn"><i class="fa-solid fa-print"></i> PDF</button>
@@ -1568,11 +1771,41 @@
         let activeEditorTab = 'draft'; // 'draft' or 'live'
         let countdownInterval = null;
 
+        function initThemeToggle() {
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (!themeBtn) return;
+
+            // Load active theme preference or default to dark
+            const storedTheme = localStorage.getItem('theme') || 'dark';
+            if (storedTheme === 'light') {
+                themeBtn.classList.add('light');
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+
+            themeBtn.addEventListener('click', () => {
+                const isCurrentlyLight = themeBtn.classList.contains('light');
+                if (isCurrentlyLight) {
+                    themeBtn.classList.remove('light');
+                    document.body.classList.remove('light-mode');
+                    localStorage.setItem('theme', 'dark');
+                    showToast('Dark mode activated.');
+                } else {
+                    themeBtn.classList.add('light');
+                    document.body.classList.add('light-mode');
+                    localStorage.setItem('theme', 'light');
+                    showToast('Light mode activated.');
+                }
+            });
+        }
+
         // Retrieve token
         const jwtToken = localStorage.getItem('stockSense_jwt') || '';
 
         // Initialize On Load
         window.addEventListener('load', async () => {
+            initThemeToggle();
             await fetchConfig();
             await fetchSections();
             await fetchTeam();

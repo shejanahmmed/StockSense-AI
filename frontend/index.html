@@ -179,8 +179,8 @@
                         <i class="fa-regular fa-bell"></i>
                         <span class="notification-dot" id="notificationDot" style="display: none;"></span>
                     </button>
-                    <div class="notification-dropdown glass-panel" id="notificationDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 300px; padding: 1rem; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #000000;">
-                        <div class="dropdown-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div class="notification-dropdown glass-panel" id="notificationDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 300px; padding: 1rem; z-index: 100; box-shadow: var(--shadow-glass); background: var(--bg-glass);">
+                        <div class="dropdown-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
                             <h4 style="margin: 0; font-size: 0.95rem;">Notifications</h4>
                             <span class="clear-btn" id="clearNotifications" style="font-size: 0.8rem; cursor: pointer; color: var(--accent-primary);">Clear All</span>
                         </div>
@@ -204,8 +204,8 @@
                 </div>
                 
                 <!-- Profile Dropdown -->
-                <div class="profile-dropdown glass-panel" id="profileDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 220px; padding: 0.5rem; flex-direction: column; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #000000;">
-                    <div class="profile-dropdown-header" style="padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <div class="profile-dropdown glass-panel" id="profileDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 220px; padding: 0.5rem; flex-direction: column; z-index: 100; box-shadow: var(--shadow-glass); background: var(--bg-glass);">
+                    <div class="profile-dropdown-header" style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
                         <div id="dropdownAvatar" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--text-secondary); background-size: cover; background-position: center; flex-shrink: 0;">
                             <i class="fa-regular fa-user" id="dropdownAvatarIcon"></i>
                         </div>
