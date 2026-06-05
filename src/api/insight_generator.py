@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import logging
 from typing import Dict, Any
@@ -165,6 +166,64 @@ def generate_insight(data: Dict[str, Any]) -> str:
         except Exception:
             return "Unable to generate forecast insights at this time. Please review the raw forecast data."
 
+def generate_what_if_insight(data: Dict[str, Any]) -> str:
+    """
+    Generates plain-English business insights for a Simulated Scenario.
+    """
+    try:
+        discount = data.get("discount_pct", 0.0)
+        delay = data.get("lead_time_delay", 0)
+        target = data.get("target_sku", "ALL")
+        
+        sim_summary = data.get("simulation_summary", {})
+        demand_change = sim_summary.get("demand_change_pct", "0.0%")
+        stockout_losses = sim_summary.get("total_stockout_losses", 0.0)
+        net_balance = sim_summary.get("net_financial_balance", 0.0)
+        at_risk = sim_summary.get("at_risk_count", 0)
+        
+        prompt = f"""You are a top-tier business analyst helping SME owners make data-driven inventory decisions.
+Your task is to generate 2-3 sentences of specific, actionable business advice based on a simulated "What-If" business scenario.
+
+SCENARIO PARAMETERS:
+- Target Product/Category: {target}
+- Applied Discount: {discount}%
+- Supplier Lead Time Delay: {delay} days
+
+SIMULATION RESULTS:
+- Projected Demand Change: {demand_change}
+- Stockout Losses: ${stockout_losses:,.2f}
+- Net Financial Impact (Profit - Loss): ${net_balance:,.2f}
+- Number of items pushed into high stockout risk: {at_risk} items
+
+Your advice must detail:
+1. The immediate consequence of this scenario (e.g. "Applying a {discount}% discount on {target} will surge demand by {demand_change}").
+2. The risk (e.g. "However, a {delay}-day delay will trigger stockouts on {at_risk} item(s), costing ${stockout_losses:,.2f} in lost sales").
+3. A clear action item (e.g. "We recommend ordering replenishment stock at least Y days in advance to offset the delay and capture the sales lift").
+
+Keep it concise, realistic, professional, and write for a store owner. Do not use data science jargon.
+"""
+        insight = call_llm(prompt)
+        return insight
+    except Exception as e:
+        logger.error(f"Failed to generate What-If LLM insight: {e}")
+        # Build a robust fallback template
+        discount = data.get("discount_pct", 0.0)
+        delay = data.get("lead_time_delay", 0)
+        target = data.get("target_sku", "ALL")
+        sim_summary = data.get("simulation_summary", {})
+        demand_change = sim_summary.get("demand_change_pct", "0.0%")
+        stockout_losses = sim_summary.get("total_stockout_losses", 0.0)
+        net_balance = sim_summary.get("net_financial_balance", 0.0)
+        at_risk = sim_summary.get("at_risk_count", 0)
+        
+        fallback = f"Applying a {discount}% discount on {target} increases demand by {demand_change}. "
+        if delay > 0 and at_risk > 0:
+            fallback += f"However, the {delay}-day lead time delay pushes {at_risk} item(s) into stockout risk, costing ${stockout_losses:,.2f} in lost sales. "
+            fallback += f"To mitigate this, reorder stock immediately or hold a higher safety buffer."
+        else:
+            fallback += f"The simulated scenario results in a net financial balance of ${net_balance:,.2f}. No critical stockout warnings are triggered."
+        return fallback
+
 def generate_chat_response(query: str, history: list, context_data: Dict[str, Any], currency: str = "BDT", org_name: str = "Unknown") -> str:
     """
     Generates a conversational AI response for the chat assistant.
@@ -247,6 +306,206 @@ Guidelines:
         messages.append(msg)
     messages.append({"role": "user", "content": query})
 
+    # ── Pre-flight: resolve inventory items (needed for What-If & local mode) ──
+    _items_for_sim = []
+    if isinstance(context_data, list):
+        _items_for_sim = context_data
+    elif isinstance(context_data, dict) and "data" in context_data:
+        _items_for_sim = context_data["data"]
+
+    if not _items_for_sim:
+        try:
+            from src.api.database import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT sku, name, category, price, stock, reorder_point, "
+                "supplier_lead_days, supplier, status, forecasted_demand, units_sold "
+                "FROM inventory WHERE org_name = ?", (org_name,)
+            )
+            rows = cursor.fetchall()
+            conn.close()
+            _items_for_sim = [dict(row) for row in rows]
+        except Exception as _dberr:
+            logger.error(f"Failed to pre-fetch inventory for chat: {_dberr}")
+
+    # ── What-If / Scenario Planning — intercept before LLM ──────────────────
+    _q_lower = query.strip().lower()
+    _is_what_if = (
+        "what if" in _q_lower or "what-if" in _q_lower or
+        ("discount" in _q_lower and any(c.isdigit() for c in _q_lower)) or
+        ("promo" in _q_lower and any(c.isdigit() for c in _q_lower)) or
+        (("lead time" in _q_lower or "lead-time" in _q_lower or
+          "delay" in _q_lower or "supplier" in _q_lower)
+         and any(c.isdigit() for c in _q_lower))
+    )
+
+    if _is_what_if and _items_for_sim:
+        # Parse discount %
+        _disc_pct = 0.0
+        _dm = re.search(r'(\d+(?:\.\d+)?)\s*%?\s*(?:discount|off|promo|sale|markdown)', _q_lower)
+        if not _dm:
+            _dm = re.search(r'(?:discount|off|promo|sale|markdown)\s+(?:of\s+)?(\d+(?:\.\d+)?)\s*%?', _q_lower)
+        if not _dm:
+            _dm = re.search(r'(\d+(?:\.\d+)?)\s*%', _q_lower)
+        if _dm:
+            _disc_pct = float(_dm.group(1))
+
+        # Parse lead-time delay (days)
+        _lead_delay = 0
+        _lm = re.search(r'(\d+)\s*(?:day|days|d)\s*(?:delay|late|longer|increase|more|extra|behind)?', _q_lower)
+        if not _lm:
+            _lm = re.search(r'(?:delay|late|longer|increase|more|extra|behind)\s*(\d+)\s*(?:day|days|d)', _q_lower)
+        if _lm and any(kw in _q_lower for kw in ["lead", "delay", "supplier", "logistics", "disruption"]):
+            _lead_delay = int(_lm.group(1))
+
+        # Parse target category / SKU
+        _tgt_label = "ALL"
+        _tgt_str   = "all"
+        _known_cats = list({i.get('category', '') for i in _items_for_sim if i.get('category')})
+        for _cat in _known_cats:
+            if _cat.lower() in _q_lower:
+                _tgt_label = _cat
+                _tgt_str   = _cat.lower()
+                break
+
+        # Simulation math
+        _ELAST = {
+            "accessory": 2.5, "case": 2.5, "cable": 2.5, "charger": 2.5, "stand": 2.5,
+            "electronic": 2.0, "watch": 2.0, "earbud": 2.0, "power bank": 2.0,
+        }
+        _horizon = 7
+        _t_orig = _t_sim = _t_so = _t_hold = _t_rev = 0.0
+        _at_risk = 0
+        _affected = []
+
+        for _it in _items_for_sim:
+            _sku   = str(_it.get('sku', 'N/A'))
+            _name  = str(_it.get('name', 'N/A'))
+            _cat   = str(_it.get('category', ''))
+            _price = float(_it.get('price', 0.0) or 0.0)
+            _stock = int(_it.get('stock', 0) or 0)
+            _lead  = int(_it.get('supplier_lead_days', 7) or 7)
+            _fcast = float(_it.get('forecasted_demand', 0.0) or 0.0)
+
+            _targeted = (
+                _tgt_str == "all" or
+                _tgt_str in _cat.lower() or
+                _cat.lower() in _tgt_str or
+                _tgt_str == _sku.lower()
+            )
+
+            if _targeted:
+                _elast = next((v for k, v in _ELAST.items() if k in _cat.lower()), 1.5)
+                _dmult = 1.0 + (_disc_pct / 100.0) * _elast
+                _sl    = _lead + _lead_delay
+            else:
+                _dmult = 1.0
+                _sl    = _lead
+
+            _sd  = _fcast * _dmult
+            _dd  = _sd / _horizon if _horizon > 0 else 0.0
+            _t_orig += _fcast
+            _t_sim  += _sd
+
+            _d2so = (_stock / _dd) if _dd > 0 else 999.0
+            _so_cost = _so_units = 0.0
+            if _d2so < _sl:
+                _so_days  = _sl - _d2so
+                _so_units = min(_sd, _so_days * _dd)
+                _so_cost  = _so_units * _price
+
+            _excess  = max(0, _stock - _sd)
+            _hcost   = _excess * _price * 0.005
+            _sunits  = max(0.0, _sd - _so_units)
+            _dfact   = (1.0 - _disc_pct / 100.0) if _targeted else 1.0
+            _rev     = _sunits * _price * _dfact
+
+            _sim_rop = int(_dd * _sl * 1.4)
+            _sstatus = "Out of Stock" if _stock <= 0 else (
+                "Low Stock" if _stock <= _sim_rop else (
+                    "Warning" if _stock <= _sim_rop * 1.5 else "In Stock"
+                )
+            )
+            if _sstatus in ["Low Stock", "Out of Stock"]:
+                _at_risk += 1
+
+            _t_so   += _so_cost
+            _t_hold += _hcost
+            _t_rev  += _rev
+
+            if _targeted and (_so_cost > 0 or _sstatus in ["Low Stock", "Out of Stock"]):
+                _affected.append({
+                    "name": _name, "sku": _sku, "stock": _stock,
+                    "sim_demand": round(_sd, 0), "so_cost": round(_so_cost, 2),
+                    "sim_status": _sstatus
+                })
+
+        _dchg = ((_t_sim - _t_orig) / _t_orig * 100) if _t_orig > 0 else 0.0
+        _dsign = "+" if _dchg >= 0 else ""
+
+        # Build markdown response
+        _sl_parts = []
+        if _disc_pct > 0:
+            _sl_parts.append(f"{_disc_pct:.0f}% discount")
+        if _lead_delay > 0:
+            _sl_parts.append(f"+{_lead_delay}-day supplier delay")
+        _scen_str = " + ".join(_sl_parts) if _sl_parts else "baseline (no changes)"
+
+        _out = [
+            f"### 🧪 What-If Scenario: {_scen_str} on **{_tgt_label}**",
+            "",
+            "Here's the simulated impact on your inventory operations:",
+            "",
+            "| Metric | Result |",
+            "| :--- | :--- |",
+            f"| {'📈' if _dchg > 0 else '📉'} Projected Demand Change | **{_dsign}{_dchg:.1f}%** |",
+            f"| {'🔴' if _at_risk > 3 else ('🟡' if _at_risk > 0 else '🟢')} SKUs at Stockout Risk | **{_at_risk} item(s)** |",
+            f"| 💸 Projected Stockout Losses | **{currency_symbol}{_t_so:,.2f}** |",
+            f"| 📦 Holding / Carrying Costs | **{currency_symbol}{_t_hold:,.2f}** |",
+            f"| 💰 Simulated Revenue | **{currency_symbol}{_t_rev:,.2f}** |",
+            "",
+        ]
+
+        if _affected:
+            _out += [
+                "#### ⚠️ Items Most Affected",
+                "",
+                "| SKU | Product | Stock | Sim. Demand | Stockout Loss | Status |",
+                "| :--- | :--- | :---: | :---: | :---: | :--- |",
+            ]
+            for _r in sorted(_affected, key=lambda x: x['so_cost'], reverse=True)[:5]:
+                _sico = "🔴" if _r['sim_status'] == "Out of Stock" else "🟡"
+                _out.append(
+                    f"| `{_r['sku']}` | {_r['name']} | {_r['stock']} | "
+                    f"{_r['sim_demand']:.0f} | {currency_symbol}{_r['so_cost']:,.2f} | "
+                    f"{_sico} {_r['sim_status']} |"
+                )
+            _out.append("")
+
+        if _disc_pct > 0 and _lead_delay > 0:
+            _out.append(
+                f"**Summary:** A {_disc_pct:.0f}% promotion on **{_tgt_label}** would surge demand by "
+                f"{_dsign}{_dchg:.1f}%, but the concurrent {_lead_delay}-day supplier delay puts "
+                f"**{_at_risk} SKU(s)** at stockout risk, costing {currency_symbol}{_t_so:,.2f} in "
+                f"lost sales. Consider pre-ordering stock before launching the promotion to avoid the gap."
+            )
+        elif _disc_pct > 0:
+            _out.append(
+                f"**Summary:** A {_disc_pct:.0f}% discount on **{_tgt_label}** would lift demand by "
+                f"{_dsign}{_dchg:.1f}%, generating projected revenue of {currency_symbol}{_t_rev:,.2f}. "
+                f"Monitor {_at_risk} at-risk SKU(s) closely and consider a pre-promotion replenishment run."
+            )
+        elif _lead_delay > 0:
+            _out.append(
+                f"**Summary:** A {_lead_delay}-day supplier delay would push **{_at_risk} SKU(s)** into "
+                f"stockout territory, risking {currency_symbol}{_t_so:,.2f} in lost revenue. "
+                f"Issue emergency POs immediately to close the replenishment gap."
+            )
+
+        return "\n".join(_out)
+    # ── End What-If intercept ─────────────────────────────────────────────────
+
     env = os.environ.get("DEPLOYMENT_ENV", "local").lower()
     
     if env == "production" and Groq is not None:
@@ -264,29 +523,14 @@ Guidelines:
             return f"I apologize, but I'm having an API error: {str(e)}"
     else:
         # Fallback to dynamic structured mock if in local environment or Groq fails
-        items = []
-        if isinstance(context_data, list):
-            items = context_data
-        elif isinstance(context_data, dict) and "data" in context_data:
-            items = context_data["data"]
-        
-        # If no items available in context, query local database directly!
-        if not items:
-            try:
-                from src.api.database import get_db_connection
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days, supplier, status, forecasted_demand, units_sold FROM inventory WHERE org_name = ?", (org_name,))
-                rows = cursor.fetchall()
-                conn.close()
-                items = [dict(row) for row in rows]
-            except Exception as dberr:
-                logger.error(f"Failed to query database for chat: {dberr}")
-                items = []
+        items = _items_for_sim  # reuse pre-fetched items
+
 
         q = query.strip().lower()
-        
+
         # 1. /restock or Stockout Risks command
+
+
         if "/restock" in q or "restock" in q or "stockout" in q or "reorder" in q or "low stock" in q or "critical" in q:
             at_risk = []
             for i in items:

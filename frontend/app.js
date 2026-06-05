@@ -2898,7 +2898,21 @@ function appendMessage(role, content) {
     div.innerHTML = `<div class="msg-bubble">${parsedContent}</div>`;
     chatMessages.appendChild(div);
     
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (role === 'user') {
+        requestAnimationFrame(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    } else if (role === 'assistant') {
+        requestAnimationFrame(() => {
+            const userMessages = chatMessages.querySelectorAll('.message.user');
+            if (userMessages.length > 0) {
+                const lastUserMsg = userMessages[userMessages.length - 1];
+                chatMessages.scrollTop = lastUserMsg.offsetTop - 10;
+            } else {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    }
 }
 
 function updateInsightsCockpitMetrics() {

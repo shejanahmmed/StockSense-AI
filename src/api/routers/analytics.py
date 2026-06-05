@@ -9,7 +9,7 @@ import json
 from src.pipeline.data_loader import validate_schema
 from src.pipeline.feature_engineering import create_date_features, create_lag_features, create_rolling_stats
 from src.models.prophet_model import DemandProphetModel
-from src.api.insight_generator import generate_insight
+from src.api.insight_generator import generate_insight, generate_what_if_insight
 
 from src.api.database import get_db_connection
 from src.api.auth_utils import get_current_user
@@ -1365,3 +1365,183 @@ Powered by StockSense AI
         "email_body": email_body
     }
 
+
+class SimulationPayload(BaseModel):
+    discount_pct: float = 0.0
+    lead_time_delay: int = 0
+    target_sku: str = "ALL"  # Can be "ALL", a category name, or a specific SKU
+
+@router.post("/api/simulate")
+async def run_simulation(payload: SimulationPayload, user: dict = Depends(get_current_user)):
+    org_name = user.get("sub", "Unknown")
+    
+    # 1. Fetch current inventory details
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT sku, name, category, price, stock, reorder_point, supplier_lead_days, forecasted_demand
+        FROM inventory WHERE org_name = ?
+    ''', (org_name,))
+    inventory_items = cursor.fetchall()
+    
+    # Get the number of forecast dates stored to determine the exact horizon
+    cursor.execute('SELECT COUNT(DISTINCT forecast_date) as cnt FROM forecasts WHERE org_name = ?', (org_name,))
+    horizon_row = cursor.fetchone()
+    forecast_horizon = max(7, horizon_row["cnt"]) if horizon_row else 7
+    conn.close()
+    
+    if not inventory_items:
+        return {
+            "status": "success",
+            "discount_pct": payload.discount_pct,
+            "lead_time_delay": payload.lead_time_delay,
+            "target_sku": payload.target_sku,
+            "simulation_summary": {
+                "demand_change_pct": "0.0%",
+                "total_stockout_losses": 0.0,
+                "total_holding_costs": 0.0,
+                "net_financial_balance": 0.0,
+                "at_risk_count": 0,
+                "simulated_sales_rev": 0.0,
+                "simulated_sales_profit": 0.0
+            },
+            "insight": "No inventory items found. Please upload a sales history CSV file first."
+        }
+        
+    # 2. Loop and run target matching and math calculations
+    total_original_demand = 0.0
+    total_simulated_demand = 0.0
+    total_stockout_losses = 0.0
+    total_holding_costs = 0.0
+    total_sim_revenue = 0.0
+    total_sim_profit = 0.0
+    at_risk_count = 0
+    
+    sim_items = []
+    
+    target_str = payload.target_sku.strip().lower()
+    
+    for item in inventory_items:
+        sku = str(item["sku"])
+        name = str(item["name"])
+        category = str(item["category"])
+        price = float(item["price"] or 0.0)
+        stock = int(item["stock"] or 0)
+        reorder_point = int(item["reorder_point"] or 50)
+        lead_days = int(item["supplier_lead_days"] or 7)
+        forecast_demand = float(item["forecasted_demand"] or 0.0)
+        
+        # Check if targeted
+        is_targeted = False
+        if target_str == "all":
+            is_targeted = True
+        elif target_str.startswith("cat_"):
+            clean_cat = target_str[4:]
+            if clean_cat in category.lower() or category.lower() in clean_cat:
+                is_targeted = True
+        elif target_str == category.lower():
+            is_targeted = True
+        elif target_str == sku.lower() or target_str in name.lower():
+            is_targeted = True
+            
+        # Apply elasticity
+        if is_targeted:
+            cat_lower = category.lower()
+            if any(x in cat_lower for x in ["accessory", "case", "cable", "charger", "stand"]):
+                elasticity = 2.5
+            elif any(x in cat_lower for x in ["electronic", "watch", "earbud", "power bank"]):
+                elasticity = 2.0
+            else:
+                elasticity = 1.5
+                
+            demand_multiplier = 1.0 + (payload.discount_pct / 100.0) * elasticity
+            sim_lead_days = lead_days + payload.lead_time_delay
+        else:
+            demand_multiplier = 1.0
+            sim_lead_days = lead_days
+            
+        sim_demand = forecast_demand * demand_multiplier
+        daily_demand = sim_demand / forecast_horizon
+        
+        total_original_demand += forecast_demand
+        total_simulated_demand += sim_demand
+        
+        # Calculate stockout metrics
+        days_to_stockout = (stock / daily_demand) if daily_demand > 0 else 999.0
+        
+        stockout_cost = 0.0
+        stockout_units = 0.0
+        if days_to_stockout < sim_lead_days:
+            stockout_days = sim_lead_days - days_to_stockout
+            stockout_units = min(sim_demand, stockout_days * daily_demand)
+            stockout_cost = stockout_units * price
+            
+        # Carrying cost for excess stock
+        # 0.5% of value per period carrying cost
+        excess_units = max(0, stock - sim_demand)
+        holding_cost = excess_units * price * 0.005
+        
+        # Sales revenue & profit
+        sales_units = max(0.0, sim_demand - stockout_units)
+        sales_rev = sales_units * price * (1.0 - (payload.discount_pct / 100.0 if is_targeted else 0.0))
+        
+        margin = get_deterministic_margin(sku, category)
+        sales_profit = sales_rev * (margin / 100.0)
+        
+        # Determine at risk
+        # Reorder point under simulated conditions
+        sim_reorder_point = int(daily_demand * sim_lead_days * 1.4)
+        sim_status = _compute_product_status(stock, sim_reorder_point)
+        
+        if sim_status in ["Low Stock", "Out of Stock"]:
+            at_risk_count += 1
+            
+        total_stockout_losses += stockout_cost
+        total_holding_costs += holding_cost
+        total_sim_revenue += sales_rev
+        total_sim_profit += sales_profit
+        
+        sim_items.append({
+            "sku": sku,
+            "name": name,
+            "category": category,
+            "price": price,
+            "stock": stock,
+            "original_demand": forecast_demand,
+            "simulated_demand": sim_demand,
+            "is_targeted": is_targeted,
+            "days_to_stockout": round(days_to_stockout, 1) if days_to_stockout < 999 else "N/A",
+            "stockout_losses": round(stockout_cost, 2),
+            "sim_status": sim_status
+        })
+        
+    demand_change_pct = ((total_simulated_demand - total_original_demand) / total_original_demand * 100) if total_original_demand > 0 else 0.0
+    net_financial_balance = total_sim_profit - total_stockout_losses - total_holding_costs
+    
+    # 3. Construct AI strategic narrative prompt
+    sim_summary = {
+        "demand_change_pct": f"{'+' if demand_change_pct >= 0 else ''}{demand_change_pct:.1f}%",
+        "total_stockout_losses": round(total_stockout_losses, 2),
+        "total_holding_costs": round(total_holding_costs, 2),
+        "net_financial_balance": round(net_financial_balance, 2),
+        "at_risk_count": at_risk_count,
+        "simulated_sales_rev": round(total_sim_revenue, 2),
+        "simulated_sales_profit": round(total_sim_profit, 2)
+    }
+    
+    ai_insight = generate_what_if_insight({
+        "discount_pct": payload.discount_pct,
+        "lead_time_delay": payload.lead_time_delay,
+        "target_sku": payload.target_sku,
+        "simulation_summary": sim_summary
+    })
+    
+    return {
+        "status": "success",
+        "discount_pct": payload.discount_pct,
+        "lead_time_delay": payload.lead_time_delay,
+        "target_sku": payload.target_sku,
+        "simulation_summary": sim_summary,
+        "insight": ai_insight,
+        "items": sorted(sim_items, key=lambda x: x["stockout_losses"], reverse=True)[:10] # Top 10 affected items
+    }
