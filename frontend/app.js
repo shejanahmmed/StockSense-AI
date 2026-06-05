@@ -1,3 +1,50 @@
+
+// ──────────────────────────────────────────────────────────────────────────────
+// showConfirm — custom async confirm dialog (replaces native browser confirm())
+// Usage: showConfirm(message, onConfirm, { title, icon, variant, confirmLabel })
+// variant: 'danger' (default) | 'warn' | 'info'
+// ──────────────────────────────────────────────────────────────────────────────
+function showConfirm(message, onConfirm, opts) {
+    opts = opts || {};
+    const overlay   = document.getElementById('customConfirmOverlay');
+    const iconWrap  = document.getElementById('customConfirmIconWrap');
+    const iconEl    = document.getElementById('customConfirmIcon');
+    const titleEl   = document.getElementById('customConfirmTitle');
+    const msgEl     = document.getElementById('customConfirmMessage');
+    const okBtn     = document.getElementById('customConfirmOk');
+    const cancelBtn = document.getElementById('customConfirmCancel');
+    if (!overlay) { if (onConfirm && confirm(message)) onConfirm(); return; }
+
+    const variant  = opts.variant || 'danger';
+    const iconMap  = { danger: 'fa-triangle-exclamation', warn: 'fa-circle-exclamation', info: 'fa-circle-question' };
+
+    titleEl.textContent = opts.title || 'Are you sure?';
+    msgEl.textContent   = message;
+    okBtn.textContent   = opts.confirmLabel || 'Confirm';
+
+    iconWrap.className  = 'custom-confirm-icon-wrap' + (variant !== 'danger' ? ' ' + variant : '');
+    iconEl.className    = 'fa-solid ' + (iconMap[variant] || iconMap.danger);
+    okBtn.className     = 'custom-confirm-ok' + (variant === 'warn' ? ' btn-warn' : variant === 'info' ? ' btn-info' : '');
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        overlay.removeEventListener('click', handleBackdrop);
+    }
+    function handleOk()        { close(); if (onConfirm) onConfirm(); }
+    function handleCancel()    { close(); }
+    function handleBackdrop(e) { if (e.target === overlay) close(); }
+
+    okBtn.addEventListener('click',     handleOk,       { once: true });
+    cancelBtn.addEventListener('click', handleCancel,   { once: true });
+    overlay.addEventListener('click',   handleBackdrop);
+}
+
 /**
  * StockSense AI Frontend Logic
  * Handles dynamic rendering of insights, SHAP drivers, and Chart.js initialization.
@@ -1002,7 +1049,7 @@ function renderInventoryTable(data, page = 1) {
     document.querySelectorAll('.action-delete').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const sku = e.currentTarget.getAttribute('data-sku');
-            if (confirm(`Are you sure you want to delete SKU ${sku}?`)) {
+            showConfirm(`Are you sure you want to delete SKU ${sku}?`, async () => {
                 try {
                     const token = localStorage.getItem('stockSense_jwt');
                     const res = await fetch(`/api/inventory/${encodeURIComponent(sku)}`, { 
@@ -1022,7 +1069,7 @@ function renderInventoryTable(data, page = 1) {
                 } catch (error) {
                     console.error("Delete failed:", error);
                 }
-            }
+            });
         });
     });
 
@@ -1824,9 +1871,9 @@ function initChat() {
             clearChatBtn.style.opacity = '1';
             clearChatBtn.style.cursor = 'pointer';
             clearChatBtn.addEventListener('click', async () => {
-                const confirmed = confirm('Are you sure you want to clear your chat history? This cannot be undone.');
-                if (!confirmed) return;
-                await clearChatHistoryFrontend();
+                showConfirm('Clear your entire chat history? This cannot be undone.', async () => {
+                    await clearChatHistoryFrontend();
+                }, { title: 'Clear Chat History', variant: 'danger', confirmLabel: 'Clear All' });
             });
         }
     }
@@ -1994,12 +2041,13 @@ function initChat() {
             });
 
             row.querySelector('.perm-delete').addEventListener('click', () => {
-                if (!confirm('Permanently delete this chat? This cannot be undone.')) return;
-                let list = JSON.parse(localStorage.getItem('stockSense_deletedChats') || '[]');
-                list = list.filter(s => s.id !== sess.id);
-                localStorage.setItem('stockSense_deletedChats', JSON.stringify(list));
-                renderTrashModal();
-                showToast('Chat permanently deleted', 'success');
+                showConfirm('Permanently delete this chat? This cannot be undone.', () => {
+                    let list = JSON.parse(localStorage.getItem('stockSense_deletedChats') || '[]');
+                    list = list.filter(s => s.id !== sess.id);
+                    localStorage.setItem('stockSense_deletedChats', JSON.stringify(list));
+                    renderTrashModal();
+                    showToast('Chat permanently deleted', 'success');
+                }, { title: 'Delete Forever', variant: 'danger', confirmLabel: 'Delete' });
             });
 
             trashModalBody.appendChild(row);
@@ -2061,21 +2109,23 @@ function initChat() {
     // ── Helpers: animated collapse / expand ─────────────────────────────
     function collapseSidebar() {
         if (!insightsLayoutGrid || !chatSidebarEl) return;
-        // Add animating class so CSS transition fires
-        chatSidebarEl.classList.add('sidebar-animating');
+        // Cancel any in-progress expand, apply snappy ease-in collapse
+        chatSidebarEl.classList.remove('sidebar-expanding');
+        chatSidebarEl.classList.add('sidebar-collapsing');
         insightsLayoutGrid.classList.add('sidebar-collapsed');
-        // Remove animating class once the transition ends
         chatSidebarEl.addEventListener('transitionend', () => {
-            chatSidebarEl.classList.remove('sidebar-animating');
+            chatSidebarEl.classList.remove('sidebar-collapsing');
         }, { once: true });
     }
 
     function expandSidebar() {
         if (!insightsLayoutGrid || !chatSidebarEl) return;
-        chatSidebarEl.classList.add('sidebar-animating');
+        // Cancel any in-progress collapse, apply smooth ease-out expand
+        chatSidebarEl.classList.remove('sidebar-collapsing');
+        chatSidebarEl.classList.add('sidebar-expanding');
         insightsLayoutGrid.classList.remove('sidebar-collapsed');
         chatSidebarEl.addEventListener('transitionend', () => {
-            chatSidebarEl.classList.remove('sidebar-animating');
+            chatSidebarEl.classList.remove('sidebar-expanding');
         }, { once: true });
     }
 
@@ -2508,8 +2558,11 @@ function createNewSession() {
 }
 
 function deleteChatSession(id) {
-    const confirmDelete = confirm('Are you sure you want to delete this conversation?');
-    if (!confirmDelete) return;
+    showConfirm('Are you sure you want to delete this conversation?', () => {
+        _doDeleteChatSession(id);
+    }, { title: 'Delete Conversation', variant: 'danger', confirmLabel: 'Delete' });
+}
+function _doDeleteChatSession(id) {
 
     // Save to deleted/trash list
     const session = chatSessions.find(s => s.id === id);
@@ -2759,49 +2812,58 @@ function parseChatMessageContent(content) {
     });
     
     // 2. Parse [RESTOCK:sku|name|stock] tags into action cards
-    const restockRegex = /\[RESTOCK:([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
-    processed = processed.replace(restockRegex, (match, sku, name, stock) => {
-        const parsedStock = parseInt(stock) || 0;
-        return `
-        <div class="chat-restock-card">
-            <div class="card-info-pane">
-                <div class="card-title-line">
-                    <h4>${name}</h4>
+    const restockBlockRegex = /((?:\[RESTOCK:[^\]]+\]\r?\n?\s*)+)/g;
+    processed = processed.replace(restockBlockRegex, (blockMatch) => {
+        const restockRegex = /\[RESTOCK:([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
+        let cardsHtml = '';
+        blockMatch.replace(restockRegex, (match, sku, name, stock) => {
+            const parsedStock = parseInt(stock) || 0;
+            cardsHtml += `
+            <div class="chat-restock-card">
+                <div class="card-horizontal-content">
                     <span class="card-badge restock">Replenish Alert</span>
+                    <span class="card-product-name" title="${name}">${name}</span>
+                    <span class="card-sku">SKU: <code>${sku}</code></span>
+                    <span class="card-separator">&bull;</span>
+                    <span class="card-stock">Stock: <strong>${parsedStock.toLocaleString()}</strong></span>
                 </div>
-                <div class="card-desc-line">SKU: <code>${sku}</code></div>
-                <div class="card-metrics-row">
-                    <span class="card-metric">Current Stock: <strong>${parsedStock.toLocaleString()}</strong></span>
+                <div class="card-action-pane">
+                    <button type="button" class="primary-btn timeline-po-btn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; height: 30px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.3rem; font-weight: 600; margin: 0;" onclick="window.openDraftPO('${sku}', '${name.replace(/'/g, "\\'")}', ${parsedStock})">
+                        <i class="fa-solid fa-bolt"></i> Draft PO
+                    </button>
                 </div>
             </div>
-            <div class="card-action-pane">
-                <button type="button" class="primary-btn timeline-po-btn" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; height: 32px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.35rem; font-weight: 600;" onclick="window.openDraftPO('${sku}', '${name.replace(/'/g, "\\'")}', ${parsedStock})">
-                    <i class="fa-solid fa-bolt"></i> Draft PO
-                </button>
-            </div>
-        </div>
-        `;
+            `;
+            return '';
+        });
+        return `<div class="chat-cards-grid">${cardsHtml}</div>`;
     });
     
     // 3. Parse [PROMO:discount|sku|name|reason] tags into campaign recommendation chips
-    const promoRegex = /\[PROMO:([^|\]]+)\|([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
-    processed = processed.replace(promoRegex, (match, discount, sku, name, reason) => {
-        return `
-        <div class="chat-promo-card">
-            <div class="card-info-pane">
-                <div class="card-title-line">
-                    <h4>${name}</h4>
-                    <span class="card-badge promo">${discount} Promo Opportunity</span>
+    const promoBlockRegex = /((?:\[PROMO:[^\]]+\]\r?\n?\s*)+)/g;
+    processed = processed.replace(promoBlockRegex, (blockMatch) => {
+        const promoRegex = /\[PROMO:([^|\]]+)\|([^|\]]+)\|([^|\]]+)\|([^\]]+)\]/g;
+        let cardsHtml = '';
+        blockMatch.replace(promoRegex, (match, discount, sku, name, reason) => {
+            cardsHtml += `
+            <div class="chat-promo-card">
+                <div class="card-horizontal-content">
+                    <span class="card-badge promo">${discount} Promo</span>
+                    <span class="card-product-name" title="${name}">${name}</span>
+                    <span class="card-sku">SKU: <code>${sku}</code></span>
+                    <span class="card-separator">&bull;</span>
+                    <span class="card-reason">${reason}</span>
                 </div>
-                <div class="card-desc-line">SKU: <code>${sku}</code> &bull; ${reason}</div>
+                <div class="card-action-pane">
+                    <button type="button" class="primary-btn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; height: 30px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.3rem; font-weight: 600; margin: 0; background: linear-gradient(135deg, var(--status-warning), #d97706); border-color: rgba(245,158,11,0.4);" onclick="switchView('dashboard'); setTimeout(() => { document.getElementById('promo-planner-section').scrollIntoView({ behavior: 'smooth' }); }, 500);">
+                        <i class="fa-solid fa-calendar-plus"></i> View Planner
+                    </button>
+                </div>
             </div>
-            <div class="card-action-pane">
-                <button type="button" class="primary-btn" style="padding: 0.4rem 0.85rem; font-size: 0.78rem; height: 32px; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.35rem; font-weight: 600; background: linear-gradient(135deg, var(--status-warning), #d97706); border-color: rgba(245,158,11,0.4);" onclick="switchView('dashboard'); setTimeout(() => { document.getElementById('promo-planner-section').scrollIntoView({ behavior: 'smooth' }); }, 500);">
-                    <i class="fa-solid fa-calendar-plus"></i> View Planner
-                </button>
-            </div>
-        </div>
-        `;
+            `;
+            return '';
+        });
+        return `<div class="chat-cards-grid">${cardsHtml}</div>`;
     });
     
     // Standard conversions
@@ -3751,9 +3813,8 @@ function setupCsvUpload() {
     }
 
     if (clearFileBtn) {
-        clearFileBtn.addEventListener('click', async () => {
-            const confirmed = confirm('Remove CSV data? This will clear all inventory and forecast data from the app so it is ready for a fresh upload.');
-            if (!confirmed) return;
+        clearFileBtn.addEventListener('click', () => {
+            showConfirm('Remove CSV data? This will clear all inventory and forecast data from the app so it is ready for a fresh upload.', async () => {
 
             // Wipe backend DB (inventory + forecasts) for this org
             try {
@@ -3776,7 +3837,8 @@ function setupCsvUpload() {
             // Full page reload — app is now fresh and ready for another upload
             window.location.reload();
         });
-    }
+    });
+}
 
     if (!fileInput || !uploadBtn) return;
     
@@ -5318,8 +5380,8 @@ function initUserProfile() {
     // 2b. Avatar Remove Logic
     const removeAvatarBtn = document.getElementById('removeAvatarBtn');
     if (removeAvatarBtn) {
-        removeAvatarBtn.addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to remove your organization logo?')) return;
+        removeAvatarBtn.addEventListener('click', () => {
+            showConfirm('Are you sure you want to remove your organization logo?', async () => {
             
             try {
                 const avatarInput = document.getElementById('settingAvatarUrl');
@@ -5353,7 +5415,8 @@ function initUserProfile() {
                 addNotification('Removal Failed', 'Could not remove your organization logo.', 'warning');
             }
         });
-    }
+    });
+}
     
     // 3. Profile Dropdown Toggle
     const profileBtn = document.getElementById('userProfileBtn');
@@ -5395,14 +5458,12 @@ function initUserProfile() {
     if (dropdownLogoutBtn) {
         dropdownLogoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if(confirm('Are you sure you want to sign out?')) {
-                // Clear state
+            showConfirm('You will be signed out of StockSense AI.', () => {
                 localStorage.removeItem('stockSense_storeName');
                 localStorage.removeItem('stockSense_industry');
                 localStorage.removeItem('stockSense_jwt');
-                // Reload to reset
                 window.location.reload();
-            }
+            }, { title: 'Sign Out', variant: 'warn', confirmLabel: 'Sign Out' });
         });
     }
     
@@ -5421,12 +5482,12 @@ function initUserProfile() {
     if (mobileLogoutBtn) {
         mobileLogoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if(confirm('Are you sure you want to sign out?')) {
+            showConfirm('You will be signed out of StockSense AI.', () => {
                 localStorage.removeItem('stockSense_storeName');
                 localStorage.removeItem('stockSense_industry');
                 localStorage.removeItem('stockSense_jwt');
                 window.location.reload();
-            }
+            }, { title: 'Sign Out', variant: 'warn', confirmLabel: 'Sign Out' });
         });
     }
     
@@ -5496,12 +5557,9 @@ function initUserProfile() {
     // 5. Danger Zone — Purge All Data
     const purgeBtn = document.getElementById('purgeDataBtn');
     if (purgeBtn) {
-        purgeBtn.addEventListener('click', async () => {
+        purgeBtn.addEventListener('click', () => {
             const orgName = localStorage.getItem('stockSense_storeName') || 'your organization';
-            const confirmed = confirm(
-                `⚠️ WARNING: This will permanently delete ALL inventory items and chat history for "${orgName}".\n\nThis action cannot be undone. Are you absolutely sure?`
-            );
-            if (!confirmed) return;
+            showConfirm(`This will permanently delete ALL inventory and chat history for "${orgName}". This cannot be undone.`, async () => {
 
             const originalText = purgeBtn.innerHTML;
             purgeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Purging...';
@@ -5540,7 +5598,8 @@ function initUserProfile() {
                 purgeBtn.disabled = false;
             }
         });
-    }
+    });
+}
 }
 
 function updateUserProfileUI(name, role, avatarUrl) {
@@ -9405,9 +9464,9 @@ async function loadPoLedger() {
             document.querySelectorAll('.action-delete-po').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const poId = e.currentTarget.getAttribute('data-po-id');
-                    if (confirm(`Are you sure you want to delete PO Record ${poId}?`)) {
+                    showConfirm(`Are you sure you want to delete PO Record ${poId}?`, async () => {
                         await deletePo(poId);
-                    }
+                    });
                 });
             });
         }

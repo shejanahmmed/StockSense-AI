@@ -2940,6 +2940,21 @@
         </div>
     </div>
 
+    <!-- Custom Confirm Modal (replaces native browser confirm()) -->
+    <div class="custom-confirm-overlay" id="customConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="customConfirmTitle">
+        <div class="custom-confirm-box" id="customConfirmBox">
+            <div class="custom-confirm-icon-wrap" id="customConfirmIconWrap">
+                <i class="fa-solid fa-triangle-exclamation" id="customConfirmIcon"></i>
+            </div>
+            <h3 class="custom-confirm-title" id="customConfirmTitle">Are you sure?</h3>
+            <p class="custom-confirm-message" id="customConfirmMessage"></p>
+            <div class="custom-confirm-actions">
+                <button type="button" class="custom-confirm-cancel" id="customConfirmCancel">Cancel</button>
+                <button type="button" class="custom-confirm-ok" id="customConfirmOk">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="app_v11.js"></script>
