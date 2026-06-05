@@ -3717,45 +3717,78 @@ function renderPromoSuggestions(suggestions) {
         
         const isScheduled = scheduledPromoIds.has(promo.id);
         const btnHtml = isScheduled ? `
-            <button class="secondary-btn promo-schedule-btn" style="width: 100%; margin-top: 0.75rem; font-size: 0.8rem; justify-content: center; padding: 0.5rem; gap: 0.35rem; opacity: 0.65; cursor: not-allowed; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);" disabled>
-                <i class="fa-solid fa-calendar-check" style="color: var(--status-success);"></i> Campaign Scheduled
+            <button class="promo-schedule-btn scheduled" disabled>
+                <i class="fa-solid fa-circle-check"></i> Campaign Scheduled
             </button>
         ` : `
-            <button class="primary-btn promo-schedule-btn" id="btn-promo-${promo.id}" style="width: 100%; margin-top: 0.75rem; font-size: 0.8rem; justify-content: center; padding: 0.5rem; gap: 0.35rem;" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}', '${promo.type}', '${promo.start_date}', '${promo.end_date}', '${promo.target_product.replace(/'/g, "\\'")}', '${promo.target_sku}', '${promo.expected_impact}', '${promo.urgency}', '${promo.reason.replace(/'/g, "\\'")}')">
+            <button class="promo-schedule-btn unscheduled" id="btn-promo-${promo.id}" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}', '${promo.type}', '${promo.start_date}', '${promo.end_date}', '${promo.target_product.replace(/'/g, "\\'")}', '${promo.target_sku}', '${promo.expected_impact}', '${promo.urgency}', '${promo.reason.replace(/'/g, "\\'")}')">
                 <i class="fa-solid fa-calendar-plus"></i> Schedule Campaign
             </button>
         `;
 
+        // Extract percentage/metric number and the text (e.g. "+35% Sales Lift" -> "+35%", "Sales Lift")
+        let impactVal = '';
+        let impactLbl = promo.expected_impact || '';
+        const regexMatch = String(promo.expected_impact).match(/^([\+\-]?\d+%)\s*(.*)$/);
+        if (regexMatch) {
+            impactVal = regexMatch[1];
+            impactLbl = regexMatch[2];
+        } else {
+            const standalonePct = String(promo.expected_impact).match(/(\d+%)/);
+            if (standalonePct) {
+                impactVal = standalonePct[1];
+                impactLbl = String(promo.expected_impact).replace(standalonePct[1], '').trim();
+            }
+        }
+
+        const impactInner = impactVal ? `
+            <div class="impact-metric-row">
+                <span class="impact-val-num">${impactVal}</span>
+                <span class="impact-val-lbl">${impactLbl}</span>
+            </div>
+        ` : `
+            <div class="impact-metric-row">
+                <span class="impact-val-lbl-full">${impactLbl}</span>
+            </div>
+        `;
+
         html += `
             <div class="promo-card ${badgeClass}">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 0.5rem;">
+                <div class="promo-card-header">
                     <span class="promo-badge-tag ${badgeClass}">
                         <i class="fa-solid ${typeIcon}"></i> ${promo.type}
                     </span>
-                    <span class="badge ${promo.urgency === 'High' ? 'warning-badge' : 'neutral'}" style="${promo.urgency === 'High' ? 'background: var(--status-danger-bg); color: var(--status-danger); border-color: rgba(239, 68, 68, 0.2); margin: 0;' : 'margin: 0;'}">
-                        ${promo.urgency} Urgency
+                    <span class="promo-urgency-badge ${promo.urgency.toLowerCase()}">
+                        <i class="fa-solid ${promo.urgency === 'High' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i> ${promo.urgency} Urgency
                     </span>
                 </div>
                 
-                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-top: 0.25rem; font-weight: 600; line-height: 1.3;">${promo.title}</h3>
+                <h3 class="promo-card-title">${promo.title}</h3>
                 
-                <div class="promo-meta" style="margin-top: -0.25rem;">
-                    <span class="promo-dates" style="font-size: 0.75rem;"><i class="fa-regular fa-calendar"></i> ${startStr} - ${endStr}</span>
-                    <span class="promo-lift" style="font-size: 0.8rem; font-weight: 700; color: var(--status-success);">${promo.expected_impact}</span>
+                <div class="promo-card-dates">
+                    <i class="fa-regular fa-calendar-days"></i>
+                    <span>${startStr} &mdash; ${endStr}</span>
                 </div>
                 
-                <p class="promo-card-reason" style="margin-top: -0.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; flex-grow: 1;">${promo.reason}</p>
+                <div class="promo-impact-showcase ${badgeClass}">
+                    <div class="impact-label">Projected Benefit</div>
+                    ${impactInner}
+                </div>
                 
-                ${btnHtml}
+                <p class="promo-card-reason">${promo.reason}</p>
                 
-                <div class="promo-card-footer" style="margin-top: 0.75rem;">
+                <div class="promo-action-wrapper">
+                    ${btnHtml}
+                </div>
+                
+                <div class="promo-card-footer">
                     <div class="promo-target-label">
-                        <span>Target Item</span>
-                        <span title="${promo.target_product}">${promo.target_product}</span>
+                        <span class="footer-label">Target Product</span>
+                        <span class="footer-value" title="${promo.target_product}">${promo.target_product}</span>
                     </div>
                     <div class="promo-target-label" style="text-align: right;">
-                        <span>Product Code</span>
-                        <span style="font-family: monospace; font-size: 0.85rem; color: var(--accent-primary); font-weight: 700;">${promo.target_sku || 'N/A'}</span>
+                        <span class="footer-label">SKU Code</span>
+                        <span class="footer-sku-code">${promo.target_sku || 'N/A'}</span>
                     </div>
                 </div>
             </div>
