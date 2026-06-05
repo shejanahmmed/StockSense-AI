@@ -43,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Initialize Notifications
     initNotifications();
 
+    // 5b. Initialize Theme Toggle
+    initThemeToggle();
+
     // 6. Setup Navigation
     setupNavigation();
 
@@ -3182,7 +3185,7 @@ function updateBIMetrics(metrics) {
         let html = '';
         
         let timelineList = metrics.timeline;
-        if (_showAllTimeline && fullInventoryData && fullInventoryData.length > 0) {
+        if (fullInventoryData && fullInventoryData.length > 0) {
             timelineList = fullInventoryData.map(p => {
                 let urgency = 'Healthy';
                 if (p.status === 'Out of Stock') urgency = 'Critical';
@@ -3333,7 +3336,7 @@ function updateBIMetrics(metrics) {
         
         // Resilient Fallback: If cache is stale and only contains <= 5 items, but full database has more,
         // dynamically reconstruct the sorted margin list from full inventory data.
-        if (_showAllDrivers && fullInventoryData && fullInventoryData.length > 5) {
+        if (fullInventoryData && fullInventoryData.length > 5) {
             const sortedInventory = [...fullInventoryData].sort((a, b) => (b.forecasted_demand || 0) - (a.forecasted_demand || 0));
             topProductsList = sortedInventory.map((p, i) => ({
                 name: p.name,
@@ -3434,6 +3437,33 @@ function initNotifications() {
         list.innerHTML = '<p class="empty-state">No new notifications</p>';
         unreadNotifications = 0;
         document.getElementById('notificationDot').style.display = 'none';
+    });
+}
+
+// ==========================================
+// Theme Toggle System (Dark / Light)
+// ==========================================
+function initThemeToggle() {
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (!themeBtn) return;
+
+    // Load active theme preference or default to dark
+    const storedTheme = localStorage.getItem('theme') || 'dark';
+    if (storedTheme === 'light') {
+        themeBtn.classList.add('light');
+    }
+
+    themeBtn.addEventListener('click', () => {
+        const isCurrentlyLight = themeBtn.classList.contains('light');
+        if (isCurrentlyLight) {
+            themeBtn.classList.remove('light');
+            localStorage.setItem('theme', 'dark');
+            addNotification('Theme Switched', 'Dark mode activated.', 'success');
+        } else {
+            themeBtn.classList.add('light');
+            localStorage.setItem('theme', 'light');
+            addNotification('Theme Switched', 'Light mode toggled (styles coming soon!).', 'info');
+        }
     });
 }
 
