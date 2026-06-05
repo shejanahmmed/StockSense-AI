@@ -7421,27 +7421,90 @@ function initHelpChat() {
     
     if (!aiHelpToggle || !aiHelpPanel) return;
 
+    let chatbotMode = 'insight'; // 'insight' or 'guide'
     let aiHelpHistory = [];
-    
-    // Restore session from localStorage if exists
+    let aiInsightFloatingHistory = [];
+
+    const greetingInsight = `Hello! 👋 I am your AI Insight co-pilot. I can help you analyze your inventory, predict stockouts, suggest strategies, or query your sales history. How can I assist you today?`;
+    const greetingGuide = `Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!`;
+
+    const chipsInsight = `
+        <button class="ai-help-chip" data-query="Identify products with high risk of stockouts">💡 Predict stockouts</button>
+        <button class="ai-help-chip" data-query="Analyze my sales trends and drivers">📊 Sales analysis</button>
+        <button class="ai-help-chip" data-query="Recommend custom reorder levels for my inventory">📦 Optimize reorder</button>
+        <button class="ai-help-chip" data-query="Suggest pricing or clearance strategies based on current stock">💰 Strategy advice</button>
+    `;
+    const chipsGuide = `
+        <button class="ai-help-chip" data-query="How do I change the Forecasting Strategy?">💡 Change Strategy</button>
+        <button class="ai-help-chip" data-query="What do the SHAP demand drivers mean?">📊 Explain SHAP</button>
+        <button class="ai-help-chip" data-query="How do I upload custom product CSVs?">📦 Upload CSV</button>
+        <button class="ai-help-chip" data-query="Is my inventory data secure?">🔒 Privacy &amp; Security</button>
+    `;
+
+    // Restore sessions from localStorage if they exist
     try {
-        const savedHistory = JSON.parse(localStorage.getItem('stockSense_helpChatHistory') || '[]');
-        if (savedHistory && savedHistory.length > 0) {
-            aiHelpHistory = savedHistory;
-            // Keep the first welcome message, clear other UI, then reload all
-            aiHelpMessages.innerHTML = `
-                <div class="ai-help-message assistant">
-                    <div class="ai-help-bubble">
-                        Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!
-                    </div>
-                </div>
-            `;
-            aiHelpHistory.forEach(msg => {
-                appendHelpMessage(msg.role, msg.content);
-            });
-        }
+        aiHelpHistory = JSON.parse(localStorage.getItem('stockSense_helpChatHistory') || '[]');
+        aiInsightFloatingHistory = JSON.parse(localStorage.getItem('stockSense_insightFloatingChatHistory') || '[]');
     } catch (e) {
-        console.warn('Could not load saved help chat history:', e);
+        console.warn('Could not load saved chat histories:', e);
+    }
+
+    function renderActiveHistory() {
+        const activeHistory = chatbotMode === 'insight' ? aiInsightFloatingHistory : aiHelpHistory;
+        const defaultGreeting = chatbotMode === 'insight' ? greetingInsight : greetingGuide;
+
+        aiHelpMessages.innerHTML = `
+            <div class="ai-help-message assistant">
+                <div class="ai-help-bubble">
+                    ${defaultGreeting}
+                </div>
+            </div>
+        `;
+
+        activeHistory.forEach(msg => {
+            appendHelpMessage(msg.role, msg.content);
+        });
+
+        aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+    }
+
+    function switchMode(newMode) {
+        chatbotMode = newMode;
+        
+        aiHelpPanel.setAttribute('data-mode', chatbotMode);
+
+        const btnInsight = document.getElementById('btnModeInsight');
+        const btnGuide = document.getElementById('btnModeGuide');
+        if (btnInsight && btnGuide) {
+            if (chatbotMode === 'insight') {
+                btnInsight.classList.add('active');
+                btnGuide.classList.remove('active');
+            } else {
+                btnGuide.classList.add('active');
+                btnInsight.classList.remove('active');
+            }
+        }
+
+        const avatarEl = document.getElementById('aiHelpAvatar');
+        const titleEl = document.getElementById('aiChatPanelTitle');
+        const subtitleEl = document.getElementById('aiChatPanelSubtitle');
+        const suggestionsEl = document.getElementById('aiHelpSuggestions');
+        
+        if (chatbotMode === 'insight') {
+            if (avatarEl) avatarEl.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+            if (titleEl) titleEl.textContent = 'StockSense AI Insight';
+            if (subtitleEl) subtitleEl.innerHTML = '<span class="ai-help-status-dot"></span> Chatting Agent';
+            if (suggestionsEl) suggestionsEl.innerHTML = chipsInsight;
+            if (aiHelpInput) aiHelpInput.placeholder = 'Type a message or analytical question...';
+        } else {
+            if (avatarEl) avatarEl.innerHTML = '<i class="fa-solid fa-robot"></i>';
+            if (titleEl) titleEl.textContent = 'StockSense AI Guide';
+            if (subtitleEl) subtitleEl.innerHTML = '<span class="ai-help-status-dot"></span> Online Guide Agent';
+            if (suggestionsEl) suggestionsEl.innerHTML = chipsGuide;
+            if (aiHelpInput) aiHelpInput.placeholder = 'Type a guide question...';
+        }
+
+        renderActiveHistory();
     }
 
     // Toggle panel open/close
@@ -7462,29 +7525,30 @@ function initHelpChat() {
 
     if (aiHelpClear) {
         aiHelpClear.addEventListener('click', () => {
-            aiHelpHistory = [];
-            localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
-            aiHelpMessages.innerHTML = `
-                <div class="ai-help-message assistant">
-                    <div class="ai-help-bubble">
-                        Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!
-                    </div>
-                </div>
-            `;
-            aiHelpMessages.scrollTop = 0;
+            if (chatbotMode === 'insight') {
+                aiInsightFloatingHistory = [];
+                localStorage.setItem('stockSense_insightFloatingChatHistory', JSON.stringify(aiInsightFloatingHistory));
+            } else {
+                aiHelpHistory = [];
+                localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
+            }
+            renderActiveHistory();
         });
     }
 
-    // Suggestion chips handler
-    document.querySelectorAll('.ai-help-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
+    // Delegated suggestion chips handler
+    const suggestionsContainer = document.getElementById('aiHelpSuggestions');
+    if (suggestionsContainer) {
+        suggestionsContainer.addEventListener('click', (e) => {
+            const chip = e.target.closest('.ai-help-chip');
+            if (!chip) return;
             const question = chip.getAttribute('data-query');
             if (!question) return;
             aiHelpInput.value = question;
             aiHelpInput.focus();
             sendHelpMessage();
         });
-    });
+    }
 
     if (aiHelpInput) {
         aiHelpInput.addEventListener('keypress', (e) => {
@@ -7496,18 +7560,29 @@ function initHelpChat() {
         aiHelpSend.addEventListener('click', () => sendHelpMessage());
     }
 
+    // Setup mode selector listeners
+    const btnModeInsight = document.getElementById('btnModeInsight');
+    const btnModeGuide = document.getElementById('btnModeGuide');
+    if (btnModeInsight) {
+        btnModeInsight.addEventListener('click', () => switchMode('insight'));
+    }
+    if (btnModeGuide) {
+        btnModeGuide.addEventListener('click', () => switchMode('guide'));
+    }
+
+    // Render initial history
+    renderActiveHistory();
+
     function appendHelpMessage(role, content) {
         if (!content) return;
         const div = document.createElement('div');
         div.className = `ai-help-message ${role}`;
         
-        // Basic markdown-like rendering for bolding, bullet points, and newlines
         let renderedContent = content
             .replace(/\n/g, '<br>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
             
-        // Group raw <li> tags into <ul> tags
         if (renderedContent.includes('<li>')) {
             renderedContent = renderedContent.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
             renderedContent = renderedContent.replace(/<\/ul>\s*<ul>/g, '');
@@ -7523,162 +7598,223 @@ function initHelpChat() {
         const text = aiHelpInput.value.trim();
         if (!text) return;
 
-        // 1. Render User message
+        // Render User message
         appendHelpMessage('user', text);
         aiHelpInput.value = '';
 
-        // 2. Add Typing Indicator
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'ai-help-message assistant typing-indicator-container';
-        typingIndicator.innerHTML = `
-            <div class="ai-help-bubble" style="background:transparent; border:none; padding:0.25rem 0;">
-                <div class="ai-help-typing-indicator">
-                    <span class="ai-help-dot"></span>
-                    <span class="ai-help-dot"></span>
-                    <span class="ai-help-dot"></span>
+        if (chatbotMode === 'insight') {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'ai-help-message assistant typing-indicator-container';
+            typingIndicator.innerHTML = `
+                <div class="ai-help-bubble" style="background:transparent; border:none; padding:0.25rem 0;">
+                    <div class="ai-help-typing-indicator">
+                        <span class="ai-help-dot"></span>
+                        <span class="ai-help-dot"></span>
+                        <span class="ai-help-dot"></span>
+                    </div>
                 </div>
-            </div>
-        `;
-        aiHelpMessages.appendChild(typingIndicator);
-        aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            `;
+            aiHelpMessages.appendChild(typingIndicator);
+            aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
 
-        // Prepare history payload
-        const payloadHistory = aiHelpHistory.map(m => ({ role: m.role, content: m.content }));
-
-        try {
-            const token = localStorage.getItem('stockSense_jwt');
-            
-            const response = await fetch('/api/docs/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify({
-                    message: text,
-                    history: payloadHistory
-                })
-            });
-
-            // Remove typing indicator
-            typingIndicator.remove();
-
-            if (!response.ok) {
-                const errRes = await response.json().catch(() => ({}));
-                const detail = errRes.message || errRes.detail || 'Guide agent is currently locked or unavailable.';
-                appendHelpMessage('assistant', `⚠️ ${detail}`);
-                return;
-            }
-
-            // 3. Setup Streaming Response Reader
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            
-            let assistantBubble = appendHelpMessage('assistant', ' ');
-            let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
-            let fullResponseText = '';
-
-            // Scroll the chat panel so the response starts 4-5 lines (~100px) below the top, keeping the user's question visible
-            aiHelpMessages.scrollTop = Math.max(0, assistantBubble.offsetTop - 100);
-
-            // Throttled high-performance renderer to prevent browser main-thread lag with fast streams
-            let lastRenderTime = 0;
-            let renderTimeout = null;
-
-            function updateBubble() {
-                let liveRender = fullResponseText
-                    .replace(/\n/g, '<br>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+                const activeStrategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
                 
-                if (liveRender.includes('<li>')) {
-                    liveRender = liveRender.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-                    liveRender = liveRender.replace(/<\/ul>\s*<ul>/g, '');
+                let invContext = typeof currentInventoryContext !== 'undefined' ? currentInventoryContext : null;
+                if (!invContext) {
+                    invContext = { info: "SME Electronics Store Inventory" };
                 }
-                bubbleElement.innerHTML = liveRender;
-            }
 
-            function queueRender(force = false) {
-                const now = performance.now();
-                if (force) {
-                    if (renderTimeout) {
-                        clearTimeout(renderTimeout);
-                        renderTimeout = null;
-                    }
-                    updateBubble();
-                    lastRenderTime = now;
+                const payloadHistory = aiInsightFloatingHistory.map(m => ({ role: m.role, content: m.content }));
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        history: payloadHistory,
+                        inventory_context: invContext,
+                        currency: currency,
+                        strategy: activeStrategy
+                    })
+                });
+
+                typingIndicator.remove();
+
+                if (!response.ok) {
+                    const errRes = await response.json().catch(() => ({}));
+                    const detail = errRes.message || errRes.detail || 'Insight agent is currently locked or unavailable.';
+                    appendHelpMessage('assistant', `⚠️ ${detail}`);
                     return;
                 }
 
-                const timeSinceLast = now - lastRenderTime;
-                if (timeSinceLast >= 60) {
-                    if (renderTimeout) {
-                        clearTimeout(renderTimeout);
-                        renderTimeout = null;
+                const result = await response.json();
+                if (result.status === 'success') {
+                    appendHelpMessage('assistant', result.response);
+                    
+                    aiInsightFloatingHistory.push({ role: 'user', content: text });
+                    aiInsightFloatingHistory.push({ role: 'assistant', content: result.response });
+
+                    if (aiInsightFloatingHistory.length > 20) {
+                        aiInsightFloatingHistory = aiInsightFloatingHistory.slice(-20);
                     }
-                    updateBubble();
-                    lastRenderTime = now;
-                } else {
-                    if (!renderTimeout) {
-                        renderTimeout = setTimeout(() => {
-                            updateBubble();
-                            lastRenderTime = performance.now();
-                            renderTimeout = null;
-                        }, 60 - timeSinceLast);
-                    }
+                    localStorage.setItem('stockSense_insightFloatingChatHistory', JSON.stringify(aiInsightFloatingHistory));
                 }
+            } catch (error) {
+                console.error('Error in sendHelpMessage (Insight):', error);
+                typingIndicator.remove();
+                appendHelpMessage('assistant', "⚠️ I'm sorry, I encountered an error connecting to the AI server. Please try again.");
             }
+        } else {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'ai-help-message assistant typing-indicator-container';
+            typingIndicator.innerHTML = `
+                <div class="ai-help-bubble" style="background:transparent; border:none; padding:0.25rem 0;">
+                    <div class="ai-help-typing-indicator">
+                        <span class="ai-help-dot"></span>
+                        <span class="ai-help-dot"></span>
+                        <span class="ai-help-dot"></span>
+                    </div>
+                </div>
+            `;
+            aiHelpMessages.appendChild(typingIndicator);
+            aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
 
-            let buffer = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            const payloadHistory = aiHelpHistory.map(m => ({ role: m.role, content: m.content }));
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
+            try {
+                const token = localStorage.getItem('stockSense_jwt');
+                const response = await fetch('/api/docs/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        history: payloadHistory
+                    })
+                });
+
+                typingIndicator.remove();
+
+                if (!response.ok) {
+                    const errRes = await response.json().catch(() => ({}));
+                    const detail = errRes.message || errRes.detail || 'Guide agent is currently locked or unavailable.';
+                    appendHelpMessage('assistant', `⚠️ ${detail}`);
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
                 
-                buffer = lines.pop();
+                let assistantBubble = appendHelpMessage('assistant', ' ');
+                let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
+                let fullResponseText = '';
 
-                for (const line of lines) {
-                    const cleanedLine = line.trim();
-                    if (!cleanedLine) continue;
+                aiHelpMessages.scrollTop = Math.max(0, assistantBubble.offsetTop - 100);
 
-                    if (cleanedLine === 'data: [DONE]') {
-                        break;
+                let lastRenderTime = 0;
+                let renderTimeout = null;
+
+                function updateBubble() {
+                    let liveRender = fullResponseText
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/^\s*[-*]\s+(.*)$/gm, '<li>$1</li>');
+                    
+                    if (liveRender.includes('<li>')) {
+                        liveRender = liveRender.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+                        liveRender = liveRender.replace(/<\/ul>\s*<ul>/g, '');
+                    }
+                    bubbleElement.innerHTML = liveRender;
+                }
+
+                function queueRender(force = false) {
+                    const now = performance.now();
+                    if (force) {
+                        if (renderTimeout) {
+                            clearTimeout(renderTimeout);
+                            renderTimeout = null;
+                        }
+                        updateBubble();
+                        lastRenderTime = now;
+                        return;
                     }
 
-                    if (cleanedLine.startsWith('data: ')) {
-                        try {
-                            const jsonPayload = JSON.parse(cleanedLine.substring(6));
-                            if (jsonPayload.token) {
-                                fullResponseText += jsonPayload.token;
-                                queueRender();
-                            } else if (jsonPayload.error) {
-                                queueRender(true);
-                                bubbleElement.innerHTML += `<br>⚠️ *Error: ${jsonPayload.error}*`;
-                            }
-                        } catch (e) {
-                            console.warn('Error parsing stream token:', e, cleanedLine);
+                    const timeSinceLast = now - lastRenderTime;
+                    if (timeSinceLast >= 60) {
+                        if (renderTimeout) {
+                            clearTimeout(renderTimeout);
+                            renderTimeout = null;
+                        }
+                        updateBubble();
+                        lastRenderTime = now;
+                    } else {
+                        if (!renderTimeout) {
+                            renderTimeout = setTimeout(() => {
+                                updateBubble();
+                                lastRenderTime = performance.now();
+                                renderTimeout = null;
+                            }, 60 - timeSinceLast);
                         }
                     }
                 }
-            }
 
-            // Ensure the final state is rendered fully
-            queueRender(true);
+                let buffer = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-            // Store in history
-            aiHelpHistory.push({ role: 'user', content: text });
-            aiHelpHistory.push({ role: 'assistant', content: fullResponseText });
-            
-            if (aiHelpHistory.length > 20) {
-                aiHelpHistory = aiHelpHistory.slice(-20);
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        const cleanedLine = line.trim();
+                        if (!cleanedLine) continue;
+
+                        if (cleanedLine === 'data: [DONE]') {
+                            break;
+                        }
+
+                        if (cleanedLine.startsWith('data: ')) {
+                            try {
+                                const jsonPayload = JSON.parse(cleanedLine.substring(6));
+                                if (jsonPayload.token) {
+                                    fullResponseText += jsonPayload.token;
+                                    queueRender();
+                                } else if (jsonPayload.error) {
+                                    queueRender(true);
+                                    bubbleElement.innerHTML += `<br>⚠️ *Error: ${jsonPayload.error}*`;
+                                }
+                            } catch (e) {
+                                console.warn('Error parsing stream token:', e, cleanedLine);
+                            }
+                        }
+                    }
+                }
+
+                queueRender(true);
+
+                aiHelpHistory.push({ role: 'user', content: text });
+                aiHelpHistory.push({ role: 'assistant', content: fullResponseText });
+                
+                if (aiHelpHistory.length > 20) {
+                    aiHelpHistory = aiHelpHistory.slice(-20);
+                }
+                localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
+
+            } catch (error) {
+                console.error('Error in sendHelpMessage (Guide):', error);
+                if (typingIndicator) typingIndicator.remove();
+                addNotification('Chat Error', 'An error occurred while communicating with the helper agent.', 'error');
             }
-            
-            localStorage.setItem('stockSense_helpChatHistory', JSON.stringify(aiHelpHistory));
-        } catch (error) {
-            console.error('Error in sendHelpMessage:', error);
-            addNotification('Chat Error', 'An error occurred while communicating with the helper agent.', 'error');
         }
     }
 }

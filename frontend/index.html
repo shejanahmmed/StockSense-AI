@@ -2611,15 +2611,15 @@
         </button>
 
         <!-- Chat Panel -->
-        <div id="aiHelpPanel" class="ai-help-panel glass" style="display: none;">
+        <div id="aiHelpPanel" class="ai-help-panel glass" style="display: none;" data-mode="insight">
             <div class="ai-help-header">
                 <div class="ai-help-title-wrapper">
-                    <div class="ai-help-avatar">
-                        <i class="fa-solid fa-robot"></i>
+                    <div class="ai-help-avatar" id="aiHelpAvatar">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </div>
                     <div>
-                        <h4 class="ai-help-title">StockSense AI Guide</h4>
-                        <span class="ai-help-subtitle"><span class="ai-help-status-dot"></span> Online Guide Agent</span>
+                        <h4 class="ai-help-title" id="aiChatPanelTitle">StockSense AI Insight</h4>
+                        <span class="ai-help-subtitle" id="aiChatPanelSubtitle"><span class="ai-help-status-dot"></span> Chatting Agent</span>
                     </div>
                 </div>
                 <div class="ai-help-header-actions">
@@ -2631,27 +2631,40 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Mode Toggle Switch -->
+            <div class="ai-help-mode-toggle-container">
+                <div class="ai-help-mode-selector" id="aiChatModeSelector">
+                    <div class="ai-help-mode-slider"></div>
+                    <button type="button" class="ai-help-mode-btn active" id="btnModeInsight" data-mode="insight">
+                        <i class="fa-solid fa-comments"></i> AI Insight
+                    </button>
+                    <button type="button" class="ai-help-mode-btn" id="btnModeGuide" data-mode="guide">
+                        <i class="fa-solid fa-book-open"></i> AI Guide
+                    </button>
+                </div>
+            </div>
             
             <!-- Chat Messages Area -->
             <div id="aiHelpMessages" class="ai-help-messages">
                 <div class="ai-help-message assistant">
                     <div class="ai-help-bubble">
-                        Hello! 👋 I am your StockSense AI virtual assistant. Ask me anything about how the app works, time-series forecasting, or configuring your business parameters!
+                        Hello! 👋 I am your AI Insight co-pilot. I can help you analyze your inventory, predict stockouts, suggest strategies, or query your sales history. How can I assist you today?
                     </div>
                 </div>
             </div>
 
             <!-- Quick Suggestions Chips -->
-            <div class="ai-help-suggestions">
-                <button class="ai-help-chip" data-query="How do I change the Forecasting Strategy?">💡 Change Strategy</button>
-                <button class="ai-help-chip" data-query="What do the SHAP demand drivers mean?">📊 Explain SHAP</button>
-                <button class="ai-help-chip" data-query="How do I upload custom product CSVs?">📦 Upload CSV</button>
-                <button class="ai-help-chip" data-query="Is my inventory data secure?">🔒 Privacy &amp; Security</button>
+            <div class="ai-help-suggestions" id="aiHelpSuggestions">
+                <button class="ai-help-chip" data-query="Identify products with high risk of stockouts">💡 Predict stockouts</button>
+                <button class="ai-help-chip" data-query="Analyze my sales trends and drivers">📊 Sales analysis</button>
+                <button class="ai-help-chip" data-query="Recommend custom reorder levels for my inventory">📦 Optimize reorder</button>
+                <button class="ai-help-chip" data-query="Suggest pricing or clearance strategies based on current stock">💰 Strategy advice</button>
             </div>
 
             <!-- Chat Input Area -->
             <div class="ai-help-input-area">
-                <input type="text" id="aiHelpInput" class="ai-help-input" placeholder="Type a guide question..." autocomplete="off">
+                <input type="text" id="aiHelpInput" class="ai-help-input" placeholder="Type a message or analytical question..." autocomplete="off">
                 <button id="aiHelpSend" class="ai-help-send-btn" title="Send Message">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>

@@ -7897,6 +7897,94 @@ input:checked + .slider:before {
     color: var(--status-danger, #ef4444);
 }
 
+/* AI Chatbot Mode Toggle Styles */
+.ai-help-mode-toggle-container {
+    padding: 0.65rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.12);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body.light-mode .ai-help-mode-toggle-container {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.ai-help-mode-selector {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 2px;
+    width: 100%;
+}
+
+body.light-mode .ai-help-mode-selector {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.ai-help-mode-btn {
+    position: relative;
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    z-index: 2;
+}
+
+.ai-help-mode-btn:hover {
+    color: #fff;
+}
+
+body.light-mode .ai-help-mode-btn:hover {
+    color: var(--text-primary);
+}
+
+.ai-help-mode-btn.active {
+    color: #fff;
+}
+
+body.light-mode .ai-help-mode-btn.active {
+    color: #fff;
+}
+
+/* Sliding slider highlight */
+.ai-help-mode-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(50% - 2px);
+    height: calc(100% - 4px);
+    background: var(--accent-primary, #8b5cf6);
+    border-radius: 18px;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+}
+
+body.light-mode .ai-help-mode-slider {
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
+}
+
+/* Slide to right for Guide mode */
+.ai-help-panel[data-mode="guide"] .ai-help-mode-slider {
+    transform: translateX(100%);
+}
+
 .ai-help-messages {
     flex: 1;
     padding: 1.25rem;
