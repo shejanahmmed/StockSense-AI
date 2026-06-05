@@ -8274,7 +8274,14 @@ function initHelpChat() {
             appendHelpMessage(msg.role, msg.content);
         });
 
+        // Restore position: jump to bottom when reloading history
         aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+    }
+
+    // Returns true if the user is close enough to the bottom that auto-scroll should happen
+    function isNearBottom() {
+        const threshold = 80; // px from bottom
+        return aiHelpMessages.scrollHeight - aiHelpMessages.scrollTop - aiHelpMessages.clientHeight <= threshold;
     }
 
     function switchMode(newMode) {
@@ -8322,6 +8329,7 @@ function initHelpChat() {
         aiHelpPanel.style.display = isHidden ? 'flex' : 'none';
         if (isHidden) {
             aiHelpInput.focus();
+            // Reopening panel — restore to bottom
             aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
         }
     });
@@ -8399,7 +8407,19 @@ function initHelpChat() {
 
         div.innerHTML = `<div class="ai-help-bubble">${renderedContent}</div>`;
         aiHelpMessages.appendChild(div);
-        aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+
+        if (role === 'user') {
+            // ChatGPT style: scroll so the user's question is near the top
+            requestAnimationFrame(() => {
+                const topOffset = div.offsetTop - 16;
+                aiHelpMessages.scrollTo({ top: topOffset, behavior: 'smooth' });
+            });
+        } else {
+            // Assistant message: only auto-scroll if user was already at the bottom
+            if (isNearBottom()) {
+                aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            }
+        }
         return div;
     }
 
@@ -8424,7 +8444,10 @@ function initHelpChat() {
                 </div>
             `;
             aiHelpMessages.appendChild(typingIndicator);
-            aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            // Only scroll to typing indicator if user is near bottom
+            if (isNearBottom()) {
+                aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            }
 
             try {
                 const token = localStorage.getItem('stockSense_jwt');
@@ -8492,7 +8515,10 @@ function initHelpChat() {
                 </div>
             `;
             aiHelpMessages.appendChild(typingIndicator);
-            aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            // Only scroll to typing indicator if user is near bottom
+            if (isNearBottom()) {
+                aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+            }
 
             const payloadHistory = aiHelpHistory.map(m => ({ role: m.role, content: m.content }));
 
@@ -8526,7 +8552,11 @@ function initHelpChat() {
                 let bubbleElement = assistantBubble.querySelector('.ai-help-bubble');
                 let fullResponseText = '';
 
-                aiHelpMessages.scrollTop = Math.max(0, assistantBubble.offsetTop - 100);
+                // During streaming, only scroll down if user is near the bottom
+                // (don't interrupt if they've scrolled up to read)
+                if (isNearBottom()) {
+                    aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+                }
 
                 let lastRenderTime = 0;
                 let renderTimeout = null;
@@ -8542,6 +8572,10 @@ function initHelpChat() {
                         liveRender = liveRender.replace(/<\/ul>\s*<ul>/g, '');
                     }
                     bubbleElement.innerHTML = liveRender;
+                    // Auto-scroll during streaming only if user is near the bottom
+                    if (isNearBottom()) {
+                        aiHelpMessages.scrollTop = aiHelpMessages.scrollHeight;
+                    }
                 }
 
                 function queueRender(force = false) {
