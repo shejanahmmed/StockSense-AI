@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v14.css?v=20260606h">
+    <link rel="stylesheet" href="style_v14.css?v=20260606i">
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -245,6 +245,48 @@
             background: rgba(255, 255, 255, 0.2) !important;
             color: #ffffff !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Unified Parent Card Styling */
+        #kpiUnifiedCard {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.75)) !important;
+            border: 2px solid rgba(139, 92, 246, 0.45) !important;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+        body.light-mode #kpiUnifiedCard {
+            background: linear-gradient(135deg, rgba(238, 242, 255, 0.85), rgba(224, 231, 255, 0.85)) !important;
+            border: 2px solid rgba(92, 96, 245, 0.4) !important;
+            box-shadow: 0 8px 32px rgba(92, 96, 245, 0.12) !important;
+        }
+        #kpiUnifiedCard .kpi-unified-header h2 {
+            background: none !important;
+            -webkit-text-fill-color: initial !important;
+        }
+        #kpiUnifiedCard .kpi-unified-header h2,
+        #kpiUnifiedCard .kpi-unified-header h2 i {
+            color: #ffffff !important;
+        }
+        body.light-mode #kpiUnifiedCard .kpi-unified-header h2,
+        body.light-mode #kpiUnifiedCard .kpi-unified-header h2 i {
+            color: #1e1b4b !important;
+        }
+        #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        body.light-mode #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
+            background: rgba(92, 96, 245, 0.1) !important;
+            color: #5c60f5 !important;
+            border: 1px solid rgba(92, 96, 245, 0.2) !important;
+        }
+        #kpiUnifiedCard .kpi-unified-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        body.light-mode #kpiUnifiedCard .kpi-unified-header {
+            border-bottom: 1px solid rgba(92, 96, 245, 0.15) !important;
         }
     </style>
     <!-- Chart.js for data visualization -->
