@@ -11360,3 +11360,70 @@ body.light-mode #kpiPriorityNextStepCard {
     filter: none !important;
 }
 
+/* Unified KPI List Items Styling */
+#kpiItemSkus {
+    background: #3b82f6 !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15) !important;
+}
+body.light-mode #kpiItemSkus {
+    border: 2px solid rgba(15, 23, 42, 0.2) !important;
+}
+#kpiItemUnits {
+    background: #5c60f5 !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(92, 96, 245, 0.15) !important;
+}
+body.light-mode #kpiItemUnits {
+    border: 2px solid rgba(15, 23, 42, 0.2) !important;
+}
+#kpiItemDemand {
+    background: #0ea5e9 !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+}
+body.light-mode #kpiItemDemand {
+    border: 2px solid rgba(15, 23, 42, 0.2) !important;
+}
+#kpiItemAtRisk {
+    background: #ff7e67 !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(255, 126, 103, 0.15) !important;
+}
+body.light-mode #kpiItemAtRisk {
+    border: 2px solid rgba(15, 23, 42, 0.2) !important;
+}
+#kpiItemHealth {
+    background: #10b981 !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15) !important;
+}
+body.light-mode #kpiItemHealth {
+    border: 2px solid rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Common styles for elements inside colored unified items */
+#kpiItemSkus, #kpiItemUnits, #kpiItemDemand, #kpiItemAtRisk, #kpiItemHealth {
+    color: #ffffff !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+#kpiItemSkus:hover, #kpiItemUnits:hover, #kpiItemDemand:hover, #kpiItemAtRisk:hover, #kpiItemHealth:hover {
+    transform: scale(1.018) !important;
+    filter: none !important;
+}
+#kpiItemSkus .kpi-unified-label, #kpiItemUnits .kpi-unified-label, #kpiItemDemand .kpi-unified-label, #kpiItemAtRisk .kpi-unified-label, #kpiItemHealth .kpi-unified-label {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 600 !important;
+}
+#kpiItemSkus .kpi-unified-value, #kpiItemUnits .kpi-unified-value, #kpiItemDemand .kpi-unified-value, #kpiItemAtRisk .kpi-unified-value, #kpiItemHealth .kpi-unified-value {
+    color: #ffffff !important;
+}
+#kpiItemSkus .kpi-unified-sub, #kpiItemUnits .kpi-unified-sub, #kpiItemDemand .kpi-unified-sub, #kpiItemAtRisk .kpi-unified-sub, #kpiItemHealth .kpi-unified-sub {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+#kpiItemSkus .kpi-unified-icon, #kpiItemUnits .kpi-unified-icon, #kpiItemDemand .kpi-unified-icon, #kpiItemAtRisk .kpi-unified-icon, #kpiItemHealth .kpi-unified-icon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+

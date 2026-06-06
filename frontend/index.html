@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v14.css?v=20260606g">
+    <link rel="stylesheet" href="style_v14.css?v=20260606h">
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -178,6 +178,73 @@
         #kpiPriorityNextStepCard:hover {
             transform: scale(1.012) !important;
             filter: none !important;
+        }
+
+        /* Unified KPI List Items Styling */
+        #kpiItemSkus {
+            background: #3b82f6 !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15) !important;
+        }
+        body.light-mode #kpiItemSkus {
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
+        }
+        #kpiItemUnits {
+            background: #5c60f5 !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(92, 96, 245, 0.15) !important;
+        }
+        body.light-mode #kpiItemUnits {
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
+        }
+        #kpiItemDemand {
+            background: #0ea5e9 !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+        }
+        body.light-mode #kpiItemDemand {
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
+        }
+        #kpiItemAtRisk {
+            background: #ff7e67 !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(255, 126, 103, 0.15) !important;
+        }
+        body.light-mode #kpiItemAtRisk {
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
+        }
+        #kpiItemHealth {
+            background: #10b981 !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15) !important;
+        }
+        body.light-mode #kpiItemHealth {
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
+        }
+
+        /* Common styles for elements inside colored unified items */
+        #kpiItemSkus, #kpiItemUnits, #kpiItemDemand, #kpiItemAtRisk, #kpiItemHealth {
+            color: #ffffff !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        #kpiItemSkus:hover, #kpiItemUnits:hover, #kpiItemDemand:hover, #kpiItemAtRisk:hover, #kpiItemHealth:hover {
+            transform: scale(1.018) !important;
+            filter: none !important;
+        }
+        #kpiItemSkus .kpi-unified-label, #kpiItemUnits .kpi-unified-label, #kpiItemDemand .kpi-unified-label, #kpiItemAtRisk .kpi-unified-label, #kpiItemHealth .kpi-unified-label {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 600 !important;
+        }
+        #kpiItemSkus .kpi-unified-value, #kpiItemUnits .kpi-unified-value, #kpiItemDemand .kpi-unified-value, #kpiItemAtRisk .kpi-unified-value, #kpiItemHealth .kpi-unified-value {
+            color: #ffffff !important;
+        }
+        #kpiItemSkus .kpi-unified-sub, #kpiItemUnits .kpi-unified-sub, #kpiItemDemand .kpi-unified-sub, #kpiItemAtRisk .kpi-unified-sub, #kpiItemHealth .kpi-unified-sub {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        #kpiItemSkus .kpi-unified-icon, #kpiItemUnits .kpi-unified-icon, #kpiItemDemand .kpi-unified-icon, #kpiItemAtRisk .kpi-unified-icon, #kpiItemHealth .kpi-unified-icon {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
         }
     </style>
     <!-- Chart.js for data visualization -->
@@ -470,9 +537,9 @@
                             <span class="badge info-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.2); font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-circle-info"></i> Details</span>
                         </div>
                         <div class="kpi-unified-body-vertical">
-                            <div class="kpi-unified-item">
+                            <div class="kpi-unified-item" id="kpiItemSkus">
                                 <div class="kpi-unified-left">
-                                    <div class="kpi-unified-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-layer-group"></i></div>
+                                    <div class="kpi-unified-icon"><i class="fa-solid fa-layer-group"></i></div>
                                     <span class="kpi-unified-label">Total SKUs</span>
                                 </div>
                                 <div class="kpi-unified-right">
@@ -480,9 +547,9 @@
                                     <span class="kpi-unified-sub">Items tracked</span>
                                 </div>
                             </div>
-                            <div class="kpi-unified-item">
+                            <div class="kpi-unified-item" id="kpiItemUnits">
                                 <div class="kpi-unified-left">
-                                    <div class="kpi-unified-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fa-solid fa-box-open"></i></div>
+                                    <div class="kpi-unified-icon"><i class="fa-solid fa-box-open"></i></div>
                                     <span class="kpi-unified-label">Total Units</span>
                                 </div>
                                 <div class="kpi-unified-right">
@@ -490,9 +557,9 @@
                                     <span class="kpi-unified-sub">Available in stock</span>
                                 </div>
                             </div>
-                            <div class="kpi-unified-item">
+                            <div class="kpi-unified-item" id="kpiItemDemand">
                                 <div class="kpi-unified-left">
-                                    <div class="kpi-unified-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                                    <div class="kpi-unified-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
                                     <span class="kpi-unified-label">Forecasted Demand</span>
                                 </div>
                                 <div class="kpi-unified-right">
@@ -500,9 +567,9 @@
                                     <span class="kpi-unified-sub" id="kpi-demand-change">Awaiting data</span>
                                 </div>
                             </div>
-                            <div class="kpi-unified-item">
+                            <div class="kpi-unified-item" id="kpiItemAtRisk">
                                 <div class="kpi-unified-left">
-                                    <div class="kpi-unified-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-cart-plus"></i></div>
+                                    <div class="kpi-unified-icon"><i class="fa-solid fa-cart-plus"></i></div>
                                     <span class="kpi-unified-label">At-Risk Products</span>
                                 </div>
                                 <div class="kpi-unified-right">
@@ -510,9 +577,9 @@
                                     <span class="kpi-unified-sub">Awaiting data</span>
                                 </div>
                             </div>
-                            <div class="kpi-unified-item">
+                            <div class="kpi-unified-item" id="kpiItemHealth">
                                 <div class="kpi-unified-left">
-                                    <div class="kpi-unified-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fa-solid fa-clock"></i></div>
+                                    <div class="kpi-unified-icon"><i class="fa-solid fa-clock"></i></div>
                                     <span class="kpi-unified-label">Inventory Health</span>
                                 </div>
                                 <div class="kpi-unified-right">
