@@ -153,6 +153,32 @@
             color: #1e293b !important;
             border: 1px solid rgba(15, 23, 42, 0.06) !important;
         }
+
+        /* Card 6: Priority Next Step - Vibrant Teal */
+        #kpiPriorityNextStepCard {
+            background: #0ea5e9 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.25) !important;
+            transition: var(--transition-smooth) !important;
+        }
+        body.light-mode #kpiPriorityNextStepCard {
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15) !important;
+        }
+        #kpiPriorityNextStepCard h3 {
+            color: #ffffff !important;
+        }
+        #kpiPriorityNextStepCard p {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+        #kpiPriorityNextStepCard .kpi-priority-icon-wrap {
+            color: #ffffff !important;
+        }
+        #kpiPriorityNextStepCard:hover {
+            transform: scale(1.012) !important;
+            filter: none !important;
+        }
     </style>
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -655,8 +681,8 @@
                 </div>
 
                 <!-- 10. Next step recommendation -->
-                <div class="kpi-card glass-panel premium-glow" style="flex-direction: row; align-items: center; gap: 1rem; padding: 1.5rem; border-color: var(--status-warning); margin-bottom: 2rem;">
-                    <div style="font-size: 2rem; color: var(--status-warning);"><i class="fa-solid fa-lightbulb"></i></div>
+                <div class="kpi-card glass-panel premium-glow" id="kpiPriorityNextStepCard" style="flex-direction: row; align-items: center; gap: 1rem; padding: 1.5rem; margin-bottom: 2rem;">
+                    <div class="kpi-priority-icon-wrap" style="font-size: 2rem;"><i class="fa-solid fa-lightbulb"></i></div>
                     <div>
                         <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-primary);">Priority Next Step</h3>
                         <p style="font-size: 0.95rem; color: var(--text-muted);" id="metric-next-step">Upload a CSV file to generate AI-driven recommendations.</p>
