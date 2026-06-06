@@ -4509,10 +4509,10 @@ function updateChartsForTheme() {
     // Choose colors based on theme
     const textColor = isLight ? '#475569' : '#94a3b8';
     const gridColor = isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.05)';
-    const tooltipBg = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 17, 26, 0.9)';
+    const tooltipBg = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(13, 13, 13, 0.9)';
     const tooltipText = isLight ? '#0f172a' : '#ffffff';
     const tooltipBorder = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.1)';
-    const pointBgColor = isLight ? '#ffffff' : '#0f111a';
+    const pointBgColor = isLight ? '#ffffff' : '#0d0d0d';
     
     // Set global Chart.js defaults
     if (typeof Chart !== 'undefined') {
@@ -5006,7 +5006,7 @@ function initChart() {
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
-                    pointBackgroundColor: '#0f111a',
+                    pointBackgroundColor: '#0d0d0d',
                     pointBorderColor: '#8b5cf6',
                     pointBorderWidth: 2,
                     pointRadius: 4,
@@ -5045,7 +5045,7 @@ function initChart() {
                     display: false // We use custom HTML legend
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 17, 26, 0.9)',
+                    backgroundColor: 'rgba(13, 13, 13, 0.9)',
                     titleColor: '#fff',
                     bodyColor: '#e2e8f0',
                     borderColor: 'rgba(255,255,255,0.1)',
