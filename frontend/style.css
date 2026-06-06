@@ -304,6 +304,231 @@ body.light-mode .mapping-select {
 
 }
 
+/* Table & Filter Contrast Overrides in Light Mode */
+body.light-mode .table-wrapper {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode #inventorySearchInput {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    color: var(--text-primary) !important;
+}
+
+body.light-mode #inventorySearchInput::placeholder {
+    color: var(--text-muted) !important;
+}
+
+body.light-mode #inventorySearchInput:focus {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.15) !important;
+}
+
+body.light-mode .capsule-filter-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .capsule-filter-btn:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-mode .capsule-filter-btn.active {
+    background: rgba(124, 58, 237, 0.1) !important;
+    border-color: rgba(124, 58, 237, 0.3) !important;
+    color: var(--accent-primary) !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08) !important;
+}
+
+body.light-mode #inventoryCountBadge {
+    background: rgba(15, 23, 42, 0.08) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .sku-table-wrapper {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .sku-table th {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 -2px 0 0 #f8fafc !important;
+}
+
+body.light-mode .sku-table td {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.04) !important;
+}
+
+body.light-mode .sku-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+body.light-mode #dailyVsForecastModal .sku-table-wrapper,
+body.light-mode #cashFlowModal .sku-table-wrapper,
+body.light-mode #demandTrendModal .sku-table-wrapper,
+body.light-mode #avgMarginModal .sku-table-wrapper {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode #dailyVsForecastModal .sku-table thead th,
+body.light-mode #cashFlowModal .sku-table thead th,
+body.light-mode #demandTrendModal .sku-table thead th,
+body.light-mode #avgMarginModal .sku-table thead th {
+    background: #f8fafc !important;
+    box-shadow: 0 -3px 0 0 #f8fafc !important;
+}
+
+body.light-mode .holiday-row td {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+body.light-mode .holiday-row:hover td {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+body.light-mode .holiday-stat-chip {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .holiday-calendar-table thead th {
+    background: #f8fafc !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 -2px 0 0 #f8fafc !important;
+}
+
+body.light-mode .staging-table-wrapper {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .staging-data-table th {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .staging-data-table td {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.04) !important;
+}
+
+body.light-mode .staging-row:hover {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+body.light-mode .mapping-section-container {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .mapping-card {
+    background: rgba(0, 0, 0, 0.01) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .mapping-card.mapped {
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    background: rgba(16, 185, 129, 0.05) !important;
+}
+
+body.light-mode .mapping-card.unmapped {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+body.light-mode .mapping-card.mapped span {
+    color: #065f46 !important;
+}
+
+body.light-mode .mapping-card.unmapped span {
+    color: #991b1b !important;
+}
+
+body.light-mode .mapping-select option {
+    background: #ffffff !important;
+    color: var(--text-primary) !important;
+}
+
+/* Settings Page Contrast Overrides in Light Mode */
+body.light-mode .strategy-card {
+    background: rgba(0,0,0,0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .strategy-card:hover {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(124, 58, 237, 0.25) !important;
+}
+
+body.light-mode .strategy-card.active {
+    border-color: rgba(124, 58, 237, 0.45) !important;
+    background: rgba(124, 58, 237, 0.05) !important;
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2) inset !important;
+}
+
+body.light-mode .settings-toggle-row {
+    background: rgba(0,0,0,0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .settings-toggle-row:hover {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+body.light-mode .avatar-upload-area {
+    background: rgba(0,0,0,0.02) !important;
+    border: 1px dashed rgba(15, 23, 42, 0.12) !important;
+}
+
+body.light-mode .avatar-upload-area:hover {
+    border-color: rgba(124, 58, 237, 0.4) !important;
+    background: rgba(124, 58, 237, 0.03) !important;
+}
+
+body.light-mode .settings-avatar-preview {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+body.light-mode .settings-tab:hover {
+    background: rgba(0,0,0,0.04) !important;
+}
+
+body.light-mode .social-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .social-btn:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+body.light-mode .footer-badge {
+    background: rgba(124, 58, 237, 0.08) !important;
+    border-color: rgba(124, 58, 237, 0.2) !important;
+    color: var(--accent-primary) !important;
+}
+
+body.light-mode .footer-badge:hover {
+    background: rgba(124, 58, 237, 0.14) !important;
+    border-color: rgba(124, 58, 237, 0.35) !important;
+}
+
+
+
+
 
 
 /* Premium Webkit Scrollbars (Global) */
@@ -556,6 +781,17 @@ h1, h2, h3, h4 {
     color: white;
 
 }
+
+/* Light mode logo color invert to make it visible */
+body.light-mode .logo-icon img,
+body.light-mode .welcome-logo img {
+    filter: invert(1) !important;
+}
+
+body.light-mode .showcase-logo-img {
+    filter: invert(1) drop-shadow(0 0 12px rgba(139, 92, 246, 0.2)) !important;
+}
+
 
 
 

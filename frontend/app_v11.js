@@ -2367,7 +2367,7 @@ function renderNoCsvState() {
     Object.assign(heading.style, {
         fontSize: '1.35rem',
         fontWeight: '700',
-        color: '#f0f0f0',
+        color: 'var(--text-primary)',
         margin: '0 0 0.6rem 0',
         fontFamily: "'Outfit', sans-serif",
         letterSpacing: '-0.01em'
@@ -2378,7 +2378,7 @@ function renderNoCsvState() {
     const subtitle = document.createElement('p');
     Object.assign(subtitle.style, {
         fontSize: '0.87rem',
-        color: 'rgba(255,255,255,0.5)',
+        color: 'var(--text-secondary)',
         lineHeight: '1.6',
         margin: '0 0 1.5rem 0'
     });
@@ -2410,7 +2410,7 @@ function renderNoCsvState() {
             justifyContent: 'center',
             gap: '0.55rem',
             fontSize: '0.84rem',
-            color: 'rgba(255,255,255,0.55)',
+            color: 'var(--text-secondary)',
             paddingLeft: '0'
         });
         li.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#34d399;font-size:0.85rem;flex-shrink:0"></i> ${text}`;
