@@ -1790,7 +1790,10 @@ function initChat() {
 
     // Re-check state whenever localStorage changes (e.g. CSV uploaded in another tab)
     window.addEventListener('storage', (e) => {
-        if (e.key === 'stockSense_uploadedFile') applyInputState();
+        if (e.key === 'stockSense_uploadedFile') {
+            applyInputState();
+            loadChatHistory();
+        }
     });
 
     btn.addEventListener('click', () => {
@@ -2073,7 +2076,10 @@ function initChat() {
                 showToast('Please upload a CSV file to start a new chat', 'warning');
                 return;
             }
-            createNewSession();
+            currentSessionId = null;
+            chatHistory = [];
+            renderChatHistory();
+            renderSessionsList();
         });
     }
 
@@ -2231,7 +2237,7 @@ function initChat() {
 async function loadChatHistory() {
     const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
     if (!hasUploadedFile) {
-        await clearChatHistorySilently();
+        renderNoCsvState();
         return;
     }
     const token = localStorage.getItem('stockSense_jwt');
@@ -2257,45 +2263,79 @@ async function loadChatHistory() {
                 return;
             }
             const data = await res.json();
-            let initialMessages = [
-                {
-                    role: "assistant",
-                    content: "Hello! I am StockSense AI. I've analyzed your current inventory and sales data. How can I help you optimize your business today?"
-                }
-            ];
             if (data.status === 'success' && data.history && data.history.length > 0) {
-                initialMessages = data.history;
-            }
-            
-            let initialTitle = "New chat";
-            const firstUserMsg = initialMessages.find(m => m.role === 'user');
-            if (firstUserMsg) {
-                initialTitle = firstUserMsg.content;
-                if (initialTitle.startsWith('/')) {
-                    initialTitle = initialTitle.split(' ')[0];
+                let initialTitle = "Restored chat";
+                const firstUserMsg = data.history.find(m => m.role === 'user');
+                if (firstUserMsg) {
+                    initialTitle = firstUserMsg.content;
+                    if (initialTitle.startsWith('/')) {
+                        initialTitle = initialTitle.split(' ')[0];
+                    }
+                    if (initialTitle.length > 25) {
+                        initialTitle = initialTitle.substring(0, 22) + '...';
+                    }
                 }
-                if (initialTitle.length > 25) {
-                    initialTitle = initialTitle.substring(0, 22) + '...';
-                }
+                const defaultSession = {
+                    id: Date.now().toString(),
+                    title: initialTitle,
+                    messages: data.history,
+                    timestamp: Date.now()
+                };
+                chatSessions.push(defaultSession);
+                localStorage.setItem('stockSense_chatSessions', JSON.stringify(chatSessions));
+                currentSessionId = defaultSession.id;
+                chatHistory = defaultSession.messages;
+            } else {
+                currentSessionId = null;
+                chatHistory = [];
             }
-            
-            const defaultSession = {
-                id: Date.now().toString(),
-                title: initialTitle,
-                messages: initialMessages,
-                timestamp: Date.now()
-            };
-            chatSessions.push(defaultSession);
-            localStorage.setItem('stockSense_chatSessions', JSON.stringify(chatSessions));
+        } else {
+            currentSessionId = chatSessions[0].id;
+            chatHistory = chatSessions[0].messages;
         }
-        
-        currentSessionId = chatSessions[0].id;
-        chatHistory = chatSessions[0].messages;
         
         renderChatHistory();
         renderSessionsList();
     } catch (e) {
         console.error("Failed to load chat history", e);
+    }
+}
+
+function renderNoCsvState() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    // Hide suggestions chips
+    const suggestionsEl = document.getElementById('chatSuggestions');
+    if (suggestionsEl) {
+        suggestionsEl.style.display = 'none';
+    }
+
+    chatMessages.innerHTML = `
+        <div class="chat-no-csv-container">
+            <div class="no-csv-card glass-panel premium-glow">
+                <div class="no-csv-icon">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3>Unlock AI Strategic Insights</h3>
+                <p>Upload your inventory CSV data on the dashboard to start chatting with StockSense AI. Our assistant can help you:</p>
+                <ul class="no-csv-features">
+                    <li><i class="fa-solid fa-circle-check"></i> Identify stockout risks &amp; replenishment needs</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Discover slow-moving items &amp; dead stock</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Project weekly demand &amp; optimize profit margins</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Create automated Purchase Orders in seconds</li>
+                </ul>
+                <button class="primary-btn upload-shortcut-btn" onclick="document.getElementById('csvFileInput').click()">
+                    <i class="fa-solid fa-file-csv"></i> Upload CSV Data
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Clear the sessions sidebar rendering
+    const listContainer = document.getElementById('recentChatsList');
+    if (listContainer) {
+        listContainer.innerHTML = '';
     }
 }
 
@@ -2715,6 +2755,25 @@ async function sendChatMessage() {
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (!text) return;
+
+    if (!currentSessionId) {
+        const newSession = {
+            id: Date.now().toString(),
+            title: text.length > 25 ? text.substring(0, 22) + '...' : text,
+            messages: [
+                {
+                    role: "assistant",
+                    content: "Hello! I am StockSense AI. I've analyzed your current inventory and sales data. How can I help you optimize your business today?"
+                }
+            ],
+            timestamp: Date.now()
+        };
+        chatSessions.unshift(newSession);
+        currentSessionId = newSession.id;
+        chatHistory = newSession.messages;
+        localStorage.setItem('stockSense_chatSessions', JSON.stringify(chatSessions));
+        renderSessionsList();
+    }
 
     appendMessage('user', text);
     input.value = '';
@@ -3710,6 +3769,9 @@ async function commitStagedCSV() {
                 fileNameDisplay.textContent = stagedCSVFileName;
                 fileIndicator.style.display = 'flex';
                 localStorage.setItem('stockSense_uploadedFile', stagedCSVFileName);
+                if (typeof loadChatHistory === 'function') {
+                    loadChatHistory();
+                }
             }
             if (newUserCsvGuide) newUserCsvGuide.style.display = 'none';
             
