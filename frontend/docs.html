@@ -1415,12 +1415,14 @@
             filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
         }
         
-        .theme-toggle-btn.light .moon-icon {
+        .theme-toggle-btn.light .moon-icon,
+        body.light-mode .theme-toggle-btn .moon-icon {
             opacity: 0;
             transform: rotate(90deg) scale(0);
         }
         
-        .theme-toggle-btn.light .sun-icon {
+        .theme-toggle-btn.light .sun-icon,
+        body.light-mode .theme-toggle-btn .sun-icon {
             opacity: 1;
             transform: rotate(0deg) scale(1);
         }
@@ -1559,6 +1561,14 @@
     </style>
 </head>
 <body>
+    <script>
+        (function() {
+            const storedTheme = localStorage.getItem('theme') || 'dark';
+            if (storedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        })();
+    </script>
 
     <!-- Glowing Background blobs -->
     <div class="glow-blobs">

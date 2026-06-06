@@ -9,11 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v14.css?v=20260606e">
+    <link rel="stylesheet" href="style_v14.css?v=20260606f">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <script>
+        (function() {
+            const storedTheme = localStorage.getItem('theme') || 'dark';
+            if (storedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        })();
+    </script>
     <!-- Auth/Login Screen -->
     <div id="authScreen" class="auth-screen-wrapper" style="display: none;">
         <div class="auth-card-container">
