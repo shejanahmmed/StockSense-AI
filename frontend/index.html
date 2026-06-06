@@ -10,6 +10,153 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style_v14.css?v=20260606f">
+    <style>
+        /* Vibrant Overview KPI Cards */
+        .kpi-card {
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
+        body.light-mode .kpi-card {
+            border: 1px solid rgba(15, 23, 42, 0.12) !important;
+        }
+        #kpiDailyVsForecastCard {
+            background: #5c60f5 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(92, 96, 245, 0.25) !important;
+        }
+        body.light-mode #kpiDailyVsForecastCard {
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 8px 25px rgba(92, 96, 245, 0.15) !important;
+        }
+        #kpiDailyVsForecastCard .kpi-label { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500 !important; }
+        #kpiDailyVsForecastCard .kpi-label i { color: #ffffff !important; }
+        #kpiDailyVsForecastCard .kpi-value { color: #ffffff !important; }
+
+        #kpiCashFlowCard {
+            background: #10b981 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25) !important;
+        }
+        body.light-mode #kpiCashFlowCard {
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15) !important;
+        }
+        #kpiCashFlowCard .kpi-label { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500 !important; }
+        #kpiCashFlowCard .kpi-label i { color: #ffffff !important; }
+        #kpiCashFlowCard .kpi-value { color: #ffffff !important; }
+
+        #kpiDemandTrendCard {
+            background: #3b82f6 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25) !important;
+        }
+        body.light-mode #kpiDemandTrendCard {
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15) !important;
+        }
+        #kpiDemandTrendCard .kpi-label { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500 !important; }
+        #kpiDemandTrendCard .kpi-label i { color: #ffffff !important; }
+        #kpiDemandTrendCard .kpi-value { color: #ffffff !important; }
+
+        #kpiNextEventCard {
+            background: #f59e0b !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            color: #0f172a !important;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25) !important;
+        }
+        body.light-mode #kpiNextEventCard {
+            border: 1px solid rgba(15, 23, 42, 0.18) !important;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15) !important;
+        }
+        #kpiNextEventCard .kpi-label { color: rgba(15, 23, 42, 0.8) !important; font-weight: 600 !important; }
+        #kpiNextEventCard .kpi-label i { color: #0f172a !important; }
+        #kpiNextEventCard .kpi-value { color: #0f172a !important; }
+
+        #kpiMarginCard {
+            background: #ff7e67 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(255, 126, 103, 0.25) !important;
+        }
+        body.light-mode #kpiMarginCard {
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 8px 25px rgba(255, 126, 103, 0.15) !important;
+        }
+        #kpiMarginCard .kpi-label { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500 !important; }
+        #kpiMarginCard .kpi-label i { color: #ffffff !important; }
+        #kpiMarginCard .kpi-value { color: #ffffff !important; }
+
+        #kpiDailyVsForecastCard:hover,
+        #kpiCashFlowCard:hover,
+        #kpiDemandTrendCard:hover,
+        #kpiMarginCard:hover {
+            filter: brightness(1.06) !important;
+            transform: translateY(-3px) !important;
+        }
+        #kpiNextEventCard:hover {
+            filter: brightness(0.96) !important;
+            transform: translateY(-3px) !important;
+        }
+
+        #kpiDailyVsForecastCard .trend,
+        #kpiCashFlowCard .trend,
+        #kpiDemandTrendCard .trend,
+        #kpiNextEventCard .trend,
+        #kpiMarginCard .trend {
+            display: inline-flex !important;
+            align-items: center !important;
+            padding: 3px 10px !important;
+            border-radius: 20px !important;
+            font-size: 0.72rem !important;
+            font-weight: 600 !important;
+            width: fit-content !important;
+            margin-top: 0.4rem !important;
+            line-height: 1 !important;
+        }
+
+        #kpiDailyVsForecastCard .trend.positive,
+        #kpiCashFlowCard .trend.positive,
+        #kpiDemandTrendCard .trend.positive,
+        #kpiMarginCard .trend.positive {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        #kpiDailyVsForecastCard .trend.negative,
+        #kpiCashFlowCard .trend.negative,
+        #kpiDemandTrendCard .trend.negative,
+        #kpiMarginCard .trend.negative {
+            background: rgba(239, 68, 68, 0.25) !important;
+            color: #fca5a5 !important;
+            border: 1px solid rgba(239, 68, 68, 0.15) !important;
+        }
+        #kpiDailyVsForecastCard .trend.neutral,
+        #kpiCashFlowCard .trend.neutral,
+        #kpiDemandTrendCard .trend.neutral,
+        #kpiMarginCard .trend.neutral {
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        #kpiNextEventCard .trend.positive {
+            background: rgba(16, 185, 129, 0.18) !important;
+            color: #065f46 !important;
+            border: 1px solid rgba(16, 185, 129, 0.15) !important;
+        }
+        #kpiNextEventCard .trend.negative {
+            background: rgba(239, 68, 68, 0.18) !important;
+            color: #991b1b !important;
+            border: 1px solid rgba(239, 68, 68, 0.15) !important;
+        }
+        #kpiNextEventCard .trend.neutral {
+            background: rgba(15, 23, 42, 0.08) !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(15, 23, 42, 0.06) !important;
+        }
+    </style>
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
