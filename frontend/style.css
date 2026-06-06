@@ -11419,7 +11419,7 @@ body.light-mode #kpiItemHealth {
     color: #ffffff !important;
 }
 #kpiItemSkus .kpi-unified-sub, #kpiItemUnits .kpi-unified-sub, #kpiItemDemand .kpi-unified-sub, #kpiItemAtRisk .kpi-unified-sub, #kpiItemHealth .kpi-unified-sub {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
 }
 #kpiItemSkus .kpi-unified-icon, #kpiItemUnits .kpi-unified-icon, #kpiItemDemand .kpi-unified-icon, #kpiItemAtRisk .kpi-unified-icon, #kpiItemHealth .kpi-unified-icon {
     background: rgba(255, 255, 255, 0.2) !important;
@@ -11427,45 +11427,70 @@ body.light-mode #kpiItemHealth {
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
+/* Enforce trend/change text elements inside the colored cards to be white */
+#kpiItemSkus .trend,
+#kpiItemUnits .trend,
+#kpiItemDemand .trend,
+#kpiItemAtRisk .trend,
+#kpiItemHealth .trend {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    padding: 2px 8px !important;
+    border-radius: 12px !important;
+    font-size: 0.68rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    margin-top: 2px !important;
+}
+
+/* Catch-all white color rule for children inside the colored card divs */
+#kpiItemSkus *,
+#kpiItemUnits *,
+#kpiItemDemand *,
+#kpiItemAtRisk *,
+#kpiItemHealth * {
+    color: #ffffff !important;
+}
+
 /* Unified Parent Card Styling */
 #kpiUnifiedCard {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.75)) !important;
-    border: 2px solid rgba(139, 92, 246, 0.45) !important;
-    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    background: #141416 !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
 }
 body.light-mode #kpiUnifiedCard {
-    background: linear-gradient(135deg, rgba(238, 242, 255, 0.85), rgba(224, 231, 255, 0.85)) !important;
-    border: 2px solid rgba(92, 96, 245, 0.4) !important;
-    box-shadow: 0 8px 32px rgba(92, 96, 245, 0.12) !important;
+    background: #ffffff !important;
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
 }
 #kpiUnifiedCard .kpi-unified-header h2 {
     background: none !important;
     -webkit-text-fill-color: initial !important;
+    color: var(--text-primary) !important;
 }
-#kpiUnifiedCard .kpi-unified-header h2,
 #kpiUnifiedCard .kpi-unified-header h2 i {
-    color: #ffffff !important;
+    color: var(--accent-primary) !important;
 }
 body.light-mode #kpiUnifiedCard .kpi-unified-header h2,
 body.light-mode #kpiUnifiedCard .kpi-unified-header h2 i {
-    color: #1e1b4b !important;
+    color: var(--text-primary) !important;
 }
 #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
-    background: rgba(255, 255, 255, 0.12) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 body.light-mode #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
-    background: rgba(92, 96, 245, 0.1) !important;
-    color: #5c60f5 !important;
-    border: 1px solid rgba(92, 96, 245, 0.2) !important;
+    background: rgba(15, 23, 42, 0.05) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
 }
 #kpiUnifiedCard .kpi-unified-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 body.light-mode #kpiUnifiedCard .kpi-unified-header {
-    border-bottom: 1px solid rgba(92, 96, 245, 0.15) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
 

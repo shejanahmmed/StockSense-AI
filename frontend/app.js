@@ -173,6 +173,12 @@ function resetDashboardToEmpty() {
     if (demandChange) { demandChange.textContent = 'Awaiting data'; demandChange.className = 'trend neutral'; }
     const stockoutSub = document.getElementById('kpi-stockout-sub');
     if (stockoutSub) { stockoutSub.textContent = 'Awaiting data'; stockoutSub.className = 'trend neutral'; }
+    const stockSub = document.getElementById('kpi-stock-sub');
+    if (stockSub) { stockSub.textContent = 'Awaiting data'; stockSub.className = 'trend neutral'; }
+    const unitsSub = document.getElementById('kpi-total-units-sub');
+    if (unitsSub) { unitsSub.textContent = 'Awaiting data'; unitsSub.className = 'trend neutral'; }
+    const orderSub = document.getElementById('kpi-order-sub');
+    if (orderSub) { orderSub.textContent = 'Awaiting data'; orderSub.className = 'trend neutral'; }
 
     // AI Insight panel → placeholder
     const insightContainer = document.getElementById('ai-insight-text');
@@ -4077,18 +4083,37 @@ function setupCsvUpload() {
 function updateKPIs(kpis) {
     // Total SKUs (new multi-product field)
     const skuElem = document.getElementById('kpi-stock');
+    const stockSub = document.getElementById('kpi-stock-sub');
     if (skuElem) {
         if (kpis.total_skus !== undefined) {
             skuElem.innerText = kpis.total_skus.toLocaleString();
+            if (stockSub) {
+                stockSub.innerText = 'Items tracked';
+                stockSub.className = 'trend positive';
+            }
         } else {
             skuElem.innerText = '0';
+            if (stockSub) {
+                stockSub.innerText = 'Awaiting data';
+                stockSub.className = 'trend neutral';
+            }
         }
     }
 
     // Total Units
     const unitsElem = document.getElementById('kpi-total-units');
+    const unitsSub = document.getElementById('kpi-total-units-sub');
     if (unitsElem) {
         unitsElem.innerText = (kpis.current_stock || 0).toLocaleString();
+        if (unitsSub) {
+            if (kpis.current_stock !== undefined) {
+                unitsSub.innerText = 'Available in stock';
+                unitsSub.className = 'trend positive';
+            } else {
+                unitsSub.innerText = 'Awaiting data';
+                unitsSub.className = 'trend neutral';
+            }
+        }
     }
 
     // Forecasted demand
@@ -4104,10 +4129,21 @@ function updateKPIs(kpis) {
     
     // Recommended order or at-risk products
     const orderElem = document.getElementById('kpi-order');
+    const orderSub = document.getElementById('kpi-order-sub');
     if (orderElem) {
         orderElem.innerText = kpis.at_risk_products !== undefined
             ? kpis.at_risk_products + ' Items'
             : (kpis.recommended_order || 0).toLocaleString();
+    }
+    if (orderSub) {
+        if (kpis.at_risk_products !== undefined) {
+            const atRisk = kpis.at_risk_products || 0;
+            orderSub.innerText = atRisk > 0 ? 'Action Required' : 'All Healthy';
+            orderSub.className = `trend ${atRisk > 0 ? 'negative' : 'positive'}`;
+        } else {
+            orderSub.innerText = 'Awaiting data';
+            orderSub.className = 'trend neutral';
+        }
     }
     
     // Stockout KPI
