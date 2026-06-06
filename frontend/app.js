@@ -2307,41 +2307,178 @@ function renderNoCsvState() {
 
     // Hide suggestions chips
     const suggestionsEl = document.getElementById('chatSuggestions');
-    if (suggestionsEl) {
-        suggestionsEl.style.display = 'none';
-    }
+    if (suggestionsEl) suggestionsEl.style.display = 'none';
 
-    chatMessages.innerHTML = `
-        <div class="chat-no-csv-container">
-            <div class="no-csv-card glass-panel premium-glow">
-                <div class="no-csv-icon">
-                    <i class="fa-solid fa-lock"></i>
-                </div>
-                <h3>Unlock AI Strategic Insights</h3>
-                <p>Upload your inventory CSV data on the dashboard to start chatting with StockSense AI. Our assistant can help you:</p>
-                <ul class="no-csv-features">
-                    <li><i class="fa-solid fa-circle-check"></i> Identify stockout risks &amp; replenishment needs</li>
-                    <li><i class="fa-solid fa-circle-check"></i> Discover slow-moving items &amp; dead stock</li>
-                    <li><i class="fa-solid fa-circle-check"></i> Project weekly demand &amp; optimize profit margins</li>
-                    <li><i class="fa-solid fa-circle-check"></i> Create automated Purchase Orders in seconds</li>
-                </ul>
-                <button class="primary-btn upload-shortcut-btn" onclick="document.getElementById('csvFileInput').click()">
-                    <i class="fa-solid fa-file-csv"></i> Upload CSV Data
-                </button>
-            </div>
-        </div>
-    `;
-    
-    // Clear the sessions sidebar rendering
+    // Style the parent container inline — beats ALL CSS
+    Object.assign(chatMessages.style, {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+        gap: '0',
+        boxSizing: 'border-box'
+    });
+
+    chatMessages.innerHTML = '';
+
+    // ── Outer wrapper ──────────────────────────────────────────
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        maxWidth: '460px',
+        animation: 'noCsvFadeIn 0.4s ease forwards'
+    });
+
+    // ── Card ───────────────────────────────────────────────────
+    const card = document.createElement('div');
+    Object.assign(card.style, {
+        width: '100%',
+        textAlign: 'center',
+        boxSizing: 'border-box'
+    });
+
+
+    // ── Icon circle ────────────────────────────────────────────
+    const iconWrap = document.createElement('div');
+    Object.assign(iconWrap.style, {
+        width: '72px',
+        height: '72px',
+        minWidth: '72px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg,rgba(139,92,246,0.18),rgba(109,40,217,0.08))',
+        border: '1px solid rgba(139,92,246,0.32)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto 1.5rem',
+        fontSize: '1.85rem',
+        color: '#a78bfa',
+        boxShadow: '0 8px 24px rgba(139,92,246,0.22)'
+    });
+    iconWrap.innerHTML = '<i class="fa-solid fa-lock"></i>';
+
+    // ── Heading ────────────────────────────────────────────────
+    const heading = document.createElement('h3');
+    Object.assign(heading.style, {
+        fontSize: '1.35rem',
+        fontWeight: '700',
+        color: '#f0f0f0',
+        margin: '0 0 0.6rem 0',
+        fontFamily: "'Outfit', sans-serif",
+        letterSpacing: '-0.01em'
+    });
+    heading.textContent = 'Unlock AI Strategic Insights';
+
+    // ── Subtitle ───────────────────────────────────────────────
+    const subtitle = document.createElement('p');
+    Object.assign(subtitle.style, {
+        fontSize: '0.87rem',
+        color: 'rgba(255,255,255,0.5)',
+        lineHeight: '1.6',
+        margin: '0 0 1.5rem 0'
+    });
+    subtitle.textContent = 'Upload your inventory CSV data on the dashboard to start chatting with StockSense AI. Our assistant can help you:';
+
+    // ── Feature list ───────────────────────────────────────────
+    const features = [
+        'Identify stockout risks & replenishment needs',
+        'Discover slow-moving items & dead stock',
+        'Project weekly demand & optimize profit margins',
+        'Create automated Purchase Orders in seconds'
+    ];
+    const ul = document.createElement('ul');
+    Object.assign(ul.style, {
+        listStyle: 'none',
+        padding: '0',
+        margin: '0 0 1.75rem 0',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.65rem'
+    });
+    features.forEach(text => {
+        const li = document.createElement('li');
+        Object.assign(li.style, {
+            listStyle: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.55rem',
+            fontSize: '0.84rem',
+            color: 'rgba(255,255,255,0.55)',
+            paddingLeft: '0'
+        });
+        li.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#34d399;font-size:0.85rem;flex-shrink:0"></i> ${text}`;
+        ul.appendChild(li);
+    });
+
+    // ── Upload button ──────────────────────────────────────────
+    const btn = document.createElement('button');
+    Object.assign(btn.style, {
+        width: '100%',
+        height: '46px',
+        fontSize: '0.9rem',
+        fontWeight: '600',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.5rem',
+        cursor: 'pointer',
+        background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+        border: 'none',
+        borderRadius: '10px',
+        color: '#fff',
+        boxShadow: '0 4px 18px rgba(139,92,246,0.38)',
+        transition: 'all 0.2s ease',
+        letterSpacing: '0.01em',
+        fontFamily: "'Outfit', sans-serif"
+    });
+    btn.innerHTML = '<i class="fa-solid fa-file-csv"></i> Upload CSV Data';
+    btn.addEventListener('click', () => document.getElementById('csvFileInput').click());
+    btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'translateY(-2px)';
+        btn.style.boxShadow = '0 8px 24px rgba(139,92,246,0.52)';
+    });
+    btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translateY(0)';
+        btn.style.boxShadow = '0 4px 18px rgba(139,92,246,0.38)';
+    });
+
+    // ── Assemble ───────────────────────────────────────────────
+    card.appendChild(iconWrap);
+    card.appendChild(heading);
+    card.appendChild(subtitle);
+    card.appendChild(ul);
+    card.appendChild(btn);
+    container.appendChild(card);
+    chatMessages.appendChild(container);
+
+    // Clear the sessions sidebar
     const listContainer = document.getElementById('recentChatsList');
-    if (listContainer) {
-        listContainer.innerHTML = '';
-    }
+    if (listContainer) listContainer.innerHTML = '';
+}
+
+function clearNoCsvInlineStyles() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+    chatMessages.style.alignItems = '';
+    chatMessages.style.justifyContent = '';
+    chatMessages.style.padding = '';
+    chatMessages.style.gap = '';
+    chatMessages.style.flexDirection = '';
 }
 
 function renderChatHistory() {
     const chatMessages = document.getElementById('chatMessages');
     if (!chatMessages) return;
+
+    // Clear any inline styles set by renderNoCsvState
+    clearNoCsvInlineStyles();
 
     // Hide standard suggestions chips container as we now use the welcome grid cards
     const suggestionsEl = document.getElementById('chatSuggestions');

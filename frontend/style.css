@@ -1,4 +1,4 @@
-/* 
+﻿/* 
 
    StockSense AI - Modern Premium Theme 
 
@@ -1027,7 +1027,7 @@ h1, h2, h3, h4 {
 }
 
 /* Insights page fills the remaining viewport so the chat is always fully visible
-   without scrolling — the footer is only reachable by scrolling */
+   without scrolling â€” the footer is only reachable by scrolling */
 .insights-content {
     display: flex;
     flex-direction: column;
@@ -1710,7 +1710,7 @@ h1, h2, h3, h4 {
     background: var(--accent-primary);
 }
 
-/* Chart scroll architecture — defined below in the scroll section */
+/* Chart scroll architecture â€” defined below in the scroll section */
 
 
 
@@ -2725,7 +2725,7 @@ h1, h2, h3, h4 {
 }
 
 /* ============================================================
-   AI STRATEGIC ASSISTANT — COCKPIT & DUAL PANE UPGRADES
+   AI STRATEGIC ASSISTANT â€” COCKPIT & DUAL PANE UPGRADES
    ============================================================ */
 
 .insights-layout-grid {
@@ -3097,7 +3097,7 @@ body.light-mode .card-stock strong {
 }
 
 /* ============================================================
-   SETTINGS PAGE — MODERN PROFESSIONAL REDESIGN
+   SETTINGS PAGE â€” MODERN PROFESSIONAL REDESIGN
    ============================================================ */
 
 /* Settings content wrapper override (already set in base, extend here) */
@@ -3106,7 +3106,7 @@ body.light-mode .card-stock strong {
     padding-bottom: 4rem;
 }
 
-/* ── Hero Header ── */
+/* â”€â”€ Hero Header â”€â”€ */
 .settings-hero {
     display: flex;
     align-items: center;
@@ -3158,7 +3158,7 @@ body.light-mode .card-stock strong {
     letter-spacing: -0.025em;
 }
 
-/* ── Tab Navigation ── */
+/* â”€â”€ Tab Navigation â”€â”€ */
 .settings-tabs-nav {
     display: flex;
     align-items: center;
@@ -3205,13 +3205,13 @@ body.light-mode .card-stock strong {
     box-shadow: 0 4px 16px rgba(139,92,246,0.35);
 }
 
-/* Tab that's the Danger Zone — make it subtly red when active */
+/* Tab that's the Danger Zone â€” make it subtly red when active */
 .settings-tab[data-tab="danger"].active {
     background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(220,38,38,0.8));
     box-shadow: 0 4px 16px rgba(239,68,68,0.35);
 }
 
-/* ── Tab Panels ── */
+/* â”€â”€ Tab Panels â”€â”€ */
 .settings-panels {
     position: relative;
 }
@@ -3230,14 +3230,14 @@ body.light-mode .card-stock strong {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Panel Grid ── */
+/* â”€â”€ Panel Grid â”€â”€ */
 .settings-panel-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
     gap: 1.5rem;
 }
 
-/* ── Section Card ── */
+/* â”€â”€ Section Card â”€â”€ */
 .settings-section-card {
     padding: 2rem;
     display: flex;
@@ -3251,7 +3251,7 @@ body.light-mode .card-stock strong {
     border-color: rgba(139,92,246,0.2);
 }
 
-/* ── Section Header ── */
+/* â”€â”€ Section Header â”€â”€ */
 .settings-section-header {
     display: flex;
     align-items: flex-start;
@@ -3284,7 +3284,7 @@ body.light-mode .card-stock strong {
     line-height: 1.45;
 }
 
-/* ── Field Stack ── */
+/* â”€â”€ Field Stack â”€â”€ */
 .settings-field-stack {
     display: flex;
     flex-direction: column;
@@ -3320,7 +3320,7 @@ body.light-mode .card-stock strong {
     margin-bottom: 0.2rem;
 }
 
-/* ── Settings Input ── */
+/* â”€â”€ Settings Input â”€â”€ */
 .settings-input {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3345,7 +3345,7 @@ body.light-mode .card-stock strong {
     color: var(--text-primary);
 }
 
-/* ── Select Wrapper (custom chevron) ── */
+/* â”€â”€ Select Wrapper (custom chevron) â”€â”€ */
 .settings-select-wrapper {
     position: relative;
 }
@@ -3373,7 +3373,7 @@ body.light-mode .card-stock strong {
     color: var(--accent-primary);
 }
 
-/* ── Avatar Upload Area ── */
+/* â”€â”€ Avatar Upload Area â”€â”€ */
 .avatar-upload-area {
     display: flex;
     align-items: center;
@@ -3468,7 +3468,7 @@ body.light-mode .card-stock strong {
     border-color: rgba(239, 68, 68, 0.5);
 }
 
-/* ── Strategy Selection Cards ── */
+/* â”€â”€ Strategy Selection Cards â”€â”€ */
 .settings-strategy-cards {
     display: flex;
     flex-direction: column;
@@ -3563,7 +3563,7 @@ body.light-mode .card-stock strong {
     opacity: 1;
 }
 
-/* ── Toggle Row ── */
+/* â”€â”€ Toggle Row â”€â”€ */
 .settings-toggle-row {
     display: flex;
     align-items: center;
@@ -3597,7 +3597,7 @@ body.light-mode .card-stock strong {
     color: var(--text-primary);
 }
 
-/* ── Modern Toggle Switch ── */
+/* â”€â”€ Modern Toggle Switch â”€â”€ */
 .settings-toggle-switch {
     position: relative;
     display: inline-block;
@@ -3646,7 +3646,7 @@ body.light-mode .card-stock strong {
     box-shadow: 0 2px 12px rgba(139,92,246,0.4);
 }
 
-/* ── Action Button inside toggle row ── */
+/* â”€â”€ Action Button inside toggle row â”€â”€ */
 .settings-action-btn {
     display: inline-flex;
     align-items: center;
@@ -3671,7 +3671,7 @@ body.light-mode .card-stock strong {
     box-shadow: 0 4px 16px rgba(16,185,129,0.2);
 }
 
-/* ── Danger Zone Panel ── */
+/* â”€â”€ Danger Zone Panel â”€â”€ */
 .settings-danger-zone-wrapper {
     display: flex;
     flex-direction: column;
@@ -3757,7 +3757,7 @@ body.light-mode .card-stock strong {
     font-size: 0.9rem;
 }
 
-/* ── Danger Button (enhanced) ── */
+/* â”€â”€ Danger Button (enhanced) â”€â”€ */
 .danger-btn {
     display: inline-flex;
     align-items: center;
@@ -3782,7 +3782,7 @@ body.light-mode .card-stock strong {
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
 }
 
-/* Legacy switch — kept for backwards compat if referenced anywhere */
+/* Legacy switch â€” kept for backwards compat if referenced anywhere */
 .switch {
     position: relative;
     display: inline-block;
@@ -5061,7 +5061,7 @@ input:checked + .slider:before {
     animation: slideInUp 0.4s ease-out forwards;
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .hiw-header {
     display: flex;
     flex-direction: column;
@@ -5108,7 +5108,7 @@ input:checked + .slider:before {
     margin-top: 0.25rem;
 }
 
-/* ── Section Labels ── */
+/* â”€â”€ Section Labels â”€â”€ */
 .hiw-section-label {
     font-size: 1.05rem;
     font-weight: 700;
@@ -5122,7 +5122,7 @@ input:checked + .slider:before {
 }
 .hiw-section-label i { color: var(--accent-primary); }
 
-/* ── Steps Timeline ── */
+/* â”€â”€ Steps Timeline â”€â”€ */
 .hiw-steps-section { display: flex; flex-direction: column; }
 
 .hiw-timeline {
@@ -5244,7 +5244,7 @@ input:checked + .slider:before {
 }
 .hiw-step-tip strong { color: var(--text-primary); }
 
-/* ── CSV Format table ── */
+/* â”€â”€ CSV Format table â”€â”€ */
 .hiw-csv-format {
     padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
@@ -5286,7 +5286,7 @@ input:checked + .slider:before {
 }
 .hiw-csv-table tr:last-child td { border-bottom: none; }
 
-/* ── Feature chips (step 3 grid) ── */
+/* â”€â”€ Feature chips (step 3 grid) â”€â”€ */
 .hiw-features-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -5327,7 +5327,7 @@ input:checked + .slider:before {
     line-height: 1.4;
 }
 
-/* ── Bullet list ── */
+/* â”€â”€ Bullet list â”€â”€ */
 .hiw-bullet-list {
     list-style: none;
     padding: 0;
@@ -5351,7 +5351,7 @@ input:checked + .slider:before {
 }
 .hiw-bullet-list li strong { color: var(--text-primary); }
 
-/* ── Chat bubbles (step 5) ── */
+/* â”€â”€ Chat bubbles (step 5) â”€â”€ */
 .hiw-chat-examples {
     display: flex;
     flex-direction: column;
@@ -5383,7 +5383,7 @@ input:checked + .slider:before {
     border-color: rgba(139,92,246,0.35);
 }
 
-/* ── Architecture section ── */
+/* â”€â”€ Architecture section â”€â”€ */
 .hiw-arch-section { display: flex; flex-direction: column; }
 
 .hiw-arch-grid {
@@ -5437,7 +5437,7 @@ input:checked + .slider:before {
     flex-shrink: 0;
 }
 
-/* ── FAQ section ── */
+/* â”€â”€ FAQ section â”€â”€ */
 .hiw-faq-section { display: flex; flex-direction: column; }
 
 .hiw-faq-list {
@@ -5500,7 +5500,7 @@ input:checked + .slider:before {
 }
 .hiw-faq-answer strong { color: var(--text-primary); }
 
-/* ── CTA Banner ── */
+/* â”€â”€ CTA Banner â”€â”€ */
 .hiw-cta-banner {
     display: flex;
     align-items: center;
@@ -5523,7 +5523,7 @@ input:checked + .slider:before {
     margin: 0;
 }
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1024px) {
     .hiw-arch-grid {
         flex-direction: column;
@@ -7051,13 +7051,13 @@ input:checked + .slider:before {
     background: rgba(255, 255, 255, 0.025);
 }
 
-/* Past rows — dimmed */
+/* Past rows â€” dimmed */
 .holiday-row-past td {
     color: var(--text-muted) !important;
     opacity: 0.6;
 }
 
-/* Next upcoming row — golden highlight */
+/* Next upcoming row â€” golden highlight */
 .holiday-row-next td {
     background: rgba(245, 158, 11, 0.06) !important;
     border-top: 1px solid rgba(245, 158, 11, 0.18) !important;
@@ -9315,14 +9315,14 @@ body.light-mode #insightsView {
     max-width: 480px;
 }
 
-/* ── Collapse: decisive ease-in — sidebar snaps away cleanly ─────── */
+/* â”€â”€ Collapse: decisive ease-in â€” sidebar snaps away cleanly â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .chat-sidebar.sidebar-collapsing {
     transition: width 0.28s cubic-bezier(0.4, 0, 1, 1),
                 padding 0.28s cubic-bezier(0.4, 0, 1, 1),
                 border-color 0.22s ease;
 }
 
-/* ── Expand: smooth ease-out deceleration — premium reveal feel ─────── */
+/* â”€â”€ Expand: smooth ease-out deceleration â€” premium reveal feel â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .chat-sidebar.sidebar-expanding {
     transition: width 0.42s cubic-bezier(0.0, 0, 0.2, 1),
                 padding 0.42s cubic-bezier(0.0, 0, 0.2, 1),
@@ -9353,7 +9353,7 @@ body.light-mode #insightsView {
     border-right-color: transparent;
 }
 
-/* ─── Sidebar Resize Handle ──────────────────────────────────────── */
+/* â”€â”€â”€ Sidebar Resize Handle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .sidebar-resizer {
     width: 5px;
     flex-shrink: 0;
@@ -9452,7 +9452,7 @@ body.light-mode .sidebar-collapse-btn:hover {
     background: rgba(0, 0, 0, 0.06);
 }
 
-/* Mobile/Desktop Sidebar Toggle (reopen) Button — image version */
+/* Mobile/Desktop Sidebar Toggle (reopen) Button â€” image version */
 #insightsView .mobile-sidebar-toggle-btn {
     padding: 0;
 }
@@ -9958,7 +9958,7 @@ body.light-mode .recent-chat-item:hover {
     white-space: nowrap;
 }
 
-/* Recent Chat Item — Ellipsis (⋯) Button */
+/* Recent Chat Item â€” Ellipsis (â‹¯) Button */
 .recent-chat-item-more {
     display: none;
     align-items: center;
@@ -10304,7 +10304,7 @@ body.light-mode .welcome-card h4 {
         display: flex !important;
     }
 
-    /* Override the desktop width transition on mobile — use left-position only */
+    /* Override the desktop width transition on mobile â€” use left-position only */
     #insightsView .chat-sidebar {
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -10616,120 +10616,164 @@ body.light-mode .custom-confirm-cancel:hover { background: rgba(0,0,0,0.08); col
 .custom-confirm-ok.btn-info { background: var(--accent-primary); box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
 .custom-confirm-ok.btn-info:hover { filter: brightness(1.1); }
 
+
 /* ============================================================
    No CSV State Styling (Premium Glassmorphic Welcome Card)
+   High-specificity rules scoped to #insightsView .chat-messages
+   to override all existing parent rules.
    ============================================================ */
-.chat-no-csv-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding: 2rem;
-    margin: auto;
-    box-sizing: border-box;
+
+/* Make chat-messages a proper centering flex container when it holds the no-csv state */
+#insightsView .chat-messages:has(.chat-no-csv-container) {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 2rem !important;
 }
 
-.no-csv-card {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: var(--radius-lg) !important;
+/* Container: fills available space and centers content */
+#insightsView .chat-messages .chat-no-csv-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Card: constrained width, glassmorphic style */
+#insightsView .chat-messages .no-csv-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
     padding: 2.5rem !important;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(10px);
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    max-width: 460px !important;
+    width: 100% !important;
+    text-align: center !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(139, 92, 246, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    animation: noCsvFadeIn 0.4s ease forwards !important;
 }
 
-body.light-mode .no-csv-card {
-    background: rgba(0, 0, 0, 0.02) !important;
+body.light-mode #insightsView .chat-messages .no-csv-card {
+    background: rgba(255, 255, 255, 0.85) !important;
     border-color: rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
 }
 
-.no-csv-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(139, 92, 246, 0.3) !important;
+#insightsView .chat-messages .no-csv-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.18) !important;
 }
 
-.no-csv-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    font-size: 1.75rem;
-    color: var(--accent-primary);
+/* Icon circle */
+#insightsView .chat-messages .no-csv-icon {
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    min-height: 72px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(109, 40, 217, 0.08)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1.5rem !important;
+    font-size: 1.9rem !important;
+    line-height: 1 !important;
+    color: #a78bfa !important;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2) !important;
 }
 
-.no-csv-card h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 0.75rem 0;
-    font-family: 'Outfit', sans-serif;
+/* Heading */
+#insightsView .chat-messages .no-csv-card h3 {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #f0f0f0 !important;
+    margin: 0 0 0.6rem 0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    letter-spacing: -0.01em !important;
 }
 
-body.light-mode .no-csv-card h3 {
-    color: #111;
+body.light-mode #insightsView .chat-messages .no-csv-card h3 {
+    color: #111 !important;
 }
 
-.no-csv-card p {
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin: 0 0 1.5rem 0;
+/* Subtitle paragraph */
+#insightsView .chat-messages .no-csv-card p {
+    font-size: 0.87rem !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.6 !important;
+    margin: 0 0 1.5rem 0 !important;
 }
 
-.no-csv-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 2rem 0;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+/* Feature list â€” force away default bullets */
+#insightsView .chat-messages .no-csv-features {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 0 1.75rem 0 !important;
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.65rem !important;
 }
 
-.no-csv-features li {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+#insightsView .chat-messages .no-csv-features li {
+    font-size: 0.84rem !important;
+    color: var(--text-secondary) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    list-style: none !important;
+    padding-left: 0 !important;
 }
 
-.no-csv-features li i {
-    color: var(--status-success);
-    font-size: 0.9rem;
+#insightsView .chat-messages .no-csv-features li::before {
+    display: none !important;
+    content: none !important;
 }
 
-.upload-shortcut-btn {
-    width: 100%;
-    height: 44px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--accent-primary), #6d28d9) !important;
+#insightsView .chat-messages .no-csv-features li i {
+    color: #34d399 !important;
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Upload button */
+#insightsView .chat-messages .upload-shortcut-btn {
+    width: 100% !important;
+    height: 46px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
     border: none !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: 10px !important;
     color: #fff !important;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35) !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: 0.01em !important;
 }
 
-.upload-shortcut-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35) !important;
+#insightsView .chat-messages .upload-shortcut-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5) !important;
+    filter: brightness(1.08) !important;
+}
+
+/* Fade-in animation for the card */
+@keyframes noCsvFadeIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
 }

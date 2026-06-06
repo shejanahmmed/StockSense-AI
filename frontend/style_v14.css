@@ -10618,118 +10618,161 @@ body.light-mode .custom-confirm-cancel:hover { background: rgba(0,0,0,0.08); col
 
 /* ============================================================
    No CSV State Styling (Premium Glassmorphic Welcome Card)
+   High-specificity rules scoped to #insightsView .chat-messages
+   to override all existing parent rules.
    ============================================================ */
-.chat-no-csv-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding: 2rem;
-    margin: auto;
-    box-sizing: border-box;
+
+/* Make chat-messages a proper centering flex container when it holds the no-csv state */
+#insightsView .chat-messages:has(.chat-no-csv-container) {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 2rem !important;
 }
 
-.no-csv-card {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: var(--radius-lg) !important;
+/* Container: fills available space and centers content */
+#insightsView .chat-messages .chat-no-csv-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Card: constrained width, glassmorphic style */
+#insightsView .chat-messages .no-csv-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
     padding: 2.5rem !important;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(10px);
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    max-width: 460px !important;
+    width: 100% !important;
+    text-align: center !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(139, 92, 246, 0.08) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    animation: noCsvFadeIn 0.4s ease forwards !important;
 }
 
-body.light-mode .no-csv-card {
-    background: rgba(0, 0, 0, 0.02) !important;
+body.light-mode #insightsView .chat-messages .no-csv-card {
+    background: rgba(255, 255, 255, 0.85) !important;
     border-color: rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
 }
 
-.no-csv-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(139, 92, 246, 0.3) !important;
+#insightsView .chat-messages .no-csv-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.18) !important;
 }
 
-.no-csv-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    font-size: 1.75rem;
-    color: var(--accent-primary);
+/* Icon circle */
+#insightsView .chat-messages .no-csv-icon {
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    min-height: 72px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(109, 40, 217, 0.08)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1.5rem !important;
+    font-size: 1.9rem !important;
+    line-height: 1 !important;
+    color: #a78bfa !important;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2) !important;
 }
 
-.no-csv-card h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 0.75rem 0;
-    font-family: 'Outfit', sans-serif;
+/* Heading */
+#insightsView .chat-messages .no-csv-card h3 {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #f0f0f0 !important;
+    margin: 0 0 0.6rem 0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    letter-spacing: -0.01em !important;
 }
 
-body.light-mode .no-csv-card h3 {
-    color: #111;
+body.light-mode #insightsView .chat-messages .no-csv-card h3 {
+    color: #111 !important;
 }
 
-.no-csv-card p {
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin: 0 0 1.5rem 0;
+/* Subtitle paragraph */
+#insightsView .chat-messages .no-csv-card p {
+    font-size: 0.87rem !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.6 !important;
+    margin: 0 0 1.5rem 0 !important;
 }
 
-.no-csv-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 2rem 0;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+/* Feature list — force away default bullets */
+#insightsView .chat-messages .no-csv-features {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 0 1.75rem 0 !important;
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.65rem !important;
 }
 
-.no-csv-features li {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+#insightsView .chat-messages .no-csv-features li {
+    font-size: 0.84rem !important;
+    color: var(--text-secondary) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    list-style: none !important;
+    padding-left: 0 !important;
 }
 
-.no-csv-features li i {
-    color: var(--status-success);
-    font-size: 0.9rem;
+#insightsView .chat-messages .no-csv-features li::before {
+    display: none !important;
+    content: none !important;
 }
 
-.upload-shortcut-btn {
-    width: 100%;
-    height: 44px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--accent-primary), #6d28d9) !important;
+#insightsView .chat-messages .no-csv-features li i {
+    color: #34d399 !important;
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Upload button */
+#insightsView .chat-messages .upload-shortcut-btn {
+    width: 100% !important;
+    height: 46px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
     border: none !important;
-    border-radius: var(--radius-md) !important;
+    border-radius: 10px !important;
     color: #fff !important;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35) !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: 0.01em !important;
 }
 
-.upload-shortcut-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35) !important;
+#insightsView .chat-messages .upload-shortcut-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5) !important;
+    filter: brightness(1.08) !important;
+}
+
+/* Fade-in animation for the card */
+@keyframes noCsvFadeIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
