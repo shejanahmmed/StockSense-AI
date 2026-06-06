@@ -356,10 +356,12 @@ body.light-mode .sku-table-wrapper {
 }
 
 body.light-mode .sku-table th {
-    background: #f8fafc !important;
+    background: var(--bg-glass) !important;
     color: var(--text-muted) !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-    box-shadow: 0 -2px 0 0 #f8fafc !important;
+    box-shadow: 0 -2px 0 0 var(--bg-glass) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
 body.light-mode .sku-table td {
@@ -373,7 +375,8 @@ body.light-mode .sku-table tbody tr:hover {
 body.light-mode #dailyVsForecastModal .sku-table-wrapper,
 body.light-mode #cashFlowModal .sku-table-wrapper,
 body.light-mode #demandTrendModal .sku-table-wrapper,
-body.light-mode #avgMarginModal .sku-table-wrapper {
+body.light-mode #avgMarginModal .sku-table-wrapper,
+body.light-mode #unifiedKpiModal .sku-table-wrapper {
     background: rgba(0, 0, 0, 0.02) !important;
     border: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
@@ -381,9 +384,12 @@ body.light-mode #avgMarginModal .sku-table-wrapper {
 body.light-mode #dailyVsForecastModal .sku-table thead th,
 body.light-mode #cashFlowModal .sku-table thead th,
 body.light-mode #demandTrendModal .sku-table thead th,
-body.light-mode #avgMarginModal .sku-table thead th {
-    background: #f8fafc !important;
-    box-shadow: 0 -3px 0 0 #f8fafc !important;
+body.light-mode #avgMarginModal .sku-table thead th,
+body.light-mode #unifiedKpiModal .sku-table thead th {
+    background: #f1f5f9 !important;
+    box-shadow: 0 -3px 0 0 #f1f5f9 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 body.light-mode .holiday-row td {
@@ -401,9 +407,11 @@ body.light-mode .holiday-stat-chip {
 }
 
 body.light-mode .holiday-calendar-table thead th {
-    background: #f8fafc !important;
+    background: var(--bg-glass) !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-    box-shadow: 0 -2px 0 0 #f8fafc !important;
+    box-shadow: 0 -2px 0 0 var(--bg-glass) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
 body.light-mode .staging-table-wrapper {
@@ -412,9 +420,12 @@ body.light-mode .staging-table-wrapper {
 }
 
 body.light-mode .staging-data-table th {
-    background: #f8fafc !important;
+    background: var(--bg-glass) !important;
     color: var(--text-muted) !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 -2px 0 0 var(--bg-glass) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
 body.light-mode .staging-data-table td {
@@ -1343,15 +1354,49 @@ body.light-mode .showcase-logo-img {
 /* Premium AI Insight Card */
 
 .premium-glow {
-
     position: relative;
-
     border: 1px solid rgba(139, 92, 246, 0.3);
-
     box-shadow: 0 0 30px rgba(139, 92, 246, 0.1), inset 0 0 20px rgba(139, 92, 246, 0.05);
-
     animation: subtle-pulse 4s infinite alternate;
+}
 
+#aiInsightCard {
+    background: #ffea97 !important;
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    color: #1e293b !important;
+}
+
+#aiInsightCard h2 {
+    color: #1e293b !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+#aiInsightCard h2 i {
+    color: #1e293b !important;
+}
+
+#aiInsightCard .insight-content {
+    color: #1e293b !important;
+}
+
+#aiInsightCard .animated-text {
+    color: #1e293b !important;
+}
+
+#aiInsightCard .warning-badge {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+}
+
+#aiInsightCard .skeleton-text {
+    background: rgba(15, 23, 42, 0.1) !important;
+}
+
+#aiInsightCard span {
+    color: #dc2626 !important;
 }
 
 
@@ -4435,7 +4480,30 @@ input:checked + .slider:before {
     }
 }
 
-/* --- AI Promotional Planner Suggestions --- */
+#promo-planner-section {
+    background: #cce6f6 !important;
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
+}
+
+#promo-planner-section h2 {
+    color: #0f172a !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+#promo-planner-section h2 i {
+    color: #0f172a !important;
+}
+
+#promo-planner-section .subtitle {
+    color: #334155 !important;
+}
+
+#promo-planner-section .empty-state {
+    color: #334155 !important;
+}
+
 .promo-card {
     min-width: 320px;
     max-width: 360px;
@@ -5144,12 +5212,13 @@ input:checked + .slider:before {
     height: 300px;
     z-index: 10;
     pointer-events: none;
-    background: #181929;
+    background: transparent !important;
 }
 
 .chart-scroll-wrapper {
     margin-top: 0.75rem;
-    width: 100%;           /* Always fill the chart-section column */
+    width: auto;
+    margin-left: 65px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
@@ -7239,7 +7308,8 @@ input:checked + .slider:before {
 #dailyVsForecastModal .sku-table-wrapper,
 #cashFlowModal .sku-table-wrapper,
 #demandTrendModal .sku-table-wrapper,
-#avgMarginModal .sku-table-wrapper {
+#avgMarginModal .sku-table-wrapper,
+#unifiedKpiModal .sku-table-wrapper {
     max-height: none !important;
     overflow: visible !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -7249,7 +7319,8 @@ input:checked + .slider:before {
 #dailyVsForecastModal .sku-table thead th,
 #cashFlowModal .sku-table thead th,
 #demandTrendModal .sku-table thead th,
-#avgMarginModal .sku-table thead th {
+#avgMarginModal .sku-table thead th,
+#unifiedKpiModal .sku-table thead th {
     position: sticky;
     top: -1.5px; /* Position slightly higher to close the subpixel gap at the top viewport boundary */
     z-index: 10;
@@ -11534,5 +11605,92 @@ body.light-mode #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
 }
 body.light-mode #kpiUnifiedCard .kpi-unified-header {
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Colorful status-based table row tints */
+.sku-table tbody tr.status-leader {
+    background: rgba(16, 185, 129, 0.06) !important;
+}
+.sku-table tbody tr.status-leader td {
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+.sku-table tbody tr.status-leader:hover {
+    background: rgba(16, 185, 129, 0.1) !important;
+}
+
+.sku-table tbody tr.status-risk {
+    background: rgba(239, 68, 68, 0.06) !important;
+}
+.sku-table tbody tr.status-risk td {
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15) !important;
+}
+.sku-table tbody tr.status-risk:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.sku-table tbody tr.status-warning {
+    background: rgba(245, 158, 11, 0.06) !important;
+}
+.sku-table tbody tr.status-warning td {
+    border-bottom: 1px solid rgba(245, 158, 11, 0.15) !important;
+}
+.sku-table tbody tr.status-warning:hover {
+    background: rgba(245, 158, 11, 0.1) !important;
+}
+
+.sku-table tbody tr.status-healthy {
+    background: rgba(59, 130, 246, 0.04) !important;
+}
+.sku-table tbody tr.status-healthy td {
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1) !important;
+}
+.sku-table tbody tr.status-healthy:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Light mode overrides for table row tints */
+body.light-mode .sku-table tbody tr.status-leader {
+    background: rgba(16, 185, 129, 0.12) !important;
+}
+body.light-mode .sku-table tbody tr.status-leader td {
+    border-bottom: 1px solid rgba(16, 185, 129, 0.25) !important;
+}
+body.light-mode .sku-table tbody tr.status-leader:hover {
+    background: rgba(16, 185, 129, 0.18) !important;
+}
+
+body.light-mode .sku-table tbody tr.status-risk {
+    background: rgba(239, 68, 68, 0.12) !important;
+}
+body.light-mode .sku-table tbody tr.status-risk td {
+    border-bottom: 1px solid rgba(239, 68, 68, 0.25) !important;
+}
+body.light-mode .sku-table tbody tr.status-risk:hover {
+    background: rgba(239, 68, 68, 0.18) !important;
+}
+
+body.light-mode .sku-table tbody tr.status-warning {
+    background: rgba(245, 158, 11, 0.12) !important;
+}
+body.light-mode .sku-table tbody tr.status-warning td {
+    border-bottom: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+body.light-mode .sku-table tbody tr.status-warning:hover {
+    background: rgba(245, 158, 11, 0.18) !important;
+}
+
+body.light-mode .sku-table tbody tr.status-healthy {
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+body.light-mode .sku-table tbody tr.status-healthy td {
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2) !important;
+}
+body.light-mode .sku-table tbody tr.status-healthy:hover {
+    background: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Light mode modal container background override */
+body.light-mode .sku-modal-container {
+    background: var(--card-bg) !important;
 }
 

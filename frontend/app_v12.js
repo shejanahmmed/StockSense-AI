@@ -4307,7 +4307,7 @@ function updateBIMetrics(metrics) {
                     sku = found.sku;
                 }
             }
-            const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
+            const skuSpan = sku ? `<span class="timeline-sku" style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
             
             const poBtnHtml = (item.urgency === 'Critical' || item.urgency === 'Plan') ? `
                 <button class="primary-btn timeline-po-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem; height: 26px; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'Outfit', sans-serif;" onclick="openDraftPO('${sku}', '${item.name.replace(/'/g, "\\'")}', ${item.stock})">
@@ -4318,14 +4318,14 @@ function updateBIMetrics(metrics) {
             return `
                 <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorVar}; box-shadow: 0 0 10px ${colorVar};"></div>
-                    <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <strong style="color: var(--text-primary); display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
                             ${item.name}${skuSpan}
-                            <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: auto;">(${item.stock} left)</span>
                         </strong>
                         ${textHtml}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+                        <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem; white-space: nowrap;">(${item.stock} left)</span>
                         ${badgeHtml}
                         ${poBtnHtml}
                     </div>
@@ -4420,7 +4420,7 @@ function updateBIMetrics(metrics) {
                     sku = found.sku;
                 }
             }
-            const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
+            const skuSpan = sku ? `<span class="profit-sku" style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
             
             html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid ${borderColor};">

@@ -4191,11 +4191,11 @@ function updateBIMetrics(metrics) {
         if (el) el.innerHTML = text;
     };
 
-    setElemText('metric-daily-sales', `${Number(metrics.daily_sales || 0).toLocaleString()} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">units/day</span>`);
+    setElemText('metric-daily-sales', `${Number(metrics.daily_sales || 0).toLocaleString()} <span style="font-size: 0.8rem; font-weight: normal; color: rgba(255, 255, 255, 0.75);">units/day</span>`);
     // Assuming we want to show forecast too, we can adjust the sub-text.
     const salesCard = document.getElementById('metric-daily-sales');
     if (salesCard && salesCard.parentElement && salesCard.parentElement.nextElementSibling) {
-        salesCard.parentElement.nextElementSibling.innerHTML = `vs <span style="font-weight: 600; color: var(--accent-primary);">${Number(metrics.daily_forecast || 0).toLocaleString()}</span> forecasted units/day`;
+        salesCard.parentElement.nextElementSibling.innerHTML = `vs <span style="font-weight: 700; color: #ffffff;">${Number(metrics.daily_forecast || 0).toLocaleString()}</span> forecasted units/day`;
     }
 
     setElemText('metric-cash-flow', `+${formatCurrency(metrics.cash_flow)}`);
@@ -4214,7 +4214,7 @@ function updateBIMetrics(metrics) {
     if (eventEl) {
         eventEl.innerHTML = metrics.upcoming_event +
             (metrics.upcoming_event_date
-                ? `<span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-muted);margin-top:0.2rem;letter-spacing:0.02em;">${metrics.upcoming_event_date}</span>`
+                ? `<span style="display:block;font-size:0.65rem;font-weight:400;color:rgba(255, 255, 255, 0.75);margin-top:0.2rem;letter-spacing:0.02em;">${metrics.upcoming_event_date}</span>`
                 : '');
     }
     const eventCard = document.getElementById('metric-event');
@@ -4307,7 +4307,7 @@ function updateBIMetrics(metrics) {
                     sku = found.sku;
                 }
             }
-            const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
+            const skuSpan = sku ? `<span class="timeline-sku" style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
             
             const poBtnHtml = (item.urgency === 'Critical' || item.urgency === 'Plan') ? `
                 <button class="primary-btn timeline-po-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem; height: 26px; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'Outfit', sans-serif;" onclick="openDraftPO('${sku}', '${item.name.replace(/'/g, "\\'")}', ${item.stock})">
@@ -4318,14 +4318,14 @@ function updateBIMetrics(metrics) {
             return `
                 <li style="display: flex; align-items: center; gap: 1rem; position: relative;">
                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorVar}; box-shadow: 0 0 10px ${colorVar};"></div>
-                    <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <strong style="color: var(--text-primary); display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
                             ${item.name}${skuSpan}
-                            <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: auto;">(${item.stock} left)</span>
                         </strong>
                         ${textHtml}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+                        <span style="font-weight: normal; color: var(--text-muted); font-size: 0.85rem; white-space: nowrap;">(${item.stock} left)</span>
                         ${badgeHtml}
                         ${poBtnHtml}
                     </div>
@@ -4420,7 +4420,7 @@ function updateBIMetrics(metrics) {
                     sku = found.sku;
                 }
             }
-            const skuSpan = sku ? `<span style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
+            const skuSpan = sku ? `<span class="profit-sku" style="font-weight: normal; color: var(--text-secondary); font-family: monospace; font-size: 0.82rem; margin-left: 0.4rem; padding: 0.1rem 0.35rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px;">${sku}</span>` : '';
             
             html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 3px solid ${borderColor};">
@@ -5122,7 +5122,7 @@ function initChart() {
                         color: 'transparent'
                     },
                     afterFit: function(scale) {
-                        scale.width = 115; // 50px padding/buffer beyond the 65px sticky Y-axis overlay to prevent slanted labels from clipping
+                        scale.width = 10; // Only a small 10px buffer is needed now since the sticky Y-axis has its own 65px margin
                     }
                 }
             }
@@ -6264,25 +6264,29 @@ function renderUnifiedKpiModalRows(items) {
         let statusText = 'Healthy';
         let badgeStyle = 'background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.25);';
         let remainingColor = 'var(--text-primary)';
+        let rowClass = 'status-leader';
 
         if (left === 0) {
             statusText = 'Out of Stock';
             badgeStyle = 'background: rgba(239, 68, 68, 0.15); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.25);';
             remainingColor = 'var(--status-danger)';
+            rowClass = 'status-risk';
         } else if (left <= reorderPoint) {
             statusText = 'Low Stock';
             badgeStyle = 'background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25);';
             remainingColor = 'var(--status-warning)';
+            rowClass = 'status-warning';
         } else if (left >= reorderPoint * 3) {
             statusText = 'Overstocked';
             badgeStyle = 'background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.25);';
             remainingColor = 'var(--accent-primary)';
+            rowClass = 'status-healthy';
         }
 
         const statusBadge = `<span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; display: inline-block; ${badgeStyle}">${statusText}</span>`;
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td style="text-align: center; font-size: 0.8rem; vertical-align: middle;">
                     <code style="font-family: monospace; font-size: 0.78rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>
@@ -6676,16 +6680,24 @@ function renderDailyVsForecastRows(items, maxVelocity) {
         
         let badgeStyle = '';
         let badgeText = '';
+        let rowClass = 'status-healthy';
         
         if (diff > 0) {
             badgeStyle = 'background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);';
             badgeText = `+${diff}/day`;
+            rowClass = 'status-leader';
         } else if (diff < 0) {
             badgeStyle = 'background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.2);';
             badgeText = `${diff}/day`;
+            rowClass = 'status-warning';
         } else {
             badgeStyle = 'background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid rgba(255, 255, 255, 0.08);';
             badgeText = 'Stable';
+            rowClass = 'status-healthy';
+        }
+
+        if (item.hasDeficit) {
+            rowClass = 'status-risk';
         }
 
         const varianceBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-block; ${badgeStyle}">${badgeText}</span>`;
@@ -6712,7 +6724,7 @@ function renderDailyVsForecastRows(items, maxVelocity) {
         }
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
                     <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>
@@ -7143,14 +7155,19 @@ function renderCashFlowModalRows(items, maxInflow, leaderThreshold) {
         const risk = item.cashAtRisk || 0;
 
         let statusBadge = '';
+        let rowClass = 'status-healthy';
         if (inflow >= leaderThreshold && inflow > 0) {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-star"></i> Inflow Leader</span>`;
+            rowClass = 'status-leader';
         } else if (risk > 0) {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Risk</span>`;
+            rowClass = 'status-risk';
         } else if (stock > 0 && (item.forecastedDemand30d === 0 || stock > item.forecastedDemand30d * 3)) {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fa-solid fa-lock"></i> Locked Capital</span>`;
+            rowClass = 'status-warning';
         } else {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-check"></i> Healthy</span>`;
+            rowClass = 'status-healthy';
         }
 
         // Relative width for the progress contribution bar (minimum 3%)
@@ -7172,7 +7189,7 @@ function renderCashFlowModalRows(items, maxInflow, leaderThreshold) {
         }
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
                     <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>
@@ -7596,12 +7613,16 @@ function renderDemandTrendModalRows(items, maxVelocity) {
         }
 
         let statusBadge = '';
+        let rowClass = 'status-healthy';
         if (traj === 'Surging') {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-bolt"></i> Surging</span>`;
+            rowClass = 'status-leader';
         } else if (traj === 'Cooling') {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-snowflake"></i> Cooling</span>`;
+            rowClass = 'status-risk';
         } else {
             statusBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-circle-nodes"></i> Stable</span>`;
+            rowClass = 'status-healthy';
         }
 
         // Relative widths for comparative sparklines
@@ -7609,7 +7630,7 @@ function renderDemandTrendModalRows(items, maxVelocity) {
         const forePct = Math.max(3, (foreDaily / maxVelocity) * 100);
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
                     <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>
@@ -8057,22 +8078,26 @@ function renderMarginModalRows(items) {
         // Select badge design based on classification
         let classBadge = '';
         let barColor = '';
+        let rowClass = 'status-healthy';
         if (item.classification === 'Leader') {
             classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-gem"></i> Premium</span>`;
             barColor = 'linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.7))';
+            rowClass = 'status-leader';
         } else if (item.classification === 'Healthy') {
             classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2);"><i class="fa-solid fa-shield"></i> Healthy</span>`;
             barColor = 'linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.7))';
+            rowClass = 'status-healthy';
         } else {
             classBadge = `<span style="font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fa-solid fa-triangle-exclamation"></i> Low Margin</span>`;
             barColor = 'linear-gradient(90deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.7))';
+            rowClass = 'status-warning';
         }
 
         // Relative progress bar for margin percentage representation (scaled against a max margin of 35%)
         const progressPct = Math.min(100, (marginPct / 35) * 100);
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
                     <code style="font-family: monospace; font-size: 0.85rem; color: var(--text-primary); background: rgba(255,255,255,0.06); padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.04);">${item.sku}</code>
                 </td>

@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v14.css?v=20260606k">
+    <link rel="stylesheet" href="style_v15.css?v=20260607al">
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -62,17 +62,17 @@
 
         #kpiNextEventCard {
             background: #f59e0b !important;
-            border: 2px solid rgba(255, 255, 255, 0.4) !important;
-            color: #0f172a !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25) !important;
         }
         body.light-mode #kpiNextEventCard {
-            border: 2px solid rgba(15, 23, 42, 0.22) !important;
+            border: 2px solid rgba(15, 23, 42, 0.2) !important;
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15) !important;
         }
-        #kpiNextEventCard .kpi-label { color: rgba(15, 23, 42, 0.8) !important; font-weight: 600 !important; }
-        #kpiNextEventCard .kpi-label i { color: #0f172a !important; }
-        #kpiNextEventCard .kpi-value { color: #0f172a !important; }
+        #kpiNextEventCard .kpi-label { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500 !important; }
+        #kpiNextEventCard .kpi-label i { color: #ffffff !important; }
+        #kpiNextEventCard .kpi-value { color: #ffffff !important; }
 
         #kpiMarginCard {
             background: #ff7e67 !important;
@@ -116,6 +116,7 @@
         #kpiDailyVsForecastCard .trend.positive,
         #kpiCashFlowCard .trend.positive,
         #kpiDemandTrendCard .trend.positive,
+        #kpiNextEventCard .trend.positive,
         #kpiMarginCard .trend.positive {
             background: rgba(255, 255, 255, 0.2) !important;
             color: #ffffff !important;
@@ -124,6 +125,7 @@
         #kpiDailyVsForecastCard .trend.negative,
         #kpiCashFlowCard .trend.negative,
         #kpiDemandTrendCard .trend.negative,
+        #kpiNextEventCard .trend.negative,
         #kpiMarginCard .trend.negative {
             background: rgba(239, 68, 68, 0.25) !important;
             color: #fca5a5 !important;
@@ -132,26 +134,11 @@
         #kpiDailyVsForecastCard .trend.neutral,
         #kpiCashFlowCard .trend.neutral,
         #kpiDemandTrendCard .trend.neutral,
+        #kpiNextEventCard .trend.neutral,
         #kpiMarginCard .trend.neutral {
             background: rgba(255, 255, 255, 0.12) !important;
             color: rgba(255, 255, 255, 0.9) !important;
             border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        #kpiNextEventCard .trend.positive {
-            background: rgba(16, 185, 129, 0.18) !important;
-            color: #065f46 !important;
-            border: 1.5px solid rgba(16, 185, 129, 0.15) !important;
-        }
-        #kpiNextEventCard .trend.negative {
-            background: rgba(239, 68, 68, 0.18) !important;
-            color: #991b1b !important;
-            border: 1.5px solid rgba(239, 68, 68, 0.15) !important;
-        }
-        #kpiNextEventCard .trend.neutral {
-            background: rgba(15, 23, 42, 0.08) !important;
-            color: #1e293b !important;
-            border: 1.5px solid rgba(15, 23, 42, 0.06) !important;
         }
 
         /* Card 6: Priority Next Step - Vibrant Teal */
@@ -281,7 +268,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
         }
         body.light-mode #kpiUnifiedCard {
-            background: #ffffff !important;
+            background: #ffea97 !important;
             border: 2px solid rgba(15, 23, 42, 0.15) !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
         }
@@ -295,7 +282,7 @@
         }
         body.light-mode #kpiUnifiedCard .kpi-unified-header h2,
         body.light-mode #kpiUnifiedCard .kpi-unified-header h2 i {
-            color: var(--text-primary) !important;
+            color: #1e293b !important;
         }
         #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
             background: rgba(255, 255, 255, 0.08) !important;
@@ -303,9 +290,9 @@
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
         }
         body.light-mode #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
-            background: rgba(15, 23, 42, 0.05) !important;
-            color: var(--text-secondary) !important;
-            border: 1px solid rgba(15, 23, 42, 0.1) !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(15, 23, 42, 0.15) !important;
         }
         #kpiUnifiedCard .kpi-unified-header {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -561,11 +548,11 @@
                         </button>
                     </div>
 
-                    <!-- Uploaded File Indicator (Placed before the button so the button doesn't shift left) -->
-                    <div id="uploadedFileIndicator" class="glass-panel" style="display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
-                        <i class="fa-solid fa-file-csv" style="color: var(--status-success);"></i>
-                        <span id="uploadedFileName" style="color: var(--text-primary); font-weight: 500; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
-                        <i class="fa-solid fa-xmark" id="clearUploadedFileBtn" style="cursor: pointer; color: var(--text-muted); margin-left: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='var(--status-danger)'" onmouseout="this.style.color='var(--text-muted)'"></i>
+                    <!-- Uploaded File Indicator -->
+                    <div id="uploadedFileIndicator" class="uploaded-file-pill" style="display: none;">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span id="uploadedFileName"></span>
+                        <i class="fa-solid fa-xmark" id="clearUploadedFileBtn"></i>
                     </div>
 
                     <button class="primary-btn" id="uploadCsvBtn" onclick="document.getElementById('csvFileInput').click()">
@@ -840,7 +827,7 @@
                         </section>
 
                         <!-- 2 & 8. Low-stock alerts & visual timeline -->
-                        <section class="glass-panel" style="padding: 1.5rem;">
+                        <section class="glass-panel" id="stockAlertsTimelineCard" style="padding: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                                 <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
                                 <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
@@ -852,7 +839,7 @@
                     </div>
 
                     <!-- Column 2: Top Profit Drivers -->
-                    <section class="glass-panel" style="padding: 1.5rem;">
+                    <section class="glass-panel" id="profitDriversCard" style="padding: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                             <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
                             <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
@@ -3271,6 +3258,6 @@
 
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app_v11.js?v=16"></script>
+    <script src="app_v12.js?v=20260607t"></script>
 </body>
 </html>
