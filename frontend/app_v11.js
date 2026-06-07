@@ -4177,12 +4177,24 @@ function updateBIMetrics(metrics) {
     if (toggleTimelineBtn) {
         const totalProds = Math.max(metrics.timeline ? metrics.timeline.length : 0, fullInventoryData ? fullInventoryData.length : 0);
         toggleTimelineBtn.style.display = (totalProds > 0) ? 'inline-block' : 'none';
+        toggleTimelineBtn.style.background = '#ffffff';
+        toggleTimelineBtn.style.color = '#1e293b';
+        toggleTimelineBtn.style.border = '1px solid rgba(30,41,59,0.3)';
+        toggleTimelineBtn.style.boxShadow = 'none';
+        toggleTimelineBtn.style.backdropFilter = 'none';
+        toggleTimelineBtn.style.webkitBackdropFilter = 'none';
         toggleTimelineBtn.textContent = _showAllTimeline ? 'Show Less' : 'View All';
     }
     const toggleDriversBtn = document.getElementById('toggle-all-drivers');
     if (toggleDriversBtn) {
         const totalProds = Math.max(metrics.top_products ? metrics.top_products.length : 0, fullInventoryData ? fullInventoryData.length : 0);
         toggleDriversBtn.style.display = (totalProds > 5) ? 'inline-block' : 'none';
+        toggleDriversBtn.style.background = '#ffffff';
+        toggleDriversBtn.style.color = '#1e293b';
+        toggleDriversBtn.style.border = '1px solid rgba(30,41,59,0.3)';
+        toggleDriversBtn.style.boxShadow = 'none';
+        toggleDriversBtn.style.backdropFilter = 'none';
+        toggleDriversBtn.style.webkitBackdropFilter = 'none';
         toggleDriversBtn.textContent = _showAllDrivers ? 'Show Less' : 'View All';
     }
 
@@ -4825,7 +4837,7 @@ function renderInsight(insightText) {
     const container = document.getElementById('ai-insight-text');
     
     // Format the text slightly for HTML display
-    let formattedText = insightText.replace(/Stockout Warning:/g, '<span style="color: var(--status-warning); font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Warning:</span>');
+    let formattedText = insightText.replace(/Stockout Warning:/g, '<span style="color: #fd7670; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Warning:</span>');
     formattedText = formattedText.replace(/⚠️/g, ''); // Remove emoji if it's there to avoid duplication with icon
     
     const insightHTML = `
@@ -5004,8 +5016,8 @@ function initChart() {
     
     // Gradient for the line area
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
-    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+    gradient.addColorStop(0, 'rgba(67, 191, 254, 0.4)');
+    gradient.addColorStop(1, 'rgba(67, 191, 254, 0.0)');
 
     // Empty initial state
     const labels = [];
@@ -5037,13 +5049,13 @@ function initChart() {
                 {
                     label: 'Predicted Sales',
                     data: forecastData,
-                    borderColor: '#8b5cf6',
+                    borderColor: '#43bffe',
                     backgroundColor: gradient,
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
                     pointBackgroundColor: '#0d0d0d',
-                    pointBorderColor: '#8b5cf6',
+                    pointBorderColor: '#43bffe',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6
@@ -5062,7 +5074,7 @@ function initChart() {
                     label: 'Lower Confidence',
                     data: confidenceLower,
                     borderColor: 'transparent',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    backgroundColor: 'rgba(67, 191, 254, 0.1)',
                     pointRadius: 0,
                     fill: '-1', // Fill to previous dataset (Upper Confidence)
                     tension: 0.4

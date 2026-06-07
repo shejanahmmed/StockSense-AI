@@ -1361,42 +1361,70 @@ body.light-mode .showcase-logo-img {
 }
 
 #aiInsightCard {
-    background: #ffea97 !important;
+    background: var(--bg-glass) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: var(--backdrop-filter) !important;
+    -webkit-backdrop-filter: var(--backdrop-filter) !important;
+}
+body.light-mode #aiInsightCard {
     border: 2px solid rgba(15, 23, 42, 0.15) !important;
-    color: #1e293b !important;
+}
+
+#aiInsightCard .section-header {
+    margin-bottom: 0 !important;
+}
+
+#aiInsightCard .section-header h2 {
+    margin: 0 !important;
+}
+
+#aiInsightCard .insight-content {
+    margin-top: -0.5rem !important;
+}
+
+#aiInsightCard .insight-content p,
+#aiInsightCard .animated-text {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 #aiInsightCard h2 {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
 }
 
 #aiInsightCard h2 i {
-    color: #1e293b !important;
+    color: var(--accent-primary) !important;
 }
 
 #aiInsightCard .insight-content {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
 }
 
 #aiInsightCard .animated-text {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
 }
 
 #aiInsightCard .warning-badge {
-    background: rgba(239, 68, 68, 0.12) !important;
-    color: #dc2626 !important;
-    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    background: #ff7e67 !important;
+    color: #ffffff !important;
+    border: none !important;
+    text-shadow: none !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
 }
 
 #aiInsightCard .skeleton-text {
-    background: rgba(15, 23, 42, 0.1) !important;
+    background: rgba(255, 255, 255, 0.2) !important;
 }
 
 #aiInsightCard span {
-    color: #dc2626 !important;
+    color: #fd7670 !important;
 }
 
 
@@ -1841,24 +1869,24 @@ body.light-mode .showcase-logo-img {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-md);
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.1);
+    border: 1px solid rgba(67, 191, 254, 0.25);
+    color: #43bffe;
     cursor: pointer;
     font-size: 0.95rem;
     transition: all 0.2s ease;
     position: relative;
 }
 .chart-filter-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    background: rgba(67, 191, 254, 0.2);
+    border-color: rgba(67, 191, 254, 0.5);
+    box-shadow: 0 0 12px rgba(67, 191, 254, 0.3);
     transform: scale(1.05);
 }
 .chart-filter-btn.is-active {
-    background: rgba(139, 92, 246, 0.25);
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 14px rgba(139, 92, 246, 0.4);
+    background: rgba(67, 191, 254, 0.25);
+    border-color: #43bffe;
+    box-shadow: 0 0 14px rgba(67, 191, 254, 0.4);
 }
 
 .filter-active-badge {
@@ -1888,8 +1916,8 @@ body.light-mode .showcase-logo-img {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 20px rgba(139,92,246,0.1);
+    border: 1px solid rgba(67, 191, 254, 0.25);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 20px rgba(67, 191, 254, 0.1);
     animation: filterPanelIn 0.18s ease-out;
 }
 @keyframes filterPanelIn {
@@ -1953,13 +1981,13 @@ body.light-mode .showcase-logo-img {
     transition: all 0.15s ease;
 }
 .filter-pill:hover {
-    border-color: rgba(139, 92, 246, 0.4);
-    color: var(--accent-primary);
+    border-color: rgba(67, 191, 254, 0.4);
+    color: #43bffe;
 }
 .filter-pill.active {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.2);
+    border-color: #43bffe;
+    color: #43bffe;
     font-weight: 600;
 }
 
@@ -2003,12 +2031,22 @@ body.light-mode .showcase-logo-img {
     transition: transform 0.2s ease, background 0.2s;
 }
 .filter-toggle-switch input:checked + .filter-toggle-track {
-    background: rgba(139, 92, 246, 0.3);
-    border-color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.3);
+    border-color: #43bffe;
 }
 .filter-toggle-switch input:checked + .filter-toggle-track::after {
     transform: translateX(18px);
-    background: var(--accent-primary);
+    background: #43bffe;
+}
+
+.filter-apply-btn {
+    background: #43bffe !important;
+    border-color: rgba(67, 191, 254, 0.4) !important;
+    color: #ffffff !important;
+    transition: background-color 0.2s ease !important;
+}
+.filter-apply-btn:hover {
+    background: #25a4eb !important;
 }
 
 /* Chart scroll architecture — defined below in the scroll section */
@@ -2047,7 +2085,7 @@ body.light-mode .showcase-logo-img {
 
 .legend-dot.historical { background: var(--text-muted); }
 
-.legend-dot.forecast { background: var(--accent-primary); }
+.legend-dot.forecast { background: #43bffe; }
 
 
 
@@ -4481,27 +4519,35 @@ input:checked + .slider:before {
 }
 
 #promo-planner-section {
-    background: #cce6f6 !important;
+    background: var(--bg-glass) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: var(--backdrop-filter) !important;
+    -webkit-backdrop-filter: var(--backdrop-filter) !important;
+}
+body.light-mode #promo-planner-section {
     border: 2px solid rgba(15, 23, 42, 0.15) !important;
 }
 
 #promo-planner-section h2 {
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
 }
 
 #promo-planner-section h2 i {
-    color: #0f172a !important;
+    color: var(--accent-primary) !important;
 }
 
 #promo-planner-section .subtitle {
-    color: #334155 !important;
+    color: var(--text-muted) !important;
 }
 
 #promo-planner-section .empty-state {
-    color: #334155 !important;
+    color: var(--text-muted) !important;
 }
 
 .promo-card {
@@ -7602,7 +7648,7 @@ input:checked + .slider:before {
 .new-user-guide-badge .guide-link-btn {
     background: transparent;
     border: none;
-    color: var(--accent-primary);
+    color: #f5c518;
     font-weight: 600;
     cursor: pointer;
     font-size: 0.8rem;
@@ -7615,7 +7661,7 @@ input:checked + .slider:before {
 }
 
 .new-user-guide-badge .guide-link-btn:hover {
-    color: #c4b5fd;
+    color: #ffd94a;
 }
 
 .new-user-guide-badge .guide-link-btn:hover i {
@@ -11569,14 +11615,21 @@ body.light-mode #kpiItemHealth {
 
 /* Unified Parent Card Styling */
 #kpiUnifiedCard {
-    background: #141416 !important;
-    border: 2px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: default !important;
 }
 body.light-mode #kpiUnifiedCard {
-    background: #ffffff !important;
-    border: 2px solid rgba(15, 23, 42, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: default !important;
+}
+#kpiUnifiedCard:hover {
+    transform: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
 }
 #kpiUnifiedCard .kpi-unified-header h2 {
     background: none !important;

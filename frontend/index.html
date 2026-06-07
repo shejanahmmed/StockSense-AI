@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v15.css?v=20260607al">
+    <link rel="stylesheet" href="style_v15.css?v=20260607ar">
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -141,26 +141,30 @@
             border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* Card 6: Priority Next Step - Vibrant Teal */
+        /* Card 6: Priority Next Step - matches bottom 3 cards style */
         #kpiPriorityNextStepCard {
-            background: #0ea5e9 !important;
-            border: 2px solid rgba(255, 255, 255, 0.3) !important;
-            color: #ffffff !important;
-            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.25) !important;
+            background-color: transparent !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px) !important;
+            background-size: 14px 14px !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: none !important;
             transition: var(--transition-smooth) !important;
         }
         body.light-mode #kpiPriorityNextStepCard {
-            border: 2px solid rgba(15, 23, 42, 0.2) !important;
-            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15) !important;
+            background-color: transparent !important;
+            background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+            background-size: 14px 14px !important;
+            border: 2px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: none !important;
         }
         #kpiPriorityNextStepCard h3 {
-            color: #ffffff !important;
+            color: var(--text-primary) !important;
         }
         #kpiPriorityNextStepCard p {
-            color: rgba(255, 255, 255, 0.85) !important;
+            color: var(--text-secondary) !important;
         }
         #kpiPriorityNextStepCard .kpi-priority-icon-wrap {
-            color: #ffffff !important;
+            color: var(--accent-primary) !important;
         }
         #kpiPriorityNextStepCard:hover {
             transform: scale(1.012) !important;
@@ -263,14 +267,26 @@
 
         /* Unified Parent Card Styling */
         #kpiUnifiedCard {
-            background: #141416 !important;
-            border: 2px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+            background: transparent !important;
+            background-image: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            cursor: default !important;
         }
         body.light-mode #kpiUnifiedCard {
-            background: #ffea97 !important;
-            border: 2px solid rgba(15, 23, 42, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+            background: transparent !important;
+            background-image: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            cursor: default !important;
+        }
+        #kpiUnifiedCard:hover {
+            transform: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+        }
+        body.light-mode #kpiUnifiedCard:hover {
+            border-color: transparent !important;
         }
         #kpiUnifiedCard .kpi-unified-header h2 {
             background: none !important;
@@ -299,6 +315,77 @@
         }
         body.light-mode #kpiUnifiedCard .kpi-unified-header {
             border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+        }
+
+        /* Transparency overrides for bottom grid cards */
+        #demandDriversCard, #profitDriversCard, #stockAlertsTimelineCard {
+            background-color: transparent !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px) !important;
+            background-size: 14px 14px !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: none !important;
+        }
+        body.light-mode #demandDriversCard, 
+        body.light-mode #profitDriversCard, 
+        body.light-mode #stockAlertsTimelineCard {
+            background-color: transparent !important;
+            background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+            background-size: 14px 14px !important;
+            border: 2px solid rgba(15, 23, 42, 0.15) !important;
+            box-shadow: none !important;
+        }
+        body.light-mode #demandDriversCard h2,
+        body.light-mode #demandDriversCard .driver-name,
+        body.light-mode #demandDriversCard .driver-impact,
+        body.light-mode #demandDriversCard .empty-state,
+        body.light-mode #demandDriversCard .empty-state span {
+            color: #1e293b !important;
+        }
+        /* AI Promotional Planner Card */
+        #promo-planner-section {
+            background: var(--bg-glass) !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: none !important;
+            animation: none !important;
+            backdrop-filter: var(--backdrop-filter) !important;
+            -webkit-backdrop-filter: var(--backdrop-filter) !important;
+        }
+        #promo-planner-section h2 {
+            color: var(--text-primary) !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+        }
+        #promo-planner-section h2 i {
+            color: var(--accent-primary) !important;
+        }
+        #promo-planner-section .subtitle,
+        #promo-planner-section .empty-state {
+            color: var(--text-muted) !important;
+        }
+        body.light-mode #promo-planner-section {
+            border: 2px solid rgba(15, 23, 42, 0.15) !important;
+        }
+        /* View All buttons - clean white with thin dark border */
+        #toggle-all-timeline,
+        #toggle-all-drivers {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(30, 41, 59, 0.25) !important;
+            font-weight: 500 !important;
+            box-shadow: none !important;
+        }
+        #toggle-all-timeline:hover,
+        #toggle-all-drivers:hover {
+            background: #f8fafc !important;
+            border-color: rgba(30, 41, 59, 0.45) !important;
+            box-shadow: none !important;
+        }
+        body.light-mode #toggle-all-timeline,
+        body.light-mode #toggle-all-drivers {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(30, 41, 59, 0.25) !important;
         }
     </style>
     <!-- Chart.js for data visualization -->
@@ -541,7 +628,7 @@
                     
                     <!-- New User Format Guide Badge (Placed left of the upload button) -->
                     <div id="newUserCsvGuide" class="new-user-guide-badge glass-panel">
-                        <i class="fa-solid fa-circle-info" style="color: var(--accent-primary); font-size: 0.85rem;"></i>
+                        <i class="fa-solid fa-circle-info" style="color: #f5c518; font-size: 0.85rem;"></i>
                         <span>New here? Learn how it works &amp; what CSV schema to upload.</span>
                         <button class="guide-link-btn" onclick="switchView('howItWorks')">
                             Go to Guide <i class="fa-solid fa-up-right-from-square"></i>
@@ -568,11 +655,11 @@
                 </header>
 
                 <!-- AI Insight Premium Card -->
-                <section class="insight-section glass-panel premium-glow" id="aiInsightCard">
+                <section class="insight-section glass-panel" id="aiInsightCard">
                     <div class="section-header">
                         <h2 class="gradient-text"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight for Store 12 — Electronics</h2>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span class="badge warning-badge"><i class="fa-solid fa-triangle-exclamation"></i> Action Required</span>
+                            <span class="badge warning-badge"><i class="fa-solid fa-bolt"></i> Action Required</span>
                         </div>
                     </div>
                     <div class="insight-content" id="ai-insight-text">
@@ -719,10 +806,10 @@
                 </div>
 
                 <!-- AI Promotional Planner Section -->
-                <section class="insight-section glass-panel premium-glow" id="promo-planner-section" style="margin-top: 2rem;">
+                <section class="insight-section glass-panel" id="promo-planner-section" style="margin-top: 2rem;">
                     <div class="section-header">
                         <h2 class="gradient-text"><i class="fa-solid fa-tags"></i> AI Promotional Planner</h2>
-                        <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-primary); border-color: rgba(139, 92, 246, 0.3);">Optimization Active</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.2); color: #ffffff; border-color: rgba(255,255,255,0.35);">Optimization Active</span>
                     </div>
                     <p class="subtitle" style="margin-top: -10px; margin-bottom: 1.5rem;">Data-driven recommendation cards based on public holidays, weekly seasonality, and slow-moving inventory levels.</p>
                     
@@ -830,7 +917,7 @@
                         <section class="glass-panel" id="stockAlertsTimelineCard" style="padding: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                                 <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
-                                <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
+                                <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none; background: #ffffff; color: #1e293b; border: 1px solid rgba(30,41,59,0.3); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; isolation: isolate;">View All</button>
                             </div>
                             <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
                                 <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
@@ -842,7 +929,7 @@
                     <section class="glass-panel" id="profitDriversCard" style="padding: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                             <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
-                            <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
+                            <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none; background: #ffffff; color: #1e293b; border: 1px solid rgba(30,41,59,0.3); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; isolation: isolate;">View All</button>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file to see top profit drivers.</p>

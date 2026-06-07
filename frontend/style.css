@@ -1246,41 +1246,41 @@ body.light-mode .uploaded-file-pill i.fa-xmark:hover {
 
 /* Upload CSV Button modern styling */
 #uploadCsvBtn {
-    background: rgba(239, 68, 68, 0.12) !important;
-    color: #fca5a5 !important;
-    border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
+    background: rgba(255, 126, 103, 0.12) !important;
+    color: #ffb4a6 !important;
+    border: 1.5px solid rgba(255, 126, 103, 0.45) !important;
     font-weight: 600 !important;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.1) !important;
+    box-shadow: 0 4px 14px rgba(255, 126, 103, 0.1) !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body.light-mode #uploadCsvBtn {
-    background: #fde8e8 !important;
-    color: #c81e1e !important;
-    border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12) !important;
+    background: #fff0ee !important;
+    color: #e0462b !important;
+    border: 1.5px solid rgba(255, 126, 103, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(255, 126, 103, 0.12) !important;
 }
 
 #uploadCsvBtn:hover {
     transform: scale(1.025) !important;
-    background: rgba(239, 68, 68, 0.2) !important;
-    border-color: rgba(239, 68, 68, 0.6) !important;
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2) !important;
+    background: rgba(255, 126, 103, 0.2) !important;
+    border-color: rgba(255, 126, 103, 0.6) !important;
+    box-shadow: 0 6px 20px rgba(255, 126, 103, 0.2) !important;
 }
 
 body.light-mode #uploadCsvBtn:hover {
-    background: #fecaca !important;
-    border-color: rgba(239, 68, 68, 0.5) !important;
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.22) !important;
+    background: #ffd5cf !important;
+    border-color: rgba(255, 126, 103, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(255, 126, 103, 0.22) !important;
 }
 
 #uploadCsvBtn:active {
     transform: scale(0.985) !important;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(255, 126, 103, 0.1) !important;
 }
 
 body.light-mode #uploadCsvBtn:active {
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(255, 126, 103, 0.08) !important;
 }
 
 @keyframes slideIn {
@@ -1512,48 +1512,63 @@ body.light-mode #uploadCsvBtn:active {
 }
 
 #aiInsightCard {
-    background: #5ca999 !important;
-    border: 2px solid rgba(255, 255, 255, 0.25) !important;
-    color: #ffffff !important;
+    background: var(--bg-glass) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    color: var(--text-primary) !important;
     padding: 1rem 1.5rem !important;
+    backdrop-filter: var(--backdrop-filter) !important;
+    -webkit-backdrop-filter: var(--backdrop-filter) !important;
+}
+body.light-mode #aiInsightCard {
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
 }
 
 #aiInsightCard .section-header {
-    margin-bottom: 0.25rem !important;
+    margin-bottom: 0 !important;
 }
 
 #aiInsightCard .section-header h2 {
     margin: 0 !important;
 }
 
-#aiInsightCard .insight-content p {
+#aiInsightCard .insight-content {
+    margin-top: -0.5rem !important;
+}
+
+#aiInsightCard .insight-content p,
+#aiInsightCard .animated-text {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
 
 #aiInsightCard h2 {
-    color: #ffffff !important;
+    color: var(--text-primary) !important;
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
 }
 
 #aiInsightCard h2 i {
-    color: #ffffff !important;
+    color: var(--accent-primary) !important;
 }
 
 #aiInsightCard .insight-content {
-    color: #ffffff !important;
+    color: var(--text-primary) !important;
 }
 
 #aiInsightCard .animated-text {
-    color: #ffffff !important;
+    color: var(--text-primary) !important;
 }
 
 #aiInsightCard .warning-badge {
-    background: rgba(255, 107, 107, 0.15) !important;
-    color: #ff6b6b !important;
-    border: 1px solid rgba(255, 107, 107, 0.3) !important;
+    background: #ff7e67 !important;
+    color: #ffffff !important;
+    border: none !important;
+    text-shadow: none !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
 }
 
 #aiInsightCard .skeleton-text {
@@ -1561,13 +1576,16 @@ body.light-mode #uploadCsvBtn:active {
 }
 
 #aiInsightCard span {
-    color: #ff6b6b !important;
+    color: #fd7670 !important;
 }
 
 /* Stock Needs & Alerts Timeline Card Custom Color */
 body.light-mode #stockAlertsTimelineCard {
-    background: #d4f3e0 !important;
+    background-color: transparent !important;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+    background-size: 14px 14px !important;
     border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    box-shadow: none !important;
 }
 
 body.light-mode #stockAlertsTimelineCard h2 {
@@ -1588,26 +1606,29 @@ body.light-mode #stockAlertsTimelineCard li strong span.timeline-sku {
 
 /* Top Demand Drivers (SHAP) Card Custom Color */
 body.light-mode #demandDriversCard {
-    background: #fd7670 !important;
-    border: 2px solid rgba(255, 255, 255, 0.25) !important;
+    background-color: transparent !important;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+    background-size: 14px 14px !important;
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    box-shadow: none !important;
 }
 
 body.light-mode #demandDriversCard h2 {
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 body.light-mode #demandDriversCard .driver-name,
 body.light-mode #demandDriversCard .driver-impact {
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 body.light-mode #demandDriversCard .progress-bar {
-    background: rgba(255, 255, 255, 0.15) !important;
+    background: rgba(15, 23, 42, 0.08) !important;
 }
 
 body.light-mode #demandDriversCard .empty-state,
 body.light-mode #demandDriversCard .empty-state span {
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* Custom backgrounds and left-borders for Top Profit Drivers list */
@@ -1634,8 +1655,11 @@ body.light-mode #metric-top-products > div:nth-child(9) { background: rgba(99, 1
 
 /* Top Profit Drivers Card Custom Color */
 body.light-mode #profitDriversCard {
-    background: #ffea97 !important;
+    background-color: transparent !important;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+    background-size: 14px 14px !important;
     border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    box-shadow: none !important;
 }
 
 body.light-mode #profitDriversCard h2 {
@@ -2104,24 +2128,24 @@ body.light-mode #profitDriversCard .profit-sku {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-md);
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.1);
+    border: 1px solid rgba(67, 191, 254, 0.25);
+    color: #43bffe;
     cursor: pointer;
     font-size: 0.95rem;
     transition: all 0.2s ease;
     position: relative;
 }
 .chart-filter-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    background: rgba(67, 191, 254, 0.2);
+    border-color: rgba(67, 191, 254, 0.5);
+    box-shadow: 0 0 12px rgba(67, 191, 254, 0.3);
     transform: scale(1.05);
 }
 .chart-filter-btn.is-active {
-    background: rgba(139, 92, 246, 0.25);
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 14px rgba(139, 92, 246, 0.4);
+    background: rgba(67, 191, 254, 0.25);
+    border-color: #43bffe;
+    box-shadow: 0 0 14px rgba(67, 191, 254, 0.4);
 }
 
 .filter-active-badge {
@@ -2151,8 +2175,8 @@ body.light-mode #profitDriversCard .profit-sku {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    border: 1px solid rgba(139, 92, 246, 0.25);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 20px rgba(139,92,246,0.1);
+    border: 1px solid rgba(67, 191, 254, 0.25);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 20px rgba(67, 191, 254, 0.1);
     animation: filterPanelIn 0.18s ease-out;
 }
 @keyframes filterPanelIn {
@@ -2216,13 +2240,13 @@ body.light-mode #profitDriversCard .profit-sku {
     transition: all 0.15s ease;
 }
 .filter-pill:hover {
-    border-color: rgba(139, 92, 246, 0.4);
-    color: var(--accent-primary);
+    border-color: rgba(67, 191, 254, 0.4);
+    color: #43bffe;
 }
 .filter-pill.active {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.2);
+    border-color: #43bffe;
+    color: #43bffe;
     font-weight: 600;
 }
 
@@ -2266,12 +2290,22 @@ body.light-mode #profitDriversCard .profit-sku {
     transition: transform 0.2s ease, background 0.2s;
 }
 .filter-toggle-switch input:checked + .filter-toggle-track {
-    background: rgba(139, 92, 246, 0.3);
-    border-color: var(--accent-primary);
+    background: rgba(67, 191, 254, 0.3);
+    border-color: #43bffe;
 }
 .filter-toggle-switch input:checked + .filter-toggle-track::after {
     transform: translateX(18px);
-    background: var(--accent-primary);
+    background: #43bffe;
+}
+
+.filter-apply-btn {
+    background: #43bffe !important;
+    border-color: rgba(67, 191, 254, 0.4) !important;
+    color: #ffffff !important;
+    transition: background-color 0.2s ease !important;
+}
+.filter-apply-btn:hover {
+    background: #25a4eb !important;
 }
 
 /* Chart scroll architecture — defined below in the scroll section */
@@ -2310,7 +2344,7 @@ body.light-mode #profitDriversCard .profit-sku {
 
 .legend-dot.historical { background: var(--text-muted); }
 
-.legend-dot.forecast { background: var(--accent-primary); }
+.legend-dot.forecast { background: #43bffe; }
 
 
 
@@ -4744,27 +4778,35 @@ input:checked + .slider:before {
 }
 
 #promo-planner-section {
-    background: #cce6f6 !important;
+    background: var(--bg-glass) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: var(--backdrop-filter) !important;
+    -webkit-backdrop-filter: var(--backdrop-filter) !important;
+}
+body.light-mode #promo-planner-section {
     border: 2px solid rgba(15, 23, 42, 0.15) !important;
 }
 
 #promo-planner-section h2 {
-    color: #0f172a !important;
+    color: var(--text-primary) !important;
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
 }
 
 #promo-planner-section h2 i {
-    color: #0f172a !important;
+    color: var(--accent-primary) !important;
 }
 
 #promo-planner-section .subtitle {
-    color: #334155 !important;
+    color: var(--text-muted) !important;
 }
 
 #promo-planner-section .empty-state {
-    color: #334155 !important;
+    color: var(--text-muted) !important;
 }
 
 .promo-card {
@@ -7867,7 +7909,7 @@ input:checked + .slider:before {
 .new-user-guide-badge .guide-link-btn {
     background: transparent;
     border: none;
-    color: var(--accent-primary);
+    color: #f5c518;
     font-weight: 600;
     cursor: pointer;
     font-size: 0.8rem;
@@ -7880,7 +7922,7 @@ input:checked + .slider:before {
 }
 
 .new-user-guide-badge .guide-link-btn:hover {
-    color: #c4b5fd;
+    color: #ffd94a;
 }
 
 .new-user-guide-badge .guide-link-btn:hover i {
@@ -11792,14 +11834,21 @@ body.light-mode #kpiItemHealth {
 
 /* Unified Parent Card Styling */
 #kpiUnifiedCard {
-    background: #141416 !important;
-    border: 2px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: default !important;
 }
 body.light-mode #kpiUnifiedCard {
-    background: #ffea97 !important;
-    border: 2px solid rgba(15, 23, 42, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: default !important;
+}
+#kpiUnifiedCard:hover {
+    transform: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
 }
 #kpiUnifiedCard .kpi-unified-header h2 {
     background: none !important;
