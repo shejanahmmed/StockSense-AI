@@ -72,7 +72,7 @@
 
     
 
-    --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+    --border-glass: 1.5px solid rgba(255, 255, 255, 0.13);
 
     --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 
@@ -82,9 +82,9 @@
 
     /* Clean Solid Theme variables */
 
-    --border-color: rgba(255, 255, 255, 0.06);
+    --border-color: rgba(255, 255, 255, 0.11);
 
-    --border-color-muted: rgba(255, 255, 255, 0.03);
+    --border-color-muted: rgba(255, 255, 255, 0.06);
 
     --hover-bg: rgba(139, 92, 246, 0.05);
 
@@ -124,9 +124,9 @@ body.light-mode {
 
     --bg-base: #f1f5f9;
 
-    --bg-glass: rgba(255, 255, 255, 0.75);
+    --bg-glass: #ffffff;
 
-    --bg-glass-hover: rgba(255, 255, 255, 0.9);
+    --bg-glass-hover: #ffffff;
 
     --bg-dropdown: #ffffff;
 
@@ -172,15 +172,15 @@ body.light-mode {
 
 
 
-    --border-glass: 1px solid rgba(15, 23, 42, 0.08);
+    --border-glass: 1.5px solid rgba(15, 23, 42, 0.14);
 
-    --shadow-glass: 0 10px 30px -10px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.02);
+    --shadow-glass: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.04);
 
     
 
-    --border-color: rgba(15, 23, 42, 0.08);
+    --border-color: rgba(15, 23, 42, 0.14);
 
-    --border-color-muted: rgba(15, 23, 42, 0.04);
+    --border-color-muted: rgba(15, 23, 42, 0.07);
 
     --hover-bg: rgba(124, 58, 237, 0.04);
 
@@ -373,8 +373,7 @@ body.light-mode .sku-table tbody tr:hover {
 body.light-mode #dailyVsForecastModal .sku-table-wrapper,
 body.light-mode #cashFlowModal .sku-table-wrapper,
 body.light-mode #demandTrendModal .sku-table-wrapper,
-body.light-mode #avgMarginModal .sku-table-wrapper,
-body.light-mode #unifiedKpiModal .sku-table-wrapper {
+body.light-mode #avgMarginModal .sku-table-wrapper {
     background: rgba(0, 0, 0, 0.02) !important;
     border: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
@@ -3513,7 +3512,6 @@ body.light-mode #profitDriversCard .profit-sku {
     display: flex !important;
 }
 
-/* Strategy Option Button Active and Hover States */
 .strategy-option-btn {
     display: flex;
     align-items: center;
@@ -3521,27 +3519,59 @@ body.light-mode #profitDriversCard .profit-sku {
     width: 100%;
     padding: 0.55rem 0.65rem;
     background: transparent;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-sm);
     cursor: pointer;
     text-align: left;
     transition: all 0.2s ease;
+    margin-bottom: 0.35rem;
+}
+
+.strategy-option-btn:last-child {
+    margin-bottom: 0;
+}
+
+.strategy-option-btn .opt-title {
+    color: var(--text-primary);
+}
+
+.strategy-option-btn .opt-desc {
+    color: var(--text-muted);
 }
 
 .strategy-option-btn:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .strategy-option-btn.active {
     background: rgba(139, 92, 246, 0.12) !important;
-    border-color: rgba(139, 92, 246, 0.5) !important;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), inset 0 0 10px rgba(139, 92, 246, 0.1) !important;
-    color: #fff !important;
+    border-color: rgba(139, 92, 246, 0.45) !important;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.1), inset 0 0 8px rgba(139, 92, 246, 0.05) !important;
 }
 
 .strategy-option-btn.active .opt-title {
     color: var(--accent-primary) !important;
+}
+
+.strategy-option-btn.active .opt-desc {
+    color: var(--text-secondary) !important;
+}
+
+/* Light mode overrides for Strategy Button States */
+body.light-mode .strategy-option-btn {
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light-mode .strategy-option-btn:hover {
+    background: rgba(15, 23, 42, 0.03) !important;
+    border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+body.light-mode .strategy-option-btn.active {
+    background: rgba(124, 58, 237, 0.08) !important;
+    border-color: rgba(124, 58, 237, 0.45) !important;
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.08) !important;
 }
 
 /* Slash Commands Menu Button States */
@@ -3563,6 +3593,21 @@ body.light-mode #profitDriversCard .profit-sku {
 
 .slash-commands-dropdown .dropdown-item:hover .cmd-badge {
     box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+/* Light mode overrides for Slash Commands Dropdown */
+body.light-mode .slash-commands-dropdown {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .slash-commands-dropdown .dropdown-header {
+    border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+body.light-mode .slash-commands-dropdown .dropdown-item:hover {
+    background: rgba(124, 58, 237, 0.08) !important;
 }
 
 /* Custom Markdown Table inside chat bubbles */
@@ -3613,6 +3658,33 @@ body.light-mode #profitDriversCard .profit-sku {
     padding-right: 1.2rem;
 }
 
+/* Light mode overrides for Markdown Tables in Chat Bubbles */
+body.light-mode .msg-bubble table {
+    background: #ffffff !important;
+    border: 1.5px solid rgba(15, 23, 42, 0.14) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
+}
+
+body.light-mode .msg-bubble th {
+    background: rgba(124, 58, 237, 0.08) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1.5px solid rgba(124, 58, 237, 0.25) !important;
+}
+
+body.light-mode .msg-bubble td {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .msg-bubble tr:last-child td {
+    border-bottom: none !important;
+}
+
+body.light-mode .msg-bubble tr:hover td {
+    background: rgba(124, 58, 237, 0.04) !important;
+    color: var(--text-primary) !important;
+}
+
 /* Glassmorphic Interactive Action Cards inside chat bubbles */
 /* Container for grouping multiple action cards together in the chat bubble */
 .chat-cards-grid {
@@ -3641,6 +3713,13 @@ body.light-mode #profitDriversCard .profit-sku {
     width: 100%;
 }
 
+body.light-mode .chat-restock-card,
+body.light-mode .chat-promo-card {
+    background: #ffffff !important;
+    border: 1.5px solid rgba(15, 23, 42, 0.14) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+}
+
 .chat-cards-grid .chat-restock-card, 
 .chat-cards-grid .chat-promo-card {
     margin: 0;
@@ -3652,7 +3731,6 @@ body.light-mode #profitDriversCard .profit-sku {
     align-items: center;
     gap: 0.75rem;
     flex: 1;
-    flex-wrap: wrap;
     min-width: 0;
 }
 
@@ -3664,6 +3742,8 @@ body.light-mode #profitDriversCard .profit-sku {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 280px;
+    flex-shrink: 1;
+    min-width: 0;
 }
 body.light-mode .card-product-name {
     color: #1f1f1f;
@@ -3672,11 +3752,13 @@ body.light-mode .card-product-name {
 .card-sku {
     font-size: 0.76rem;
     color: var(--text-muted);
+    flex-shrink: 0;
 }
 
 .card-separator {
     color: rgba(255, 255, 255, 0.15);
     font-size: 0.8rem;
+    flex-shrink: 0;
 }
 body.light-mode .card-separator {
     color: rgba(0, 0, 0, 0.15);
@@ -3685,6 +3767,7 @@ body.light-mode .card-separator {
 .card-stock, .card-reason {
     font-size: 0.78rem;
     color: var(--text-secondary);
+    flex-shrink: 0;
 }
 
 .card-stock strong {
@@ -3703,6 +3786,7 @@ body.light-mode .card-stock strong {
     text-transform: uppercase;
     letter-spacing: 0.03em;
     display: inline-block;
+    flex-shrink: 0;
 }
 
 .chat-restock-card::before {
@@ -7833,8 +7917,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 #dailyVsForecastModal .sku-table-wrapper,
 #cashFlowModal .sku-table-wrapper,
 #demandTrendModal .sku-table-wrapper,
-#avgMarginModal .sku-table-wrapper,
-#unifiedKpiModal .sku-table-wrapper {
+#avgMarginModal .sku-table-wrapper {
     max-height: none !important;
     overflow: visible !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -10405,6 +10488,18 @@ body.light-mode #insightsView {
     background: rgba(99, 102, 241, 0.06);
 }
 
+/* Light mode override for resizer (dark ash color) */
+body.light-mode #insightsView .sidebar-resizer:hover::after,
+body.light-mode #insightsView .sidebar-resizer.is-dragging::after {
+    background: var(--text-secondary, #475569) !important;
+    box-shadow: 0 0 6px rgba(71, 85, 105, 0.3) !important;
+}
+
+body.light-mode #insightsView .sidebar-resizer:hover,
+body.light-mode #insightsView .sidebar-resizer.is-dragging {
+    background: rgba(71, 85, 105, 0.06) !important;
+}
+
 /* Hide resizer when sidebar is fully collapsed */
 #insightsView .insights-layout-grid.sidebar-collapsed .sidebar-resizer {
     display: none;
@@ -12240,8 +12335,79 @@ body.light-mode .sku-table tbody tr.status-healthy:hover {
 /* Light mode modal container background override */
 body.light-mode .sku-modal-container {
     background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 body.light-mode .sku-modal-overlay {
-    background: rgba(15, 23, 42, 0.35) !important;
+    background: rgba(15, 23, 42, 0.4) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
 }
 
+
+/* ============================================================
+   DRAFT PO MODAL - LIGHT MODE FIXES
+   ============================================================ */
+body.light-mode .po-draft-modal-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 0 20px rgba(139,92,246,0.08) !important;
+    color: var(--text-primary) !important;
+}
+body.light-mode .po-draft-header { border-bottom: 1px solid rgba(0,0,0,0.08) !important; }
+body.light-mode .po-draft-header p { color: var(--text-secondary) !important; }
+body.light-mode .po-supplier-bar {
+    background: rgba(139,92,246,0.05) !important;
+    border-color: rgba(139,92,246,0.18) !important;
+}
+body.light-mode #poSupplierName {
+    background: rgba(0,0,0,0.03) !important;
+    border-color: rgba(0,0,0,0.1) !important;
+    color: var(--text-primary) !important;
+}
+body.light-mode .po-table-wrapper { border: 1px solid rgba(0,0,0,0.1) !important; }
+body.light-mode .po-tfoot-row {
+    border-top: 2px solid rgba(0,0,0,0.1) !important;
+    background: rgba(0,0,0,0.02) !important;
+}
+body.light-mode .po-email-panel { border-left: 1px solid rgba(0,0,0,0.08) !important; }
+body.light-mode .po-email-body-box {
+    background: rgba(0,0,0,0.02) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+}
+body.light-mode .po-email-subject-row { border-bottom: 1px solid rgba(0,0,0,0.06) !important; }
+body.light-mode #poEmailBody { color: var(--text-secondary) !important; background: transparent !important; }
+body.light-mode .po-modal-footer { border-top: 1px solid rgba(0,0,0,0.08) !important; }
+body.light-mode #cancelDraftPoBtn,
+body.light-mode #downloadPoCsvBtn {
+    background: rgba(0,0,0,0.04) !important;
+    border: 1px solid rgba(0,0,0,0.12) !important;
+    color: var(--text-primary) !important;
+}
+body.light-mode #cancelDraftPoBtn:hover,
+body.light-mode #downloadPoCsvBtn:hover {
+    background: rgba(0,0,0,0.08) !important;
+    border-color: rgba(0,0,0,0.18) !important;
+}
+body.light-mode #downloadPoPdfBtn { box-shadow: 0 4px 14px rgba(139,92,246,0.3) !important; }
+body.light-mode #confirmDraftPoBtn { box-shadow: 0 4px 14px rgba(16,185,129,0.3) !important; }
+body.light-mode .po-draft-modal-container .sku-modal-close {
+    color: var(--text-muted) !important;
+    background: rgba(0,0,0,0.05) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+}
+body.light-mode .po-draft-modal-container .sku-modal-close:hover {
+    background: rgba(239,68,68,0.08) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239,68,68,0.2) !important;
+}
+body.light-mode #copyPoEmailBtn {
+    background: rgba(0,0,0,0.04) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    color: var(--text-primary) !important;
+}
+body.light-mode #copyPoEmailBtn:hover {
+    background: rgba(139,92,246,0.08) !important;
+    border-color: rgba(139,92,246,0.2) !important;
+    color: var(--accent-primary) !important;
+}
