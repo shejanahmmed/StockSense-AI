@@ -4906,16 +4906,7 @@ function renderPromoSuggestions(suggestions) {
         const startStr = formatDateString(promo.start_date);
         const endStr = formatDateString(promo.end_date);
         
-        const isScheduled = scheduledPromoIds.has(promo.id);
-        const btnHtml = isScheduled ? `
-            <button class="promo-schedule-btn scheduled" disabled>
-                <i class="fa-solid fa-circle-check"></i> Campaign Scheduled
-            </button>
-        ` : `
-            <button class="promo-schedule-btn unscheduled" id="btn-promo-${promo.id}" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}', '${promo.type}', '${promo.start_date}', '${promo.end_date}', '${promo.target_product.replace(/'/g, "\\'")}', '${promo.target_sku}', '${promo.expected_impact}', '${promo.urgency}', '${promo.reason.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-calendar-plus"></i> Schedule Campaign
-            </button>
-        `;
+
 
         // Extract percentage/metric number and the text (e.g. "+35% Sales Lift" -> "+35%", "Sales Lift")
         let impactVal = '';
@@ -4968,9 +4959,7 @@ function renderPromoSuggestions(suggestions) {
                 
                 <p class="promo-card-reason">${promo.reason}</p>
                 
-                <div class="promo-action-wrapper">
-                    ${btnHtml}
-                </div>
+
                 
                 <div class="promo-card-footer">
                     <div class="promo-target-label">

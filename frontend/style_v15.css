@@ -4955,8 +4955,8 @@ body.light-mode #promo-planner-section h2 {
 }
 
 .promo-card {
-    min-width: 320px;
-    max-width: 360px;
+    min-width: 340px;
+    max-width: 390px;
     flex: 0 0 auto;
     padding: 1.15rem;
     display: flex;
@@ -4973,28 +4973,86 @@ body.light-mode #promo-planner-section h2 {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.promo-card.holiday {
-    background: var(--card-bg-holiday);
-    border-color: var(--card-border-holiday);
+/* Cycle colors: Card 1 (Purple) */
+.promo-card:nth-child(3n+1) {
+    background: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgba(139, 92, 246, 0.25) !important;
+}
+.promo-card:nth-child(3n+1):hover {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+}
+.promo-card:nth-child(3n+1) .promo-badge-tag,
+.promo-card:nth-child(3n+1) .promo-urgency-badge {
+    background: rgba(139, 92, 246, 0.12) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.25) !important;
+}
+.promo-card:nth-child(3n+1) .promo-impact-showcase {
+    background: rgba(139, 92, 246, 0.04) !important;
+    border-color: rgba(139, 92, 246, 0.18) !important;
+}
+.promo-card:nth-child(3n+1) .impact-val-num {
+    color: #a78bfa !important;
+}
+.promo-card:nth-child(3n+1) .footer-sku-code {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
 }
 
-.promo-card.clearance {
-    background: var(--card-bg-clearance);
-    border-color: var(--card-border-clearance);
+/* Cycle colors: Card 2 (Red) */
+.promo-card:nth-child(3n+2) {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.22) !important;
+}
+.promo-card:nth-child(3n+2):hover {
+    border-color: rgba(239, 68, 68, 0.45) !important;
+}
+.promo-card:nth-child(3n+2) .promo-badge-tag,
+.promo-card:nth-child(3n+2) .promo-urgency-badge {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.22) !important;
+}
+.promo-card:nth-child(3n+2) .promo-impact-showcase {
+    background: rgba(239, 68, 68, 0.04) !important;
+    border-color: rgba(239, 68, 68, 0.18) !important;
+}
+.promo-card:nth-child(3n+2) .impact-val-num {
+    color: #f87171 !important;
+}
+.promo-card:nth-child(3n+2) .footer-sku-code {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
 }
 
-.promo-card.seasonality {
-    background: var(--card-bg-seasonality);
-    border-color: var(--card-border-seasonality);
+/* Cycle colors: Card 3 (Green) */
+.promo-card:nth-child(3n) {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.22) !important;
 }
-
-.promo-card:hover {
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+.promo-card:nth-child(3n):hover {
+    border-color: rgba(16, 185, 129, 0.45) !important;
 }
-
-.promo-card.holiday:hover { border-color: var(--card-border-holiday-hover); }
-.promo-card.clearance:hover { border-color: var(--card-border-clearance-hover); }
-.promo-card.seasonality:hover { border-color: var(--card-border-seasonality-hover); }
+.promo-card:nth-child(3n) .promo-badge-tag,
+.promo-card:nth-child(3n) .promo-urgency-badge {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.22) !important;
+}
+.promo-card:nth-child(3n) .promo-impact-showcase {
+    background: rgba(16, 185, 129, 0.04) !important;
+    border-color: rgba(16, 185, 129, 0.18) !important;
+}
+.promo-card:nth-child(3n) .impact-val-num {
+    color: #34d399 !important;
+}
+.promo-card:nth-child(3n) .footer-sku-code {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
 
 .promo-card-header {
     display: flex;
@@ -5004,82 +5062,19 @@ body.light-mode #promo-planner-section h2 {
     gap: 0.5rem;
 }
 
-.promo-badge-tag {
-    align-self: flex-start;
-    padding: 0.25rem 0.55rem;
-    border-radius: var(--radius-full);
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.promo-badge-tag.holiday {
-    background: rgba(139, 92, 246, 0.12);
-    color: #c4b5fd;
-    border-color: rgba(139, 92, 246, 0.25);
-}
-
-.promo-badge-tag.clearance {
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.25);
-}
-
-.promo-badge-tag.seasonality {
-    background: rgba(16, 185, 129, 0.12);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.25);
-}
-
-.promo-urgency-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.promo-urgency-badge.high {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.promo-urgency-badge.medium {
-    background: rgba(245, 158, 11, 0.1);
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.promo-urgency-badge.low {
-    background: rgba(148, 163, 184, 0.1);
-    color: #94a3b8;
-    border: 1px solid rgba(148, 163, 184, 0.15);
-}
-
 .promo-card-title {
-    font-size: 1.0rem;
+    font-size: 1.05rem;
     font-weight: 700;
     line-height: 1.35;
-    background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    color: var(--text-primary) !important;
     margin: 0.1rem 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    height: 2.7rem;
+    display: block;
+    height: auto;
+    min-height: 2.8rem;
 }
 
 .promo-card-dates {
@@ -5087,17 +5082,17 @@ body.light-mode #promo-planner-section h2 {
     align-items: center;
     gap: 0.45rem;
     font-size: 0.7rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     font-weight: 500;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05) !important;
+    padding: 0.25rem 0.55rem;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     width: fit-content;
 }
 
 .promo-card-dates i {
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     font-size: 0.8rem;
 }
 
@@ -5107,29 +5102,12 @@ body.light-mode #promo-planner-section h2 {
     gap: 0.2rem;
     padding: 0.5rem 0.85rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.promo-impact-showcase.holiday {
-    border-color: rgba(139, 92, 246, 0.15);
-    background: rgba(139, 92, 246, 0.03);
-}
-
-.promo-impact-showcase.clearance {
-    border-color: rgba(239, 68, 68, 0.12);
-    background: rgba(239, 68, 68, 0.03);
-}
-
-.promo-impact-showcase.seasonality {
-    border-color: rgba(16, 185, 129, 0.12);
-    background: rgba(16, 185, 129, 0.03);
 }
 
 .promo-impact-showcase .impact-label {
     font-size: 0.62rem;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     letter-spacing: 0.08em;
     font-weight: 700;
 }
@@ -5146,33 +5124,28 @@ body.light-mode #promo-planner-section h2 {
     letter-spacing: -0.02em;
 }
 
-.promo-impact-showcase.holiday .impact-val-num { color: #a78bfa; }
-.promo-impact-showcase.clearance .impact-val-num { color: #f87171; }
-.promo-impact-showcase.seasonality .impact-val-num { color: #34d399; }
-
 .promo-impact-showcase .impact-val-lbl {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
 }
 
 .promo-impact-showcase .impact-val-lbl-full {
     font-size: 0.95rem;
     font-weight: 750;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 .promo-card-reason {
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     line-height: 1.45;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     flex-grow: 1;
     margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    min-height: 3.3rem;
+    display: block;
+    overflow: visible;
+    height: auto;
+    min-height: auto;
 }
 
 .promo-schedule-btn {
@@ -5220,8 +5193,8 @@ body.light-mode #promo-planner-section h2 {
     align-items: center;
     gap: 1rem;
     padding: 0.5rem 1.0rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-bottom-left-radius: 16px;
     border-bottom-right-radius: 16px;
     margin: 0 -1.15rem -1.15rem -1.15rem;
@@ -5236,7 +5209,7 @@ body.light-mode #promo-planner-section h2 {
 .promo-target-label .footer-label {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     letter-spacing: 0.05em;
     font-weight: 600;
 }
@@ -5244,24 +5217,109 @@ body.light-mode #promo-planner-section h2 {
 .promo-target-label .footer-value {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px;
+    color: var(--text-primary) !important;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
 }
 
 .promo-target-label .footer-sku-code {
     font-family: monospace;
     font-size: 0.74rem;
-    color: var(--accent-primary);
     font-weight: 700;
-    background: rgba(139, 92, 246, 0.08);
     padding: 2px 6px;
     border-radius: 4px;
-    border: 1px solid rgba(139, 92, 246, 0.15);
     width: fit-content;
     margin-left: auto;
+}
+
+/* Light mode overrides for transparent, light cards */
+body.light-mode .promo-card {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .promo-card:focus,
+body.light-mode .promo-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .promo-card:nth-child(3n+1) {
+    background: rgba(124, 58, 237, 0.08) !important;
+    border-color: rgba(124, 58, 237, 0.2) !important;
+}
+body.light-mode .promo-card:nth-child(3n+1) .promo-badge-tag,
+body.light-mode .promo-card:nth-child(3n+1) .promo-urgency-badge {
+    background: rgba(124, 58, 237, 0.08) !important;
+    color: #7c3aed !important;
+    border-color: rgba(124, 58, 237, 0.25) !important;
+}
+body.light-mode .promo-card:nth-child(3n+1) .promo-impact-showcase {
+    background: rgba(124, 58, 237, 0.03) !important;
+    border-color: rgba(124, 58, 237, 0.15) !important;
+}
+body.light-mode .promo-card:nth-child(3n+1) .impact-val-num {
+    color: #7c3aed !important;
+}
+body.light-mode .promo-card:nth-child(3n+1) .footer-sku-code {
+    background: rgba(124, 58, 237, 0.08) !important;
+    color: #7c3aed !important;
+    border-color: rgba(124, 58, 237, 0.2) !important;
+}
+
+body.light-mode .promo-card:nth-child(3n+2) {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+}
+body.light-mode .promo-card:nth-child(3n+2) .promo-badge-tag,
+body.light-mode .promo-card:nth-child(3n+2) .promo-urgency-badge {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+}
+body.light-mode .promo-card:nth-child(3n+2) .promo-impact-showcase {
+    background: rgba(239, 68, 68, 0.03) !important;
+    border-color: rgba(239, 68, 68, 0.15) !important;
+}
+body.light-mode .promo-card:nth-child(3n+2) .impact-val-num {
+    color: #ef4444 !important;
+}
+body.light-mode .promo-card:nth-child(3n+2) .footer-sku-code {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .promo-card:nth-child(3n) {
+    background: rgba(16, 185, 129, 0.08) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+body.light-mode .promo-card:nth-child(3n) .promo-badge-tag,
+body.light-mode .promo-card:nth-child(3n) .promo-urgency-badge {
+    background: rgba(16, 185, 129, 0.08) !important;
+    color: #10b981 !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+}
+body.light-mode .promo-card:nth-child(3n) .promo-impact-showcase {
+    background: rgba(16, 185, 129, 0.03) !important;
+    border-color: rgba(16, 185, 129, 0.15) !important;
+}
+body.light-mode .promo-card:nth-child(3n) .impact-val-num {
+    color: #10b981 !important;
+}
+body.light-mode .promo-card:nth-child(3n) .footer-sku-code {
+    background: rgba(16, 185, 129, 0.08) !important;
+    color: #10b981 !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+body.light-mode .promo-card .promo-card-dates {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+body.light-mode .promo-card .promo-card-footer {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border-top-color: rgba(0, 0, 0, 0.06) !important;
 }
 
 /* ============================================================
