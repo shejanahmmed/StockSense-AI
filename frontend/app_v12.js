@@ -183,11 +183,7 @@ function resetDashboardToEmpty() {
     // AI Insight panel → placeholder
     const insightContainer = document.getElementById('ai-insight-text');
     if (insightContainer) {
-        insightContainer.innerHTML = `
-            <p class="animated-text" style="color: var(--text-muted);">
-                <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
-                Upload a multi-product sales CSV to generate AI-driven demand forecasts, populate your inventory, and unlock actionable insights.
-            </p>`;
+        insightContainer.innerHTML = `<p class="animated-text" style="color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/upload.png" alt="Upload" style="height: 18px; width: 18px; object-fit: contain; flex-shrink: 0;">Upload a multi-product sales CSV to generate AI-driven demand forecasts, populate your inventory, and unlock actionable insights.</p>`;
     }
 
     // SHAP drivers → placeholder
@@ -1542,7 +1538,7 @@ async function reforecastFromInventory() {
             // Update chart title with actual forecast horizon from server
             const chartTitle = document.getElementById('forecastChartTitle');
             if (chartTitle && data.forecast_label) {
-                chartTitle.textContent = `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
             }
 
             // Cache the full result so it survives page refreshes
@@ -1554,7 +1550,9 @@ async function reforecastFromInventory() {
                 kpis:        data.kpis,
                 bi_metrics:  data.bi_metrics,
                 promo_suggestions: data.promo_suggestions,
-                holidays:    data.holidays
+                holidays:    data.holidays,
+                forecast_label: data.forecast_label,
+                data_span_days: data.data_span_days
             }));
 
             // Update main chart
@@ -3921,7 +3919,7 @@ async function commitStagedCSV() {
             // Update chart title with actual forecast horizon from server
             const chartTitle = document.getElementById('forecastChartTitle');
             if (chartTitle && data.forecast_label) {
-                chartTitle.textContent = `Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
             }
             
             updateFooterCsvStatus(stagedCSVFileName);
@@ -3935,7 +3933,9 @@ async function commitStagedCSV() {
                 kpis:        data.kpis,
                 bi_metrics:  data.bi_metrics,
                 promo_suggestions: data.promo_suggestions,
-                holidays:    data.holidays
+                holidays:    data.holidays,
+                forecast_label: data.forecast_label,
+                data_span_days: data.data_span_days
             }));
             
             updateChartWithData(data.historical, data.forecast);
@@ -4019,6 +4019,14 @@ function setupCsvUpload() {
             if (cachedData) {
                 if (cachedData.historical && cachedData.forecast) {
                     updateChartWithData(cachedData.historical, cachedData.forecast);
+                    
+                    // Restore chart title with theme-responsive styling
+                    const chartTitle = document.getElementById('forecastChartTitle');
+                    if (chartTitle) {
+                        const label = cachedData.forecast_label || (cachedData.forecast.length > 0 ? `${cachedData.forecast.length}-Day Forecast` : '7-Day Forecast');
+                        const span = cachedData.data_span_days || 90;
+                        chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${label} (${span} days of data)`;
+                    }
                 }
                 if (cachedData.insight) renderInsight(cachedData.insight);
                 if (cachedData.drivers) renderDrivers(cachedData.drivers);
@@ -4560,7 +4568,7 @@ function updateChartsForTheme() {
     const tooltipBg = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(13, 13, 13, 0.9)';
     const tooltipText = isLight ? '#0f172a' : '#ffffff';
     const tooltipBorder = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.1)';
-    const pointBgColor = isLight ? '#ffffff' : '#0d0d0d';
+    const pointBgColor = '#ffffff';
     
     // Set global Chart.js defaults
     if (typeof Chart !== 'undefined') {
@@ -4840,11 +4848,7 @@ function renderInsight(insightText) {
     let formattedText = insightText.replace(/Stockout Warning:/g, '<span style="color: #fd7670; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Stockout Warning:</span>');
     formattedText = formattedText.replace(/⚠️/g, ''); // Remove emoji if it's there to avoid duplication with icon
     
-    const insightHTML = `
-        <p class="animated-text" style="white-space: pre-line;">
-            ${formattedText}
-        </p>
-    `;
+    const insightHTML = `<p class="animated-text" style="white-space: pre-line;">${formattedText}</p>`;
     
     container.innerHTML = insightHTML;
 }
@@ -5054,7 +5058,7 @@ function initChart() {
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
-                    pointBackgroundColor: '#0d0d0d',
+                    pointBackgroundColor: '#ffffff',
                     pointBorderColor: '#43bffe',
                     pointBorderWidth: 2,
                     pointRadius: 4,
@@ -5956,7 +5960,7 @@ function updateUserProfileUI(name, role, avatarUrl) {
     // Update main header dashboard text
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');
     if (aiInsightTitle) {
-        aiInsightTitle.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight for ${name} — ${role}`;
+        aiInsightTitle.innerHTML = `<img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;"> AI Insight for ${name} — ${role}`;
     }
 }
 

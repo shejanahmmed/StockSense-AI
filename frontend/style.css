@@ -420,12 +420,10 @@ body.light-mode .staging-table-wrapper {
 }
 
 body.light-mode .staging-data-table th {
-    background: var(--bg-glass) !important;
+    background: #ffffff !important;
     color: var(--text-muted) !important;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-    box-shadow: 0 -2px 0 0 var(--bg-glass) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 -2px 0 0 #ffffff !important;
 }
 
 body.light-mode .staging-data-table td {
@@ -467,6 +465,107 @@ body.light-mode .mapping-card.unmapped span {
 body.light-mode .mapping-select option {
     background: #ffffff !important;
     color: var(--text-primary) !important;
+}
+
+
+
+body.light-mode .modal-backdrop-overlay {
+    background: rgba(15, 23, 42, 0.45) !important;
+}
+
+body.light-mode .staging-modal-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.light-mode .staging-modal-header {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    background: rgba(15, 23, 42, 0.015) !important;
+}
+
+body.light-mode .staging-modal-header h2 {
+    color: var(--text-primary) !important;
+}
+
+body.light-mode .staging-modal-header .subtitle {
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode .staging-modal-card h4 {
+    color: var(--text-primary) !important;
+}
+
+body.light-mode .close-modal-btn {
+    color: var(--text-muted) !important;
+}
+
+body.light-mode .close-modal-btn:hover {
+    color: var(--text-primary) !important;
+}
+
+body.light-mode .mapping-select {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.light-mode .editable-cell:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.light-mode .editable-cell.cell-error {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #b91c1c !important;
+    box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.25) !important;
+}
+
+body.light-mode .staging-badge.total {
+    background: rgba(15, 23, 42, 0.05) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+body.light-mode .staging-badge.clean {
+    background: rgba(16, 185, 129, 0.08) !important;
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+body.light-mode .staging-badge.errors {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+body.light-mode .staging-modal-footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+    background: rgba(15, 23, 42, 0.015) !important;
+}
+
+body.light-mode #cancelStagingBtn {
+    background: rgba(15, 23, 42, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.light-mode #cancelStagingBtn:hover {
+    background: rgba(15, 23, 42, 0.08) !important;
+    border-color: rgba(15, 23, 42, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+body.light-mode #commitStagingBtn:disabled {
+    background: rgba(15, 23, 42, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: rgba(15, 23, 42, 0.25) !important;
+}
+
+body.light-mode .editable-cell-input {
+    background: #ffffff !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--accent-primary) !important;
 }
 
 /* Settings Page Contrast Overrides in Light Mode */
@@ -581,9 +680,24 @@ body.light-mode .footer-badge:hover {
 
 
 ::-webkit-scrollbar-thumb:hover {
-
     background: rgba(139, 92, 246, 0.65);
+}
 
+body.light-mode ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.02) !important;
+    border-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.3) !important;
+}
+
+body.light-mode * {
+    scrollbar-color: rgba(15, 23, 42, 0.15) transparent !important;
 }
 
 
@@ -1526,7 +1640,7 @@ body.light-mode #aiInsightCard {
 }
 
 #aiInsightCard .section-header {
-    margin-bottom: 0 !important;
+    margin-bottom: 1.25rem !important;
 }
 
 #aiInsightCard .section-header h2 {
@@ -1534,7 +1648,7 @@ body.light-mode #aiInsightCard {
 }
 
 #aiInsightCard .insight-content {
-    margin-top: -0.5rem !important;
+    margin-top: 0 !important;
 }
 
 #aiInsightCard .insight-content p,
@@ -1579,6 +1693,14 @@ body.light-mode #aiInsightCard {
     color: #fd7670 !important;
 }
 
+#forecastChartTitle {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+}
+body.light-mode #forecastChartTitle {
+    color: #000000 !important;
+}
+
 /* Stock Needs & Alerts Timeline Card Custom Color */
 body.light-mode #stockAlertsTimelineCard {
     background-color: transparent !important;
@@ -1588,8 +1710,12 @@ body.light-mode #stockAlertsTimelineCard {
     box-shadow: none !important;
 }
 
+#stockAlertsTimelineCard h2 {
+    font-weight: 700 !important;
+}
+
 body.light-mode #stockAlertsTimelineCard h2 {
-    color: #1e293b !important;
+    color: #000000 !important;
 }
 
 body.light-mode #stockAlertsTimelineCard p,
@@ -1613,8 +1739,12 @@ body.light-mode #demandDriversCard {
     box-shadow: none !important;
 }
 
+#demandDriversCard h2 {
+    font-weight: 700 !important;
+}
+
 body.light-mode #demandDriversCard h2 {
-    color: #1e293b !important;
+    color: #000000 !important;
 }
 
 body.light-mode #demandDriversCard .driver-name,
@@ -1662,18 +1792,26 @@ body.light-mode #profitDriversCard {
     box-shadow: none !important;
 }
 
+#profitDriversCard h2 {
+    font-weight: 700 !important;
+}
+
 body.light-mode #profitDriversCard h2 {
-    color: #1e293b !important;
+    color: #000000 !important;
 }
 
 body.light-mode #profitDriversCard h2 i {
     color: #1e293b !important;
 }
 
-body.light-mode #profitDriversCard #toggle-all-drivers {
+body.light-mode .secondary-btn {
     background: rgba(15, 23, 42, 0.08) !important;
     color: #1e293b !important;
     border: 1px solid rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-mode .secondary-btn:hover {
+    background: rgba(15, 23, 42, 0.15) !important;
 }
 
 body.light-mode #profitDriversCard #metric-top-products > div > div > span {
@@ -4778,16 +4916,18 @@ input:checked + .slider:before {
 }
 
 #promo-planner-section {
-    background: var(--bg-glass) !important;
-    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    background: transparent !important;
+    border: none !important;
     box-shadow: none !important;
     animation: none !important;
     color: var(--text-primary) !important;
-    backdrop-filter: var(--backdrop-filter) !important;
-    -webkit-backdrop-filter: var(--backdrop-filter) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 body.light-mode #promo-planner-section {
-    border: 2px solid rgba(15, 23, 42, 0.15) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 #promo-planner-section h2 {
@@ -4795,6 +4935,11 @@ body.light-mode #promo-planner-section {
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode #promo-planner-section h2 {
+    color: #000000 !important;
 }
 
 #promo-planner-section h2 i {
@@ -5551,6 +5696,21 @@ body.light-mode #promo-planner-section {
 }
 .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     background: rgba(139, 92, 246, 0.6);
+}
+
+/* Light Mode overrides to make the scrollbar slider light black/gray instead of purple */
+body.light-mode .chart-scroll-wrapper {
+    scrollbar-color: rgba(15, 23, 42, 0.15) transparent !important;
+}
+body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.02) !important;
+    border-color: rgba(15, 23, 42, 0.05) !important;
+}
+body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.18) !important;
+}
+body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.35) !important;
 }
 
 .chart-inner {
@@ -9676,10 +9836,9 @@ body.light-mode .ai-help-input:focus {
 
 .kpi-unified-right {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
 }
 
 .kpi-unified-value {
@@ -9871,10 +10030,9 @@ body.light-mode .ai-help-input:focus {
 
 .kpi-unified-right {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
 }
 
 .kpi-unified-value {
@@ -9993,6 +10151,19 @@ body.light-mode .theme-toggle-btn .moon-icon {
 body.light-mode .theme-toggle-btn .sun-icon {
     opacity: 1;
     transform: rotate(0deg) scale(1);
+}
+
+/* Light mode overrides for theme toggle button to provide border and contrast */
+body.light-mode .theme-toggle-btn {
+    background: rgba(15, 23, 42, 0.05) !important;
+    border: 1px solid rgba(15, 23, 42, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.light-mode .theme-toggle-btn:hover {
+    background: rgba(15, 23, 42, 0.1) !important;
+    border-color: rgba(15, 23, 42, 0.25) !important;
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.15) !important;
 }
 
 /* ============================================================
@@ -11820,7 +11991,7 @@ body.light-mode #kpiItemHealth {
     display: inline-flex !important;
     align-items: center !important;
     gap: 3px !important;
-    margin-top: 2px !important;
+    margin-top: 0 !important;
 }
 
 /* Catch-all white color rule for children inside the colored card divs */
@@ -11854,13 +12025,14 @@ body.light-mode #kpiUnifiedCard {
     background: none !important;
     -webkit-text-fill-color: initial !important;
     color: var(--text-primary) !important;
+    font-weight: 700 !important;
 }
 #kpiUnifiedCard .kpi-unified-header h2 i {
     color: var(--accent-primary) !important;
 }
 body.light-mode #kpiUnifiedCard .kpi-unified-header h2,
 body.light-mode #kpiUnifiedCard .kpi-unified-header h2 i {
-    color: #1e293b !important;
+    color: #000000 !important;
 }
 #kpiUnifiedCard .kpi-unified-header .badge.info-badge {
     background: rgba(255, 255, 255, 0.08) !important;

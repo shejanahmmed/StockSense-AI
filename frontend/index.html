@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v15.css?v=20260607ar">
+    <link rel="stylesheet" href="style_v15.css?v=20260608_04">
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -253,7 +253,7 @@
             display: inline-flex !important;
             align-items: center !important;
             gap: 3px !important;
-            margin-top: 2px !important;
+            margin-top: 0 !important;
         }
 
         /* Catch-all white color rule for children inside the colored card divs */
@@ -343,12 +343,12 @@
         }
         /* AI Promotional Planner Card */
         #promo-planner-section {
-            background: var(--bg-glass) !important;
-            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            background: transparent !important;
+            border: none !important;
             box-shadow: none !important;
             animation: none !important;
-            backdrop-filter: var(--backdrop-filter) !important;
-            -webkit-backdrop-filter: var(--backdrop-filter) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
         #promo-planner-section h2 {
             color: var(--text-primary) !important;
@@ -364,7 +364,9 @@
             color: var(--text-muted) !important;
         }
         body.light-mode #promo-planner-section {
-            border: 2px solid rgba(15, 23, 42, 0.15) !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         /* View All buttons - clean white with thin dark border */
         #toggle-all-timeline,
@@ -511,23 +513,23 @@
             
             <nav class="nav-menu">
                 <a href="#" class="nav-item active" id="navDashboard">
-                    <i class="fa-solid fa-chart-line"></i> 
+                    <img src="assets/icons/nav-dashboard.png" alt="Dashboard" style="width: 18px; height: 18px; object-fit: contain;"> 
                     <span>Dashboard</span>
                 </a>
                 <a href="#" class="nav-item" id="navInventory">
-                    <i class="fa-solid fa-boxes-stacked"></i> 
+                    <img src="assets/icons/nav-inventory.png" alt="Inventory" style="width: 18px; height: 18px; object-fit: contain;"> 
                     <span>Inventory</span>
                 </a>
                 <a href="#" class="nav-item" id="navFinancials">
-                    <i class="fa-solid fa-sack-dollar"></i> 
+                    <img src="assets/icons/nav-financials.png" alt="Financials" style="width: 18px; height: 18px; object-fit: contain;"> 
                     <span>Financials</span>
                 </a>
                 <a href="#" class="nav-item" id="navInsights">
-                    <i class="fa-solid fa-brain"></i> 
+                    <img src="assets/icons/nav-insights.png" alt="AI Insights" style="width: 18px; height: 18px; object-fit: contain;"> 
                     <span>AI Insights</span>
                 </a>
                 <a href="#" class="nav-item" id="navSettings">
-                    <i class="fa-solid fa-gear"></i> 
+                    <img src="assets/icons/nav-settings.png" alt="Settings" style="width: 18px; height: 18px; object-fit: contain;"> 
                     <span>Settings</span>
                 </a>
                 
@@ -535,7 +537,7 @@
                 <div class="mobile-profile-section glass-panel" style="display: none; margin-top: 1rem; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
                     <div class="mobile-profile-header" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
                         <div id="mobileAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); background-size: cover; background-position: center; flex-shrink: 0;">
-                            <i class="fa-regular fa-user" id="mobileAvatarIcon"></i>
+                            <img src="assets/icons/profile.png" alt="Profile" id="mobileAvatarIcon" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <div>
                             <span style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);" id="mobileUserName">Store 12</span>
@@ -580,7 +582,7 @@
                 <div class="user-profile-container" style="position: relative;">
                 <div class="user-profile" id="userProfileBtn" style="cursor: pointer; padding: 0.5rem; display: flex; align-items: center; gap: 1rem; border-radius: var(--radius-md); transition: var(--transition-smooth);">
                     <div id="sidebarAvatar" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); background-size: cover; background-position: center; flex-shrink: 0;">
-                        <i class="fa-regular fa-user" id="sidebarAvatarIcon"></i>
+                        <img src="assets/icons/profile.png" alt="Profile" id="sidebarAvatarIcon" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     </div>
                     <div class="user-info">
                         <span class="user-name" id="sidebarUserName">Store 12</span>
@@ -593,7 +595,7 @@
                 <div class="profile-dropdown glass-panel" id="profileDropdown" style="display: none; position: absolute; top: 110%; right: 0; width: 220px; padding: 0.5rem; flex-direction: column; z-index: 100; box-shadow: var(--shadow-glass); background: var(--bg-glass);">
                     <div class="profile-dropdown-header" style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
                         <div id="dropdownAvatar" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--text-secondary); background-size: cover; background-position: center; flex-shrink: 0;">
-                            <i class="fa-regular fa-user" id="dropdownAvatarIcon"></i>
+                            <img src="assets/icons/profile.png" alt="Profile" id="dropdownAvatarIcon" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <div>
                             <span style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);" id="dropdownUserName">Store 12</span>
@@ -657,7 +659,7 @@
                 <!-- AI Insight Premium Card -->
                 <section class="insight-section glass-panel" id="aiInsightCard">
                     <div class="section-header">
-                        <h2 class="gradient-text"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight for Store 12 — Electronics</h2>
+                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;"> AI Insight for Store 12 — Electronics</h2>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span class="badge warning-badge"><i class="fa-solid fa-bolt"></i> Action Required</span>
                         </div>
@@ -674,7 +676,7 @@
                     <!-- Left: KPI Inventory Overview (30%) -->
                     <div class="kpi-unified-card glass-panel interactive" id="kpiUnifiedCard">
                         <div class="kpi-unified-header">
-                            <h2 class="gradient-text" style="font-size: 1.05rem; margin: 0;"><i class="fa-solid fa-chart-line"></i> Overview & Health</h2>
+                            <h2 class="gradient-text" style="font-size: 1.05rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/overview-health.png" alt="Overview & Health" style="height: 26px; width: 26px; object-fit: contain;"> Overview & Health</h2>
                             <span class="badge info-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.2); font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-circle-info"></i> Details</span>
                         </div>
                         <div class="kpi-unified-body-vertical">
@@ -684,8 +686,8 @@
                                     <span class="kpi-unified-label">Total SKUs</span>
                                 </div>
                                 <div class="kpi-unified-right">
-                                    <h3 class="kpi-unified-value" id="kpi-stock">0</h3>
                                     <span class="kpi-unified-sub trend neutral" id="kpi-stock-sub">Awaiting data</span>
+                                    <h3 class="kpi-unified-value" id="kpi-stock">0</h3>
                                 </div>
                             </div>
                             <div class="kpi-unified-item" id="kpiItemUnits">
@@ -694,8 +696,8 @@
                                     <span class="kpi-unified-label">Total Units</span>
                                 </div>
                                 <div class="kpi-unified-right">
-                                    <h3 class="kpi-unified-value" id="kpi-total-units">0</h3>
                                     <span class="kpi-unified-sub trend neutral" id="kpi-total-units-sub">Awaiting data</span>
+                                    <h3 class="kpi-unified-value" id="kpi-total-units">0</h3>
                                 </div>
                             </div>
                             <div class="kpi-unified-item" id="kpiItemDemand">
@@ -704,8 +706,8 @@
                                     <span class="kpi-unified-label">Forecasted Demand</span>
                                 </div>
                                 <div class="kpi-unified-right">
-                                    <h3 class="kpi-unified-value" id="kpi-demand">0</h3>
                                     <span class="kpi-unified-sub trend neutral" id="kpi-demand-change">Awaiting data</span>
+                                    <h3 class="kpi-unified-value" id="kpi-demand">0</h3>
                                 </div>
                             </div>
                             <div class="kpi-unified-item" id="kpiItemAtRisk">
@@ -714,8 +716,8 @@
                                     <span class="kpi-unified-label">At-Risk Products</span>
                                 </div>
                                 <div class="kpi-unified-right">
-                                    <h3 class="kpi-unified-value" id="kpi-order">0</h3>
                                     <span class="kpi-unified-sub trend neutral" id="kpi-order-sub">Awaiting data</span>
+                                    <h3 class="kpi-unified-value" id="kpi-order">0</h3>
                                 </div>
                             </div>
                             <div class="kpi-unified-item" id="kpiItemHealth">
@@ -724,8 +726,8 @@
                                     <span class="kpi-unified-label">Inventory Health</span>
                                 </div>
                                 <div class="kpi-unified-right">
-                                    <h3 class="kpi-unified-value" id="kpi-stockout">N/A</h3>
                                     <span class="kpi-unified-sub trend neutral" id="kpi-stockout-sub">Awaiting data</span>
+                                    <h3 class="kpi-unified-value" id="kpi-stockout">N/A</h3>
                                 </div>
                             </div>
                         </div>
@@ -734,7 +736,7 @@
                     <!-- Right: Demand Forecast (65%) -->
                     <section class="chart-section glass-panel" id="demandForecastCard" style="height: 100%;">
                         <div class="section-header">
-                            <h2 id="forecastChartTitle">Demand Forecast</h2>
+                            <h2 id="forecastChartTitle" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast</h2>
                             <div class="chart-header-controls" style="display: none;">
                                 <div class="chart-legend-custom">
                                     <span><span class="legend-dot historical"></span> Historical</span>
@@ -808,7 +810,7 @@
                 <!-- AI Promotional Planner Section -->
                 <section class="insight-section glass-panel" id="promo-planner-section" style="margin-top: 2rem;">
                     <div class="section-header">
-                        <h2 class="gradient-text"><i class="fa-solid fa-tags"></i> AI Promotional Planner</h2>
+                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/promo-planner.png" alt="AI Promotional Planner" style="height: 26px; width: 26px; object-fit: contain;"> AI Promotional Planner</h2>
                         <span class="badge" style="background: rgba(255,255,255,0.2); color: #ffffff; border-color: rgba(255,255,255,0.35);">Optimization Active</span>
                     </div>
                     <p class="subtitle" style="margin-top: -10px; margin-bottom: 1.5rem;">Data-driven recommendation cards based on public holidays, weekly seasonality, and slow-moving inventory levels.</p>
@@ -890,7 +892,7 @@
 
                 <!-- 10. Next step recommendation -->
                 <div class="kpi-card glass-panel premium-glow" id="kpiPriorityNextStepCard" style="flex-direction: row; align-items: center; gap: 1rem; padding: 1.5rem; margin-bottom: 2rem;">
-                    <div class="kpi-priority-icon-wrap" style="font-size: 2rem;"><i class="fa-solid fa-lightbulb"></i></div>
+                    <div class="kpi-priority-icon-wrap" style="font-size: 2rem; display: flex; align-items: center; justify-content: center;"><img src="assets/icons/next-step.png" alt="Priority Next Step" style="height: 38px; width: 38px; object-fit: contain;"></div>
                     <div>
                         <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-primary);">Priority Next Step</h3>
                         <p style="font-size: 0.95rem; color: var(--text-muted);" id="metric-next-step">Upload a CSV file to generate AI-driven recommendations.</p>
@@ -903,7 +905,7 @@
                         <!-- SHAP Drivers -->
                         <section class="drivers-section glass-panel" id="demandDriversCard">
                             <div class="section-header">
-                                <h2>Top Demand Drivers (SHAP)</h2>
+                                <h2 style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/demand-drivers.png" alt="Top Demand Drivers (SHAP)" style="height: 26px; width: 26px; object-fit: contain;"> Top Demand Drivers (SHAP)</h2>
                             </div>
                             <div class="drivers-list" id="drivers-list">
                                 <div class="empty-state" style="color: var(--text-muted); font-size: 0.88rem; padding: 1.5rem 1rem; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: auto;">
@@ -916,8 +918,8 @@
                         <!-- 2 & 8. Low-stock alerts & visual timeline -->
                         <section class="glass-panel" id="stockAlertsTimelineCard" style="padding: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                                <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-clipboard-list" style="color: var(--status-danger);"></i> Stock Needs & Alerts Timeline</h2>
-                                <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none; background: #ffffff; color: #1e293b; border: 1px solid rgba(30,41,59,0.3); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; isolation: isolate;">View All</button>
+                                <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/alerts-timeline.png" alt="Stock Needs & Alerts Timeline" style="height: 26px; width: 26px; object-fit: contain;"> Stock Needs & Alerts Timeline</h2>
+                                <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
                             </div>
                             <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
                                 <li><p style="color: var(--text-muted); font-size: 0.85rem;">No alerts yet. Upload a CSV to generate stock recommendations.</p></li>
@@ -928,8 +930,8 @@
                     <!-- Column 2: Top Profit Drivers -->
                     <section class="glass-panel" id="profitDriversCard" style="padding: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h2 style="font-size: 1.15rem; margin: 0;"><i class="fa-solid fa-ranking-star" style="color: var(--accent-primary);"></i> Top Profit Drivers</h2>
-                            <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none; background: #ffffff; color: #1e293b; border: 1px solid rgba(30,41,59,0.3); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; isolation: isolate;">View All</button>
+                            <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/profit-drivers.png" alt="Top Profit Drivers" style="height: 26px; width: 26px; object-fit: contain;"> Top Profit Drivers</h2>
+                            <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">No data yet. Upload a CSV file to see top profit drivers.</p>
@@ -1531,7 +1533,7 @@
                                 </div>
                                 <div class="avatar-upload-area">
                                     <div id="settingsAvatarPreview" class="settings-avatar-preview">
-                                        <i class="fa-regular fa-user" id="settingsAvatarIcon"></i>
+                                        <img src="assets/icons/profile.png" alt="Profile" id="settingsAvatarIcon" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                                     </div>
                                     <div class="avatar-upload-info">
                                         <p class="avatar-upload-title">Upload Organization Logo</p>
@@ -3345,6 +3347,6 @@
 
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app_v12.js?v=20260607t"></script>
+    <script src="app_v12.js?v=20260608_03"></script>
 </body>
 </html>
