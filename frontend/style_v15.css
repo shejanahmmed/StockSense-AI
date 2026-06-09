@@ -4959,7 +4959,7 @@ input:checked + .slider:before {
     text-decoration: none;
 }
 
-.social-btn i {
+.social-btn i, .social-btn img {
     transition: transform 0.3s ease;
 }
 
@@ -4967,7 +4967,7 @@ input:checked + .slider:before {
     background: rgba(255, 255, 255, 0.08);
 }
 
-.social-btn:hover i {
+.social-btn:hover i, .social-btn:hover img {
     transform: scale(1.15);
 }
 
