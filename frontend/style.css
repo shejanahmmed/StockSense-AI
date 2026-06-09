@@ -1,4 +1,4 @@
-/* 
+﻿/* 
 
    StockSense AI - Modern Premium Theme 
 
@@ -1559,7 +1559,7 @@ body.light-mode #uploadCsvBtn:active {
 }
 
 /* Insights page fills the remaining viewport so the chat is always fully visible
-   without scrolling — the footer is only reachable by scrolling */
+   without scrolling â€” the footer is only reachable by scrolling */
 .insights-content {
     display: flex;
     flex-direction: column;
@@ -2463,7 +2463,7 @@ body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::afte
     background: #25a4eb !important;
 }
 
-/* Chart scroll architecture — defined below in the scroll section */
+/* Chart scroll architecture â€” defined below in the scroll section */
 
 
 
@@ -3484,7 +3484,7 @@ body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::afte
 }
 
 /* ============================================================
-   AI STRATEGIC ASSISTANT — COCKPIT & DUAL PANE UPGRADES
+   AI STRATEGIC ASSISTANT â€” COCKPIT & DUAL PANE UPGRADES
    ============================================================ */
 
 .insights-layout-grid {
@@ -3856,7 +3856,7 @@ body.light-mode .card-stock strong {
 }
 
 /* ============================================================
-   SETTINGS PAGE — MODERN PROFESSIONAL REDESIGN
+   SETTINGS PAGE â€” MODERN PROFESSIONAL REDESIGN
    ============================================================ */
 
 /* Settings content wrapper override (already set in base, extend here) */
@@ -3865,7 +3865,7 @@ body.light-mode .card-stock strong {
     padding-bottom: 4rem;
 }
 
-/* ── Hero Header ── */
+/* â”€â”€ Hero Header â”€â”€ */
 .settings-hero {
     display: flex;
     align-items: center;
@@ -3917,7 +3917,7 @@ body.light-mode .card-stock strong {
     letter-spacing: -0.025em;
 }
 
-/* ── Tab Navigation ── */
+/* â”€â”€ Tab Navigation â”€â”€ */
 .settings-tabs-nav {
     display: flex;
     align-items: center;
@@ -3964,13 +3964,13 @@ body.light-mode .card-stock strong {
     box-shadow: 0 4px 16px rgba(139,92,246,0.35);
 }
 
-/* Tab that's the Danger Zone — make it subtly red when active */
+/* Tab that's the Danger Zone â€” make it subtly red when active */
 .settings-tab[data-tab="danger"].active {
     background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(220,38,38,0.8));
     box-shadow: 0 4px 16px rgba(239,68,68,0.35);
 }
 
-/* ── Tab Panels ── */
+/* â”€â”€ Tab Panels â”€â”€ */
 .settings-panels {
     position: relative;
 }
@@ -3989,14 +3989,14 @@ body.light-mode .card-stock strong {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Panel Grid ── */
+/* â”€â”€ Panel Grid â”€â”€ */
 .settings-panel-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
     gap: 1.5rem;
 }
 
-/* ── Section Card ── */
+/* â”€â”€ Section Card â”€â”€ */
 .settings-section-card {
     padding: 2rem;
     display: flex;
@@ -4010,7 +4010,7 @@ body.light-mode .card-stock strong {
     border-color: rgba(139,92,246,0.2);
 }
 
-/* ── Section Header ── */
+/* â”€â”€ Section Header â”€â”€ */
 .settings-section-header {
     display: flex;
     align-items: flex-start;
@@ -4043,7 +4043,7 @@ body.light-mode .card-stock strong {
     line-height: 1.45;
 }
 
-/* ── Field Stack ── */
+/* â”€â”€ Field Stack â”€â”€ */
 .settings-field-stack {
     display: flex;
     flex-direction: column;
@@ -4079,7 +4079,7 @@ body.light-mode .card-stock strong {
     margin-bottom: 0.2rem;
 }
 
-/* ── Settings Input ── */
+/* â”€â”€ Settings Input â”€â”€ */
 .settings-input {
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4109,7 +4109,7 @@ body.light-mode .settings-input option {
     color: var(--text-primary);
 }
 
-/* ── Select Wrapper (custom chevron) ── */
+/* â”€â”€ Select Wrapper (custom chevron) â”€â”€ */
 .settings-select-wrapper {
     position: relative;
 }
@@ -4137,7 +4137,7 @@ body.light-mode .settings-input option {
     color: var(--accent-primary);
 }
 
-/* ── Avatar Upload Area ── */
+/* â”€â”€ Avatar Upload Area â”€â”€ */
 .avatar-upload-area {
     display: flex;
     align-items: center;
@@ -4232,7 +4232,7 @@ body.light-mode .settings-input option {
     border-color: rgba(239, 68, 68, 0.5);
 }
 
-/* ── Strategy Selection Cards ── */
+/* â”€â”€ Strategy Selection Cards â”€â”€ */
 .settings-strategy-cards {
     display: flex;
     flex-direction: column;
@@ -4327,7 +4327,7 @@ body.light-mode .settings-input option {
     opacity: 1;
 }
 
-/* ── Toggle Row ── */
+/* â”€â”€ Toggle Row â”€â”€ */
 .settings-toggle-row {
     display: flex;
     align-items: center;
@@ -4361,7 +4361,7 @@ body.light-mode .settings-input option {
     color: var(--text-primary);
 }
 
-/* ── Modern Toggle Switch ── */
+/* â”€â”€ Modern Toggle Switch â”€â”€ */
 .settings-toggle-switch {
     position: relative;
     display: inline-block;
@@ -4425,7 +4425,7 @@ body.light-mode .settings-toggle-switch input:checked + .settings-toggle-track .
     border-color: transparent;
 }
 
-/* ── Action Button inside toggle row ── */
+/* â”€â”€ Action Button inside toggle row â”€â”€ */
 .settings-action-btn {
     display: inline-flex;
     align-items: center;
@@ -4450,7 +4450,7 @@ body.light-mode .settings-toggle-switch input:checked + .settings-toggle-track .
     box-shadow: 0 4px 16px rgba(16,185,129,0.2);
 }
 
-/* ── Danger Zone Panel ── */
+/* â”€â”€ Danger Zone Panel â”€â”€ */
 .settings-danger-zone-wrapper {
     display: flex;
     flex-direction: column;
@@ -4536,7 +4536,7 @@ body.light-mode .settings-toggle-switch input:checked + .settings-toggle-track .
     font-size: 0.9rem;
 }
 
-/* ── Danger Button (enhanced) ── */
+/* â”€â”€ Danger Button (enhanced) â”€â”€ */
 .danger-btn {
     display: inline-flex;
     align-items: center;
@@ -4561,7 +4561,7 @@ body.light-mode .settings-toggle-switch input:checked + .settings-toggle-track .
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
 }
 
-/* Legacy switch — kept for backwards compat if referenced anywhere */
+/* Legacy switch â€” kept for backwards compat if referenced anywhere */
 .switch {
     position: relative;
     display: inline-block;
@@ -5974,7 +5974,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     animation: slideInUp 0.4s ease-out forwards;
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .hiw-header {
     display: flex;
     flex-direction: column;
@@ -6021,7 +6021,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     margin-top: 0.25rem;
 }
 
-/* ── Section Labels ── */
+/* â”€â”€ Section Labels â”€â”€ */
 .hiw-section-label {
     font-size: 1.05rem;
     font-weight: 700;
@@ -6035,7 +6035,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 .hiw-section-label i { color: var(--accent-primary); }
 
-/* ── Steps Timeline ── */
+/* â”€â”€ Steps Timeline â”€â”€ */
 .hiw-steps-section { display: flex; flex-direction: column; }
 
 .hiw-timeline {
@@ -6157,7 +6157,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 .hiw-step-tip strong { color: var(--text-primary); }
 
-/* ── CSV Format table ── */
+/* â”€â”€ CSV Format table â”€â”€ */
 .hiw-csv-format {
     padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
@@ -6199,7 +6199,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 .hiw-csv-table tr:last-child td { border-bottom: none; }
 
-/* ── Feature chips (step 3 grid) ── */
+/* â”€â”€ Feature chips (step 3 grid) â”€â”€ */
 .hiw-features-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -6240,7 +6240,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     line-height: 1.4;
 }
 
-/* ── Bullet list ── */
+/* â”€â”€ Bullet list â”€â”€ */
 .hiw-bullet-list {
     list-style: none;
     padding: 0;
@@ -6264,7 +6264,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 .hiw-bullet-list li strong { color: var(--text-primary); }
 
-/* ── Chat bubbles (step 5) ── */
+/* â”€â”€ Chat bubbles (step 5) â”€â”€ */
 .hiw-chat-examples {
     display: flex;
     flex-direction: column;
@@ -6296,7 +6296,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     border-color: rgba(139,92,246,0.35);
 }
 
-/* ── Architecture section ── */
+/* â”€â”€ Architecture section â”€â”€ */
 .hiw-arch-section { display: flex; flex-direction: column; }
 
 .hiw-arch-grid {
@@ -6350,7 +6350,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     flex-shrink: 0;
 }
 
-/* ── FAQ section ── */
+/* â”€â”€ FAQ section â”€â”€ */
 .hiw-faq-section { display: flex; flex-direction: column; }
 
 .hiw-faq-list {
@@ -6413,7 +6413,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 .hiw-faq-answer strong { color: var(--text-primary); }
 
-/* ── CTA Banner ── */
+/* â”€â”€ CTA Banner â”€â”€ */
 .hiw-cta-banner {
     display: flex;
     align-items: center;
@@ -6436,7 +6436,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     margin: 0;
 }
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 @media (max-width: 1024px) {
     .hiw-arch-grid {
         flex-direction: column;
@@ -7968,13 +7968,13 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.025);
 }
 
-/* Past rows — dimmed */
+/* Past rows â€” dimmed */
 .holiday-row-past td {
     color: var(--text-muted) !important;
     opacity: 0.6;
 }
 
-/* Next upcoming row — golden highlight */
+/* Next upcoming row â€” golden highlight */
 .holiday-row-next td {
     background: rgba(245, 158, 11, 0.06) !important;
     border-top: 1px solid rgba(245, 158, 11, 0.18) !important;
@@ -8772,11 +8772,11 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
    AI Help Chatbot Premium Glassmorphic Styles
    ========================================== */
 /* ============================================================
-   Floating AI Chat Widget — Professional Redesign
+   Floating AI Chat Widget â€” Professional Redesign
    ============================================================ */
 
 /* ============================================================
-   Floating AI Chat Widget — Professional Redesign
+   Floating AI Chat Widget â€” Professional Redesign
    ============================================================ */
 
 .ai-help-container {
@@ -8787,7 +8787,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     font-family: 'Outfit', sans-serif;
 }
 
-/* ── FAB Toggle Button ──────────────────────────────────── */
+/* â”€â”€ FAB Toggle Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-toggle {
     width: 56px;
     height: 56px;
@@ -8826,7 +8826,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     transform: translateY(-1px) scale(0.98);
 }
 
-/* ── Chat Panel ─────────────────────────────────────────── */
+/* â”€â”€ Chat Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-panel {
     position: absolute;
     bottom: 68px;
@@ -8850,7 +8850,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Header ─────────────────────────────────────────────── */
+/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-header {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -8944,7 +8944,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     color: #f8fafc;
 }
 
-/* ── Mode Tabs ──────────────────────────────────────────── */
+/* â”€â”€ Mode Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-mode-toggle-container {
     padding: 0 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -8997,7 +8997,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     font-weight: 600;
 }
 
-/* ── Messages Area ──────────────────────────────────────── */
+/* â”€â”€ Messages Area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-messages {
     flex: 1;
     padding: 1.25rem;
@@ -9046,7 +9046,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     border-radius: 16px 16px 16px 4px;
 }
 
-/* ── Typing Indicator ───────────────────────────────────── */
+/* â”€â”€ Typing Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-typing-indicator {
     display: flex;
     gap: 0.3rem;
@@ -9068,7 +9068,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     50%       { opacity: 1;   transform: scale(1.15); }
 }
 
-/* ── Suggestion Chips ───────────────────────────────────── */
+/* â”€â”€ Suggestion Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-suggestions {
     padding: 0.5rem 1.25rem;
     display: flex;
@@ -9101,7 +9101,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     color: #c4b5fd;
 }
 
-/* ── Input Area ─────────────────────────────────────────── */
+/* â”€â”€ Input Area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-input-area {
     padding: 0.85rem 1.25rem 1.1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -9159,7 +9159,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     transform: translateY(0);
 }
 
-/* ── Bubble rich-text ───────────────────────────────────── */
+/* â”€â”€ Bubble rich-text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-help-bubble strong { color: #fff; font-weight: 600; }
 .ai-help-bubble ul, .ai-help-bubble ol {
     margin: 0.4rem 0;
@@ -9169,7 +9169,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 .ai-help-bubble p   { margin-bottom: 0.45rem; }
 .ai-help-bubble p:last-child { margin-bottom: 0; }
 
-/* ── Responsive ─────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 480px) {
     .ai-help-panel {
         width: calc(100vw - 2rem);
@@ -9179,7 +9179,7 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     }
 }
 
-/* ── Light Mode Overrides ──────────────────────────────── */
+/* â”€â”€ Light Mode Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 body.light-mode .ai-help-toggle {
     background: #ffffff;
     border: 1px solid rgba(15, 23, 42, 0.08);
@@ -9425,6 +9425,9 @@ body.light-mode .ai-help-input:focus {
     appearance: none;
     outline: none;
     border-radius: var(--radius-full);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     transition: background 0.3s;
 }
 
@@ -9461,6 +9464,49 @@ body.light-mode .ai-help-input:focus {
     box-shadow: 0 0 15px rgba(139, 92, 246, 1);
 }
 
+
+/* ── Light mode overrides — ROI buffer slider ────────────────────────────── */
+body.light-mode #roiBufferSlider {
+    background: linear-gradient(to right, #8b5cf6 40%, #dde2ef 40%) !important;
+    border: 1.5px solid rgba(99, 102, 241, 0.35) !important;
+}
+
+body.light-mode #roiBufferSlider::-webkit-slider-runnable-track {
+    background: #e2e8f0;
+    border-radius: var(--radius-full);
+    height: 6px;
+    border: 1.5px solid rgba(99, 102, 241, 0.3);
+}
+
+body.light-mode #roiBufferSlider::-moz-range-track {
+    background: #e2e8f0;
+    border-radius: var(--radius-full);
+    height: 6px;
+    border: 1.5px solid rgba(99, 102, 241, 0.3);
+}
+
+body.light-mode #roiBufferSlider::-moz-range-progress {
+    background: #8b5cf6;
+    border-radius: var(--radius-full);
+    height: 6px;
+}
+
+body.light-mode #roiBufferSlider::-webkit-slider-thumb {
+    background: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2), 0 2px 8px rgba(124, 58, 237, 0.4);
+    border: 2px solid #ffffff;
+}
+
+body.light-mode #roiBufferSlider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.25), 0 4px 14px rgba(124, 58, 237, 0.5);
+}
+
+body.light-mode #roiBufferSlider::-moz-range-thumb {
+    background: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2), 0 2px 8px rgba(124, 58, 237, 0.4);
+    border: 2px solid #ffffff;
+}
 
 /* ==========================================
    Inventory KPI Grid & Glowing Highlights
@@ -10346,14 +10392,14 @@ body.light-mode #insightsView {
     max-width: 480px;
 }
 
-/* ── Collapse: decisive ease-in — sidebar snaps away cleanly ─────── */
+/* â”€â”€ Collapse: decisive ease-in â€” sidebar snaps away cleanly â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .chat-sidebar.sidebar-collapsing {
     transition: width 0.28s cubic-bezier(0.4, 0, 1, 1),
                 padding 0.28s cubic-bezier(0.4, 0, 1, 1),
                 border-color 0.22s ease;
 }
 
-/* ── Expand: smooth ease-out deceleration — premium reveal feel ─────── */
+/* â”€â”€ Expand: smooth ease-out deceleration â€” premium reveal feel â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .chat-sidebar.sidebar-expanding {
     transition: width 0.42s cubic-bezier(0.0, 0, 0.2, 1),
                 padding 0.42s cubic-bezier(0.0, 0, 0.2, 1),
@@ -10384,7 +10430,7 @@ body.light-mode #insightsView {
     border-right-color: transparent;
 }
 
-/* ─── Sidebar Resize Handle ──────────────────────────────────────── */
+/* â”€â”€â”€ Sidebar Resize Handle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #insightsView .sidebar-resizer {
     width: 5px;
     flex-shrink: 0;
@@ -10483,7 +10529,7 @@ body.light-mode .sidebar-collapse-btn:hover {
     background: rgba(0, 0, 0, 0.06);
 }
 
-/* Mobile/Desktop Sidebar Toggle (reopen) Button — image version */
+/* Mobile/Desktop Sidebar Toggle (reopen) Button â€” image version */
 #insightsView .mobile-sidebar-toggle-btn {
     padding: 0;
 }
@@ -10989,7 +11035,7 @@ body.light-mode .recent-chat-item:hover {
     white-space: nowrap;
 }
 
-/* Recent Chat Item — Ellipsis (⋯) Button */
+/* Recent Chat Item â€” Ellipsis (â‹¯) Button */
 .recent-chat-item-more {
     display: none;
     align-items: center;
@@ -11335,7 +11381,7 @@ body.light-mode .welcome-card h4 {
         display: flex !important;
     }
 
-    /* Override the desktop width transition on mobile — use left-position only */
+    /* Override the desktop width transition on mobile â€” use left-position only */
     #insightsView .chat-sidebar {
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -11743,7 +11789,7 @@ body.light-mode #insightsView .chat-messages .no-csv-card h3 {
     margin: 0 0 1.5rem 0 !important;
 }
 
-/* Feature list — force away default bullets */
+/* Feature list â€” force away default bullets */
 #insightsView .chat-messages .no-csv-features {
     list-style: none !important;
     list-style-type: none !important;
@@ -12257,4 +12303,5 @@ body.light-mode .sku-modal-container {
 body.light-mode .sku-modal-overlay {
     background: rgba(15, 23, 42, 0.35) !important;
 }
+
 
