@@ -4952,19 +4952,25 @@ input:checked + .slider:before {
     }
 }
 
-#promo-planner-section {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    animation: none !important;
-    color: var(--text-primary) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
+/* AI Promotional Planner Card Custom Color */
 body.light-mode #promo-planner-section {
-    background: transparent !important;
-    border: none !important;
+    background-color: transparent !important;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+    background-size: 14px 14px !important;
+    border: 2px solid rgba(15, 23, 42, 0.15) !important;
     box-shadow: none !important;
+}
+
+.promo-badge {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+body.light-mode .promo-badge {
+    background: rgba(15, 23, 42, 0.08) !important;
+    color: #1e293b !important;
+    border: 1px solid rgba(15, 23, 42, 0.15) !important;
 }
 
 #promo-planner-section h2 {
@@ -5097,6 +5103,20 @@ body.light-mode #promo-planner-section h2 {
     align-items: center;
     width: 100%;
     gap: 0.5rem;
+}
+
+.promo-badge-tag,
+.promo-urgency-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+    padding: 0.25rem 0.6rem !important;
+    border-radius: 4px !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1 !important;
 }
 
 .promo-card-title {

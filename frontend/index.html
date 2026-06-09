@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v15.css?v=20260609_07">
+    <link rel="stylesheet" href="style_v15.css?v=20260610_02">
     <script>
         window.handleIconError = function(img) {
             img.style.display = 'none';
@@ -328,17 +328,21 @@
             border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
         }
 
-        /* Transparency overrides for bottom grid cards */
-        #demandDriversCard, #profitDriversCard, #stockAlertsTimelineCard {
+        /* Transparency overrides for bottom grid cards + promotional planner */
+        #demandDriversCard, #profitDriversCard, #stockAlertsTimelineCard, #promo-planner-section {
             background-color: transparent !important;
             background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px) !important;
             background-size: 14px 14px !important;
             border: 2px solid rgba(255, 255, 255, 0.15) !important;
             box-shadow: none !important;
+            animation: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
         body.light-mode #demandDriversCard, 
         body.light-mode #profitDriversCard, 
-        body.light-mode #stockAlertsTimelineCard {
+        body.light-mode #stockAlertsTimelineCard,
+        body.light-mode #promo-planner-section {
             background-color: transparent !important;
             background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
             background-size: 14px 14px !important;
@@ -352,15 +356,7 @@
         body.light-mode #demandDriversCard .empty-state span {
             color: #1e293b !important;
         }
-        /* AI Promotional Planner Card */
-        #promo-planner-section {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            animation: none !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
+        /* AI Promotional Planner Card Customizations */
         #promo-planner-section h2 {
             color: var(--text-primary) !important;
             background: none !important;
@@ -373,11 +369,6 @@
         #promo-planner-section .subtitle,
         #promo-planner-section .empty-state {
             color: var(--text-muted) !important;
-        }
-        body.light-mode #promo-planner-section {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
         }
         /* View All buttons - clean white with thin dark border */
         #toggle-all-timeline,
@@ -822,7 +813,7 @@
                 <section class="insight-section glass-panel" id="promo-planner-section" style="margin-top: 2rem;">
                     <div class="section-header">
                         <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/promo-planner.png" alt="AI Promotional Planner" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-bullhorn title-icon-fallback" style="display: none;"></i> AI Promotional Planner</h2>
-                        <span class="badge" style="background: rgba(255,255,255,0.2); color: #ffffff; border-color: rgba(255,255,255,0.35);">Optimization Active</span>
+                        <span class="badge promo-badge">Optimization Active</span>
                     </div>
                     <p class="subtitle" style="margin-top: -10px; margin-bottom: 1.5rem;">Data-driven recommendation cards based on public holidays, weekly seasonality, and slow-moving inventory levels.</p>
                     
@@ -3385,6 +3376,6 @@
 
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app_v12.js?v=20260609_07"></script>
+    <script src="app_v12.js?v=20260610_02"></script>
 </body>
 </html>
