@@ -19,6 +19,13 @@ import tempfile
 import os
 import holidays
 
+
+def _sanitize_pdf_text(text: str) -> str:
+    """Strip or replace characters that cannot be encoded in latin-1 (required by FPDF core fonts)."""
+    if not isinstance(text, str):
+        text = str(text)
+    return text.encode("latin-1", errors="replace").decode("latin-1")
+
 router = APIRouter()
 project_root = Path(__file__).resolve().parent.parent.parent.parent
 models_dir = project_root / "data" / "models"
@@ -1109,6 +1116,7 @@ async def get_product_forecast(sku: str, user: dict = Depends(get_current_user))
     return {"status": "success", "sku": sku, "forecast": rows}
 
 
+
 @router.get("/api/report")
 async def generate_pdf_report(user: dict = Depends(get_current_user)):
     """Generate a comprehensive multi-product Weekly PDF Report."""
@@ -1131,14 +1139,14 @@ async def generate_pdf_report(user: dict = Depends(get_current_user)):
     pdf = FPDF()
     pdf.add_page()
 
-    # â”€â”€ Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ——— Title ——————————————————————————————————————————————————————
     pdf.set_font("Helvetica", "B", 18)
     pdf.cell(0, 10, "StockSense AI: Weekly Inventory & Forecast Report", ln=True, align="C")
     pdf.set_font("Helvetica", "I", 12)
-    pdf.cell(0, 8, f"Organization: {org_name}", ln=True, align="C")
+    pdf.cell(0, 8, _sanitize_pdf_text(f"Organization: {org_name}"), ln=True, align="C")
     pdf.ln(6)
 
-    # â”€â”€ Executive Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ——— Executive Summary ———————————————————————————————————————————
     total_stock = sum(item["stock"] for item in inventory if item["stock"])
     low_stock = [i for i in inventory if i["status"] in ["Low Stock", "Out of Stock"]]
     total_value = sum((item["price"] or 0) * (item["stock"] or 0) for item in inventory)
@@ -1157,13 +1165,13 @@ async def generate_pdf_report(user: dict = Depends(get_current_user)):
         summary += f"ALERT: {len(low_stock)} SKUs require immediate attention (Low Stock / Out of Stock)."
     else:
         summary += "Inventory health is optimal with no critical stockout risks detected."
-    pdf.multi_cell(0, 8, summary)
+    pdf.multi_cell(0, 8, _sanitize_pdf_text(summary))
     pdf.ln(8)
 
-    # â”€â”€ At-Risk Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ——— At-Risk Section —————————————————————————————————————————————
     if low_stock:
         pdf.set_font("Helvetica", "B", 13)
-        pdf.cell(0, 10, "âš  At-Risk Products", ln=True)
+        pdf.cell(0, 10, "[!] At-Risk Products", ln=True)
         pdf.set_font("Helvetica", "B", 10)
         pdf.cell(40, 8, "SKU", border=1)
         pdf.cell(70, 8, "Product Name", border=1)
@@ -1172,11 +1180,11 @@ async def generate_pdf_report(user: dict = Depends(get_current_user)):
         pdf.cell(25, 8, "Status", border=1, ln=True)
         pdf.set_font("Helvetica", "", 9)
         for item in low_stock[:20]:
-            pdf.cell(40, 7, str(item['sku'])[:18], border=1)
-            pdf.cell(70, 7, str(item['name'])[:35], border=1)
-            pdf.cell(25, 7, str(item['stock']), border=1)
-            pdf.cell(30, 7, str(item['reorder_point']), border=1)
-            pdf.cell(25, 7, str(item['status']), border=1, ln=True)
+            pdf.cell(40, 7, _sanitize_pdf_text(str(item['sku'])[:18]), border=1)
+            pdf.cell(70, 7, _sanitize_pdf_text(str(item['name'])[:35]), border=1)
+            pdf.cell(25, 7, _sanitize_pdf_text(str(item['stock'])), border=1)
+            pdf.cell(30, 7, _sanitize_pdf_text(str(item['reorder_point'])), border=1)
+            pdf.cell(25, 7, _sanitize_pdf_text(str(item['status'])), border=1, ln=True)
         pdf.ln(8)
 
     # â”€â”€ Full Inventory Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1191,12 +1199,12 @@ async def generate_pdf_report(user: dict = Depends(get_current_user)):
 
     pdf.set_font("Helvetica", "", 8)
     for item in inventory[:100]:
-        pdf.cell(col_w[0], 7, str(item['sku'])[:16], border=1)
-        pdf.cell(col_w[1], 7, str(item['name'])[:28], border=1)
-        pdf.cell(col_w[2], 7, str(item['category'])[:14], border=1)
-        pdf.cell(col_w[3], 7, str(item['stock']), border=1)
-        pdf.cell(col_w[4], 7, str(item['forecasted_demand']), border=1)
-        pdf.cell(col_w[5], 7, str(item['status'])[:12], border=1)
+        pdf.cell(col_w[0], 7, _sanitize_pdf_text(str(item['sku'])[:16]), border=1)
+        pdf.cell(col_w[1], 7, _sanitize_pdf_text(str(item['name'])[:28]), border=1)
+        pdf.cell(col_w[2], 7, _sanitize_pdf_text(str(item['category'])[:14]), border=1)
+        pdf.cell(col_w[3], 7, _sanitize_pdf_text(str(item['stock'])), border=1)
+        pdf.cell(col_w[4], 7, _sanitize_pdf_text(str(item['forecasted_demand'])), border=1)
+        pdf.cell(col_w[5], 7, _sanitize_pdf_text(str(item['status'])[:12]), border=1)
         pdf.ln()
 
     if len(inventory) > 100:
