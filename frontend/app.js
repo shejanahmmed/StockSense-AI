@@ -6411,7 +6411,7 @@ async function showModalDailyVsForecastList() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'dailyVsForecastModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1400px; max-width: 96vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1600px; max-width: 98vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
@@ -6879,7 +6879,7 @@ async function showModalCashFlow() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'cashFlowModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1400px; max-width: 96vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1600px; max-width: 98vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
@@ -7336,7 +7336,7 @@ async function showModalDemandTrend() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'demandTrendModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1400px; max-width: 96vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1600px; max-width: 98vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
@@ -7805,7 +7805,7 @@ async function showModalMargin() {
     overlay.className = 'sku-modal-overlay';
     overlay.id = 'avgMarginModal';
     overlay.innerHTML = `
-        <div class="sku-modal-container" style="width: 1400px; max-width: 96vw; max-height: 90vh;">
+        <div class="sku-modal-container" style="width: 1600px; max-width: 98vw; max-height: 90vh;">
             <div class="sku-modal-header">
                 <div>
                     <h2 style="margin:0; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">

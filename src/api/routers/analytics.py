@@ -816,18 +816,21 @@ async def predict_demand(
         # Only consider holidays that come AFTER the last date in the CSV
         future_holidays = {d: n for d, n in local_holidays.items() if d > csv_end_date}
         
-        # Check if the closest holiday is within the forecast horizon
+        # Check if the closest holiday is in the future
         upcoming_holiday = None
         if future_holidays:
             closest_date = min(future_holidays.keys())
-            if (closest_date - csv_end_date).days <= forecast_horizon:
-                upcoming_holiday = (closest_date, future_holidays[closest_date])
+            upcoming_holiday = (closest_date, future_holidays[closest_date])
 
         if upcoming_holiday:
             next_date, raw_name = upcoming_holiday
             upcoming_event_name = raw_name
             upcoming_event_date = next_date.strftime("%b %d, %Y")
-            event_impact = "+15% expected"
+            days_away = (next_date - csv_end_date).days
+            if days_away <= forecast_horizon:
+                event_impact = "+15% expected"
+            else:
+                event_impact = f"In {days_away} days"
         else:
             upcoming_event_name = "None"
             upcoming_event_date = ""
