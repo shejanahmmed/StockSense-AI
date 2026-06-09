@@ -2416,6 +2416,10 @@ body.light-mode #profitDriversCard .profit-sku {
     border: 1px solid rgba(255,255,255,0.12);
     transition: background 0.2s, border-color 0.2s;
 }
+body.light-mode .filter-toggle-track {
+    background: rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(15, 23, 42, 0.22);
+}
 .filter-toggle-track::after {
     content: '';
     position: absolute;
@@ -2427,13 +2431,26 @@ body.light-mode #profitDriversCard .profit-sku {
     background: var(--text-muted);
     transition: transform 0.2s ease, background 0.2s;
 }
+body.light-mode .filter-toggle-track::after {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.25);
+    box-sizing: border-box;
+}
 .filter-toggle-switch input:checked + .filter-toggle-track {
     background: rgba(67, 191, 254, 0.3);
+    border-color: #43bffe;
+}
+body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track {
+    background: #43bffe;
     border-color: #43bffe;
 }
 .filter-toggle-switch input:checked + .filter-toggle-track::after {
     transform: translateX(18px);
     background: #43bffe;
+}
+body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::after {
+    background: #ffffff;
+    border-color: transparent;
 }
 
 .filter-apply-btn {
@@ -4087,6 +4104,11 @@ body.light-mode .card-stock strong {
     color: var(--text-primary);
 }
 
+body.light-mode .settings-input option {
+    background: var(--bg-dropdown);
+    color: var(--text-primary);
+}
+
 /* ── Select Wrapper (custom chevron) ── */
 .settings-select-wrapper {
     position: relative;
@@ -4365,6 +4387,11 @@ body.light-mode .card-stock strong {
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.light-mode .settings-toggle-track {
+    background: rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(15, 23, 42, 0.22);
+}
+
 .settings-toggle-thumb {
     position: absolute;
     top: 3px;
@@ -4377,6 +4404,12 @@ body.light-mode .card-stock strong {
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.light-mode .settings-toggle-thumb {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.25);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
 .settings-toggle-switch input:checked + .settings-toggle-track {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     border-color: rgba(139,92,246,0.4);
@@ -4386,6 +4419,10 @@ body.light-mode .card-stock strong {
 .settings-toggle-switch input:checked + .settings-toggle-track .settings-toggle-thumb {
     transform: translateX(22px);
     box-shadow: 0 2px 12px rgba(139,92,246,0.4);
+}
+
+body.light-mode .settings-toggle-switch input:checked + .settings-toggle-track .settings-toggle-thumb {
+    border-color: transparent;
 }
 
 /* ── Action Button inside toggle row ── */

@@ -1538,7 +1538,7 @@ async function reforecastFromInventory() {
             // Update chart title with actual forecast horizon from server
             const chartTitle = document.getElementById('forecastChartTitle');
             if (chartTitle && data.forecast_label) {
-                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-chart-line title-icon-fallback" style="display: none;"></i> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
             }
 
             // Cache the full result so it survives page refreshes
@@ -3919,7 +3919,7 @@ async function commitStagedCSV() {
             // Update chart title with actual forecast horizon from server
             const chartTitle = document.getElementById('forecastChartTitle');
             if (chartTitle && data.forecast_label) {
-                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
+                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-chart-line title-icon-fallback" style="display: none;"></i> Demand Forecast — ${data.forecast_label} (${data.data_span_days} days of data)`;
             }
             
             updateFooterCsvStatus(stagedCSVFileName);
@@ -4025,7 +4025,7 @@ function setupCsvUpload() {
                     if (chartTitle) {
                         const label = cachedData.forecast_label || (cachedData.forecast.length > 0 ? `${cachedData.forecast.length}-Day Forecast` : '7-Day Forecast');
                         const span = cachedData.data_span_days || 90;
-                        chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast — ${label} (${span} days of data)`;
+                        chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-chart-line title-icon-fallback" style="display: none;"></i> Demand Forecast — ${label} (${span} days of data)`;
                     }
                 }
                 if (cachedData.insight) renderInsight(cachedData.insight);
@@ -5960,7 +5960,7 @@ function updateUserProfileUI(name, role, avatarUrl) {
     // Update main header dashboard text
     const aiInsightTitle = document.querySelector('.insight-section .section-header h2.gradient-text');
     if (aiInsightTitle) {
-        aiInsightTitle.innerHTML = `<img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;"> AI Insight for ${name} — ${role}`;
+        aiInsightTitle.innerHTML = `<img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-brain title-icon-fallback" style="display: none;"></i> AI Insight for ${name} — ${role}`;
     }
 }
 

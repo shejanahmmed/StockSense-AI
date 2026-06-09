@@ -9,7 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style_v15.css?v=20260609_05">
+    <link rel="stylesheet" href="style_v15.css?v=20260609_07">
+    <script>
+        window.handleIconError = function(img) {
+            img.style.display = 'none';
+            const fallback = img.nextElementSibling;
+            if (fallback) {
+                fallback.style.setProperty('display', 'inline-block', 'important');
+                const isLight = document.body.classList.contains('light-mode');
+                fallback.style.setProperty('color', isLight ? '#000000' : '#ffffff', 'important');
+            }
+        };
+    </script>
     <style>
         /* Vibrant Overview KPI Cards */
         .kpi-card {
@@ -659,7 +670,7 @@
                 <!-- AI Insight Premium Card -->
                 <section class="insight-section glass-panel" id="aiInsightCard">
                     <div class="section-header">
-                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;"> AI Insight for Store 12 — Electronics</h2>
+                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/ai-insight.png" alt="AI Insight" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-brain title-icon-fallback" style="display: none;"></i> AI Insight for Store 12 — Electronics</h2>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span class="badge warning-badge"><i class="fa-solid fa-bolt"></i> Action Required</span>
                         </div>
@@ -676,7 +687,7 @@
                     <!-- Left: KPI Inventory Overview (30%) -->
                     <div class="kpi-unified-card glass-panel interactive" id="kpiUnifiedCard">
                         <div class="kpi-unified-header">
-                            <h2 class="gradient-text" style="font-size: 1.05rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/overview-health.png" alt="Overview & Health" style="height: 26px; width: 26px; object-fit: contain;"> Overview & Health</h2>
+                            <h2 class="gradient-text" style="font-size: 1.05rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/overview-health.png" alt="Overview & Health" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-heart-pulse title-icon-fallback" style="display: none;"></i> Overview & Health</h2>
                             <span class="badge info-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(139, 92, 246, 0.2); font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-circle-info"></i> Details</span>
                         </div>
                         <div class="kpi-unified-body-vertical">
@@ -736,7 +747,7 @@
                     <!-- Right: Demand Forecast (65%) -->
                     <section class="chart-section glass-panel" id="demandForecastCard" style="height: 100%;">
                         <div class="section-header">
-                            <h2 id="forecastChartTitle" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;"> Demand Forecast</h2>
+                            <h2 id="forecastChartTitle" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-chart-line title-icon-fallback" style="display: none;"></i> Demand Forecast</h2>
                             <div class="chart-header-controls" style="display: none;">
                                 <div class="chart-legend-custom">
                                     <span><span class="legend-dot historical"></span> Historical</span>
@@ -810,7 +821,7 @@
                 <!-- AI Promotional Planner Section -->
                 <section class="insight-section glass-panel" id="promo-planner-section" style="margin-top: 2rem;">
                     <div class="section-header">
-                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/promo-planner.png" alt="AI Promotional Planner" style="height: 26px; width: 26px; object-fit: contain;"> AI Promotional Planner</h2>
+                        <h2 class="gradient-text" style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/promo-planner.png" alt="AI Promotional Planner" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-bullhorn title-icon-fallback" style="display: none;"></i> AI Promotional Planner</h2>
                         <span class="badge" style="background: rgba(255,255,255,0.2); color: #ffffff; border-color: rgba(255,255,255,0.35);">Optimization Active</span>
                     </div>
                     <p class="subtitle" style="margin-top: -10px; margin-bottom: 1.5rem;">Data-driven recommendation cards based on public holidays, weekly seasonality, and slow-moving inventory levels.</p>
@@ -892,7 +903,7 @@
 
                 <!-- 10. Next step recommendation -->
                 <div class="kpi-card glass-panel premium-glow" id="kpiPriorityNextStepCard" style="flex-direction: row; align-items: center; gap: 1rem; padding: 1.5rem; margin-bottom: 2rem;">
-                    <div class="kpi-priority-icon-wrap" style="font-size: 2rem; display: flex; align-items: center; justify-content: center;"><img src="assets/icons/next-step.png" alt="Priority Next Step" style="height: 38px; width: 38px; object-fit: contain;"></div>
+                    <div class="kpi-priority-icon-wrap" style="font-size: 2rem; display: flex; align-items: center; justify-content: center;"><img src="assets/icons/next-step.png" alt="Priority Next Step" style="height: 38px; width: 38px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-forward-step title-icon-fallback" style="display: none; font-size: 1.8rem; width: 38px; height: 38px; line-height: 38px;"></i></div>
                     <div>
                         <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-primary);">Priority Next Step</h3>
                         <p style="font-size: 0.95rem; color: var(--text-muted);" id="metric-next-step">Upload a CSV file to generate AI-driven recommendations.</p>
@@ -905,7 +916,7 @@
                         <!-- SHAP Drivers -->
                         <section class="drivers-section glass-panel" id="demandDriversCard">
                             <div class="section-header">
-                                <h2 style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/demand-drivers.png" alt="Top Demand Drivers (SHAP)" style="height: 26px; width: 26px; object-fit: contain;"> Top Demand Drivers (SHAP)</h2>
+                                <h2 style="display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/demand-drivers.png" alt="Top Demand Drivers (SHAP)" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-key title-icon-fallback" style="display: none;"></i> Top Demand Drivers (SHAP)</h2>
                             </div>
                             <div class="drivers-list" id="drivers-list">
                                 <div class="empty-state" style="color: var(--text-muted); font-size: 0.88rem; padding: 1.5rem 1rem; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: auto;">
@@ -918,7 +929,7 @@
                         <!-- 2 & 8. Low-stock alerts & visual timeline -->
                         <section class="glass-panel" id="stockAlertsTimelineCard" style="padding: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                                <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/alerts-timeline.png" alt="Stock Needs & Alerts Timeline" style="height: 26px; width: 26px; object-fit: contain;"> Stock Needs & Alerts Timeline</h2>
+                                <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/alerts-timeline.png" alt="Stock Needs & Alerts Timeline" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-timeline title-icon-fallback" style="display: none;"></i> Stock Needs & Alerts Timeline</h2>
                                 <button id="toggle-all-timeline" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
                             </div>
                             <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.25rem;" id="metric-timeline">
@@ -930,7 +941,7 @@
                     <!-- Column 2: Top Profit Drivers -->
                     <section class="glass-panel" id="profitDriversCard" style="padding: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/profit-drivers.png" alt="Top Profit Drivers" style="height: 26px; width: 26px; object-fit: contain;"> Top Profit Drivers</h2>
+                            <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;"><img src="assets/icons/profit-drivers.png" alt="Top Profit Drivers" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-money-bill-trend-up title-icon-fallback" style="display: none;"></i> Top Profit Drivers</h2>
                             <button id="toggle-all-drivers" class="secondary-btn" style="padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: var(--radius-md); display: none;">View All</button>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="metric-top-products">
@@ -2648,14 +2659,14 @@
                             <p>For small businesses just getting started.</p>
                         </div>
                         <div class="pricing-amount">
-                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="29" data-bdt="2999" data-cad="39" data-gbp="25">2999</span><span class="price-period">/mo</span>
+                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="10" data-bdt="1000" data-cad="14" data-gbp="8">1000</span><span class="price-period">/mo</span>
                         </div>
                         <ul class="pricing-features">
                             <li><i class="fa-solid fa-check"></i> Up to 1,000 SKUs</li>
                             <li><i class="fa-solid fa-check"></i> 30-Day Forecasting</li>
                             <li><i class="fa-solid fa-check"></i> Standard Support</li>
                         </ul>
-                        <button class="primary-btn pricing-btn" style="width: 100%; margin-top: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Get Started</button>
+                        <button class="secondary-btn pricing-btn" style="width: 100%; margin-top: auto;">Get Started</button>
                     </div>
                     
                     <!-- Pro Plan -->
@@ -2666,7 +2677,7 @@
                             <p>For growing businesses with complex needs.</p>
                         </div>
                         <div class="pricing-amount">
-                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="99" data-bdt="9999" data-cad="129" data-gbp="79">9999</span><span class="price-period">/mo</span>
+                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="16" data-bdt="1600" data-cad="22" data-gbp="13">1600</span><span class="price-period">/mo</span>
                         </div>
                         <ul class="pricing-features">
                             <li><i class="fa-solid fa-check"></i> Up to 10,000 SKUs</li>
@@ -2684,7 +2695,7 @@
                             <p>Custom solutions for large-scale operations.</p>
                         </div>
                         <div class="pricing-amount">
-                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="299" data-bdt="29999" data-cad="399" data-gbp="249">29999</span><span class="price-period">/mo</span>
+                            <span class="currency-symbol">৳</span><span class="price-value" data-usd="22" data-bdt="2200" data-cad="30" data-gbp="18">2200</span><span class="price-period">/mo</span>
                         </div>
                         <ul class="pricing-features">
                             <li><i class="fa-solid fa-check"></i> Unlimited SKUs</li>
@@ -2692,7 +2703,7 @@
                             <li><i class="fa-solid fa-check"></i> 24/7 Dedicated Support</li>
                             <li><i class="fa-solid fa-check"></i> API Access & Integrations</li>
                         </ul>
-                        <button class="primary-btn pricing-btn" style="width: 100%; margin-top: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Contact Sales</button>
+                        <button class="secondary-btn pricing-btn" style="width: 100%; margin-top: auto;">Contact Sales</button>
                     </div>
                 </div>
             </div>
@@ -3347,6 +3358,6 @@
 
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app_v12.js?v=20260608_04"></script>
+    <script src="app_v12.js?v=20260609_07"></script>
 </body>
 </html>
