@@ -12,6 +12,8 @@ ollama
 groq
 python-dotenv
 pytest
+httpx
+requests
 PyJWT
 holidays
 fpdf2
