@@ -361,7 +361,8 @@ def run_demand_forecasting(strategy: str = "balanced", region: str = "BD", org_n
                     forecast_horizon,
                     region,
                     date_min=date_min,
-                    date_max=date_max
+                    date_max=date_max,
+                    org_name=resolved_org
                 )
             except Exception as ml_err:
                 logger.error(f"ML fitting failed for SKU {sku}: {ml_err}")
