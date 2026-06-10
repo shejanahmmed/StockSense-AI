@@ -8825,10 +8825,10 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     height: 56px;
     border-radius: 50%;
     background: #141416;
-    border: 1px solid rgba(139, 92, 246, 0.35);
+    border: 2px solid #ffffff;
     color: #c4b5fd;
     font-size: 1.25rem;
-    cursor: pointer;
+    cursor: grab;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -8849,13 +8849,14 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 
 .ai-help-toggle:hover {
     transform: translateY(-3px) scale(1.03);
-    border-color: rgba(139, 92, 246, 0.6);
-    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    box-shadow: 0 12px 30px rgba(255, 255, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1);
     color: #fff;
 }
 
 .ai-help-toggle:active {
     transform: translateY(-1px) scale(0.98);
+    cursor: grabbing;
 }
 
 /* â”€â”€ Chat Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -9214,15 +9215,15 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 /* â”€â”€ Light Mode Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 body.light-mode .ai-help-toggle {
     background: #ffffff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    border: 2px solid rgba(15, 23, 42, 0.25);
     color: var(--accent-primary);
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.02);
 }
 
 body.light-mode .ai-help-toggle:hover {
     background: #ffffff;
-    border-color: rgba(124, 58, 237, 0.35);
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.16);
+    border-color: rgba(15, 23, 42, 0.45);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
     color: #6d28d9;
 }
 

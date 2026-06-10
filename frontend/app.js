@@ -8613,8 +8613,106 @@ function initHelpChat() {
         renderActiveHistory();
     }
 
+    // Drag-and-drop implementation using PointerEvents
+    const aiHelpContainer = document.getElementById('aiHelpContainer');
+    let isDragging = false;
+    let wasDragged = false;
+    let startX = 0;
+    let startY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    aiHelpToggle.addEventListener('pointerdown', (e) => {
+        // Only drag on left click or touch/pen pointers
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        
+        isDragging = true;
+        wasDragged = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        const rect = aiHelpContainer.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+        
+        aiHelpContainer.style.transition = 'none';
+        
+        try {
+            aiHelpToggle.setPointerCapture(e.pointerId);
+        } catch (err) {
+            console.error('Failed to set pointer capture:', err);
+        }
+    });
+
+    aiHelpToggle.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        // Threshold check to distinguish click from drag
+        if (Math.hypot(dx, dy) > 4) {
+            wasDragged = true;
+        }
+        
+        if (wasDragged) {
+            let newLeft = startLeft + dx;
+            let newTop = startTop + dy;
+            
+            // Boundary constraints (minimum 10px from edge)
+            const minLeft = 10;
+            const maxLeft = window.innerWidth - aiHelpToggle.offsetWidth - 10;
+            const minTop = 10;
+            const maxTop = window.innerHeight - aiHelpToggle.offsetHeight - 10;
+            
+            newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+            newTop = Math.max(minTop, Math.min(newTop, maxTop));
+            
+            aiHelpContainer.style.position = 'fixed';
+            aiHelpContainer.style.left = `${newLeft}px`;
+            aiHelpContainer.style.top = `${newTop}px`;
+            aiHelpContainer.style.bottom = 'auto';
+            aiHelpContainer.style.right = 'auto';
+        }
+    });
+
+    const endDrag = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        aiHelpContainer.style.transition = '';
+        
+        try {
+            aiHelpToggle.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+    };
+
+    aiHelpToggle.addEventListener('pointerup', endDrag);
+    aiHelpToggle.addEventListener('pointercancel', endDrag);
+
+    // Keep container inside bounds when window is resized
+    window.addEventListener('resize', () => {
+        if (aiHelpContainer.style.left && aiHelpContainer.style.left !== 'auto') {
+            const maxLeft = window.innerWidth - aiHelpToggle.offsetWidth - 10;
+            const maxTop = window.innerHeight - aiHelpToggle.offsetHeight - 10;
+            
+            let curLeft = parseFloat(aiHelpContainer.style.left);
+            let curTop = parseFloat(aiHelpContainer.style.top);
+            
+            curLeft = Math.max(10, Math.min(curLeft, maxLeft));
+            curTop = Math.max(10, Math.min(curTop, maxTop));
+            
+            aiHelpContainer.style.left = `${curLeft}px`;
+            aiHelpContainer.style.top = `${curTop}px`;
+        }
+    });
+
     // Toggle panel open/close
-    aiHelpToggle.addEventListener('click', () => {
+    aiHelpToggle.addEventListener('click', (e) => {
+        if (wasDragged) {
+            wasDragged = false;
+            return;
+        }
         const isHidden = aiHelpPanel.style.display === 'none';
         aiHelpPanel.style.display = isHidden ? 'flex' : 'none';
         if (isHidden) {
