@@ -57,6 +57,9 @@ Traditional enterprise resources planning (ERP) platforms output dense, complex 
 - 🔒 **Edge Sovereignty & Security**: Promotes a local-first security posture. Includes secure JWT token architectures, SHA-256 password hashing, and database encryption to ensure data custody remains local.
 - 🎨 **Premium Enterprise Dashboard**: Fully responsive web frontend meticulously styled with sleek dark mode aesthetics, glassmorphism panel backdrops (`blur(24px)`), smooth CSS keyframe micro-animations, and dynamic visual graphs powered by Chart.js.
 - 📄 **One-Click PDF Diagnostics**: Renders compile-ready, beautiful PDF reports leveraging FPDF, summarizing critical week-over-week supply KPIs.
+- 🌐 **Dynamic Multicurrency Support**: Fetches live exchange rates from `https://open.er-api.com/v6/latest/BDT` to dynamically convert and format all financial data (prices, tied capital, revenue risk, charts, and chatbot calculations) into BDT, USD, CAD, or CNY.
+- 🗺️ **Geographic Region Auto-Reforecasting**: Instantly triggers Prophet/LightGBM model retraining and holiday calendar synchronization when switching geographic regions (Bangladesh, USA, Canada, UK) in Settings.
+- 🔑 **Contest Demo Bypass Mode**: Bypasses credential validation during login/registration and automatically provisions new organizations on the fly to enable seamless, frictionless testing in demo environments.
 
 ---
 

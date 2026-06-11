@@ -1957,7 +1957,7 @@
                         <section id="privacy-ml" class="privacy-doc-section">
                             <h2 class="privacy-doc-subtitle">3. Forecasting Algorithms &amp; ML Engines</h2>
                             <p class="privacy-doc-para">
-                                Demand forecasting, safety stock thresholds, and replenishment intervals are computed using mathematical models (such as the <strong>Prophet Forecasting Model</strong>) running within isolated python subprocesses. There is no external pooling of prediction weights across client instances, ensuring your competitive trading margins remain entirely proprietary.
+                                Demand forecasting, safety stock thresholds, and replenishment intervals are computed using mathematical models (such as the <strong>Prophet Forecasting Model</strong> and LightGBM engines) running within isolated python subprocesses. These forecasting engines dynamically adapt to local geographic features by incorporating region-specific holiday calendars (e.g., USA, Bangladesh, Canada, or China) based on the user's selected regional configuration. There is no external pooling of prediction weights across client instances, ensuring your competitive trading margins remain entirely proprietary.
                             </p>
                         </section>
 
@@ -1969,7 +1969,7 @@
                                 For strategic business insight synthesis and natural language chat interactions:
                             </p>
                             <ul class="privacy-doc-list">
-                                <li><strong>Contextual Queries:</strong> The platform formats raw metrics (e.g. holiday calendar correlation, promotion cycles) into highly filtered operational prompts.</li>
+                                <li><strong>Contextual Queries:</strong> The platform formats raw metrics (e.g. holiday calendar correlation, promotion cycles) into highly filtered operational prompts. To maintain alignment with client preferences, all monetary values and transaction figures sent to the LLM are pre-converted on-the-fly to the active user-configured currency (such as USD, CAD, or CNY) based on real-time exchange rates. This ensures the AI model operates directly and consistently within your target currency framework.</li>
                                 <li><strong>Zero-Data Retention API:</strong> LLM requests are dispatched using secure HTTPS tunnels to partner API gateways governed under enterprise clauses: no prompts, historical payloads, or forecasting outputs are preserved by the provider or used to train public base models.</li>
                             </ul>
                         </section>
@@ -1980,6 +1980,9 @@
                             <h2 class="privacy-doc-subtitle">5. Token Authorization &amp; Session Security</h2>
                             <p class="privacy-doc-para">
                                 Access to backend routes (FastAPI) is governed by <strong>JSON Web Tokens (JWT)</strong>. Session tokens are cached in temporary local storage (`localStorage`) and expire automatically after a predefined duration. This prevents session hijacking and maintains stateless API integrity.
+                            </p>
+                            <p class="privacy-doc-para">
+                                <strong>Contest &amp; Sandbox Authentication:</strong> To facilitate a frictionless evaluation during contests and demonstrations, standard credential checks are bypassed. The platform automatically provisions temporary sandbox accounts and organization databases for any text credentials supplied during the login or registration flow.
                             </p>
                         </section>
 
@@ -2058,7 +2061,10 @@
                                 StockSense AI grants you a limited, non-exclusive, non-transferable, revocable license to access and use our demand forecasting, inventory management, and supply chain analytics tools. This license is granted strictly for internal business operations and is subject to the terms and restrictions outlined herein.
                             </p>
                             <p class="legal-doc-para">
-                                We utilize advanced machine learning algorithms (such as Facebook Prophet) to generate predictive recommendations based on data you import. All predictions are generated local-first or via secure cloud APIs and are intended as business intelligence aids, not guaranteed guarantees of future product performance.
+                                We utilize advanced machine learning algorithms (such as Facebook Prophet and LightGBM engines) to generate predictive recommendations based on data you import. The forecasting system dynamically integrates geographic regional calendar settings, synchronizing localized holiday calendars (such as USA, Canada, China, or Bangladesh) to enhance prediction sensitivity.
+                            </p>
+                            <p class="legal-doc-para">
+                                Additionally, StockSense AI provides live multicurrency conversion features. Financial metrics and catalog pricing are automatically converted on-the-fly from the base currency (BDT) to other supported currencies (USD, CAD, CNY) using real-time exchange rates. All predictions and calculations are intended as business intelligence aids, not guaranteed metrics of future product performance.
                             </p>
                         </section>
 
@@ -2067,7 +2073,7 @@
                         <section id="terms-accounts" class="legal-doc-section">
                             <h2 class="legal-doc-subtitle">3. User Accounts &amp; Data Custody</h2>
                             <p class="legal-doc-para">
-                                To access specific enterprise features, you must maintain an active user account secured by strong authentication. You are entirely responsible for maintaining the confidentiality of your account credentials (such as JWT tokens or API keys) and all actions performed under your account.
+                                To access specific enterprise features, you must maintain an active user account. For contest demonstration and evaluation purposes, the authentication flow accepts any alphanumeric input, automatically provisioning sandbox organization environments and user schemas on the fly. You are responsible for maintaining the confidentiality of your session tokens and actions performed under your sandbox account.
                             </p>
                             <p class="legal-doc-para">
                                 Under our strict data custody guidelines, your uploaded inventories, demand curves, and business files remain your proprietary data. StockSense AI does not sell, lease, or distribute your proprietary forecasting models. Data processed through local models resides in your browser memory or localized sandboxed storage.
@@ -2174,11 +2180,11 @@
                                     <i class="fa-solid fa-user-lock"></i>
                                 </div>
                                 <div class="hiw-step-content">
-                                    <h3>Create Your Account</h3>
-                                    <p>On the login screen, click <strong>"Need an account? Sign Up"</strong> and enter your <em>Organization Name</em>, a secure <em>password</em>, and your <em>Industry Vertical</em> (e.g. Electronics, Apparel). This creates an isolated, SHA-256 hashed profile stored locally â€” no external server receives your credentials.</p>
+                                    <h3>Frictionless Demo Login</h3>
+                                    <p>For convenience in the contest/demo, we support a <strong>Frictionless Authentication Bypass</strong>. Type any organization name and password on the login screen and click <strong>Access Dashboard</strong> or <strong>Create Account</strong>. New organization schemas are automatically provisioned on the fly!</p>
                                     <div class="hiw-step-tip">
                                         <i class="fa-solid fa-lightbulb"></i>
-                                        <span>Already have an account? Just type your organization name and password on the login screen and click <strong>Access Dashboard</strong>.</span>
+                                        <span>No registration required to test! If you want to use a clean database, just type a new organization name (e.g. "ContestStore") to spin up a fresh, isolated workspace.</span>
                                     </div>
                                 </div>
                             </div>
@@ -2458,6 +2464,16 @@
 
                         <div class="hiw-faq-item glass-panel">
                             <button class="hiw-faq-question" onclick="toggleFaq(this)">
+                                <span>How does the live multicurrency conversion work?</span>
+                                <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
+                            </button>
+                            <div class="hiw-faq-answer">
+                                <p>All inventory numbers inside the local SQLite database remain stored in BDT. When you change the preferred currency to USD, CAD, or CNY in Settings, the app fetches live exchange rates from <code>open.er-api.com</code> and dynamically converts all prices, margins, tied capital, charts, and chatbot answers on the fly, preventing incorrect 1:1 symbol mappings.</p>
+                            </div>
+                        </div>
+
+                        <div class="hiw-faq-item glass-panel">
+                            <button class="hiw-faq-question" onclick="toggleFaq(this)">
                                 <span>What CSV format does StockSense AI accept?</span>
                                 <i class="fa-solid fa-chevron-down hiw-faq-chevron"></i>
                             </button>
@@ -2573,7 +2589,7 @@
                 <!-- Three-Column Features Grid -->
                 <div class="features-grid">
 
-                    <!-- Card 1: Prophet ML Forecasting -->
+                    <!-- Card 1: Prophet & Holiday Forecasts -->
                     <div class="feature-card glass-panel">
                         <div class="feature-card-header">
                             <div class="feature-icon-wrapper">
@@ -2582,12 +2598,12 @@
                             <span class="feature-status-tag active-tag">Predictive Model</span>
                         </div>
                         <div class="feature-card-body">
-                            <h3>Prophet ML Forecasting</h3>
-                            <p>Unlock state-of-the-art additive regression models tailored for weekly, monthly, and yearly business seasonal demand curves.</p>
+                            <h3>Prophet &amp; Holiday Forecasts</h3>
+                            <p>Unlock state-of-the-art additive regression models. Automatically retraining on geographic region settings updates to sync local public holiday impacts.</p>
                             <ul class="feature-sublist">
                                 <li><i class="fa-solid fa-check"></i> 7, 14, and 30-Day Forecast Windows</li>
-                                <li><i class="fa-solid fa-check"></i> Automated Public Holidays Sync</li>
-                                <li><i class="fa-solid fa-check"></i> Trend Shift &amp; Seasonality Modulators</li>
+                                <li><i class="fa-solid fa-check"></i> Auto-Retraining on Region Changes</li>
+                                <li><i class="fa-solid fa-check"></i> BD, US, CA, and UK Holiday Sync</li>
                             </ul>
                         </div>
                     </div>
@@ -2649,21 +2665,21 @@
                         </div>
                     </div>
 
-                    <!-- Card 5: Predictive Business Intelligence -->
+                    <!-- Card 5: Live Multicurrency Support -->
                     <div class="feature-card glass-panel">
                         <div class="feature-card-header">
                             <div class="feature-icon-wrapper">
-                                <i class="fa-solid fa-circle-nodes"></i>
+                                <i class="fa-solid fa-coins"></i>
                             </div>
-                            <span class="feature-status-tag active-tag">SHAP Values</span>
+                            <span class="feature-status-tag active-tag">Live Exchange Rates</span>
                         </div>
                         <div class="feature-card-body">
-                            <h3>SHAP Demand Drivers</h3>
-                            <p>Understand the 'Why' behind every prediction. Shapley Additive exPlanations dynamically highlight exactly what pushes your demand.</p>
+                            <h3>Live Multicurrency &amp; SHAP</h3>
+                            <p>Real-time exchange rate conversions (BDT, USD, CAD, CNY). Automatically converts prices, tied capital, and cash flow charts on-the-fly using the open.er-api.com API.</p>
                             <ul class="feature-sublist">
-                                <li><i class="fa-solid fa-check"></i> Top Positive/Negative SHAP Drivers</li>
-                                <li><i class="fa-solid fa-check"></i> 30-Day Projective Cash Flow Charts</li>
-                                <li><i class="fa-solid fa-check"></i> Real-time Supplier Lead-Time Trackers</li>
+                                <li><i class="fa-solid fa-check"></i> Live BDT Exchange Rate Ingestion</li>
+                                <li><i class="fa-solid fa-check"></i> Fully Converted Charts and Chat responses</li>
+                                <li><i class="fa-solid fa-check"></i> SHAP Drivers &amp; Cash Flow projections</li>
                             </ul>
                         </div>
                     </div>
