@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=5">
     <script>
         window.handleIconError = function(img) {
             img.style.display = 'none';
@@ -382,26 +382,31 @@
         #promo-planner-section .empty-state {
             color: var(--text-muted) !important;
         }
-        /* View All buttons - clean white with thin dark border */
+        /* View All buttons - very light ash color that looks good on the dark bg */
         #toggle-all-timeline,
         #toggle-all-drivers {
-            background: #ffffff !important;
-            color: #1e293b !important;
-            border: 1px solid rgba(30, 41, 59, 0.25) !important;
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            border: 1px solid rgba(15, 23, 42, 0.1) !important;
             font-weight: 500 !important;
             box-shadow: none !important;
         }
         #toggle-all-timeline:hover,
         #toggle-all-drivers:hover {
-            background: #f8fafc !important;
-            border-color: rgba(30, 41, 59, 0.45) !important;
+            background: #f1f5f9 !important;
+            border-color: rgba(15, 23, 42, 0.2) !important;
             box-shadow: none !important;
         }
         body.light-mode #toggle-all-timeline,
         body.light-mode #toggle-all-drivers {
-            background: #ffffff !important;
-            color: #1e293b !important;
-            border: 1px solid rgba(30, 41, 59, 0.25) !important;
+            background: #cbd5e1 !important;
+            color: #0f172a !important;
+            border: 1px solid rgba(30, 41, 59, 0.2) !important;
+        }
+        body.light-mode #toggle-all-timeline:hover,
+        body.light-mode #toggle-all-drivers:hover {
+            background: #e2e8f0 !important;
+            border-color: rgba(30, 41, 59, 0.3) !important;
         }
     </style>
     <!-- Chart.js for data visualization -->
@@ -3443,7 +3448,7 @@
 
     <!-- html2pdf Library for premium PO document exports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
 

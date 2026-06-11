@@ -3300,6 +3300,10 @@ body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::afte
 
 .status-pill.out-of-stock::before { background: var(--status-danger); }
 
+.status-pill.warning { background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.25); }
+
+.status-pill.warning::before { background: var(--status-warning); }
+
 
 
 /* Chat Assistant Styles */
@@ -12594,5 +12598,39 @@ body.light-mode .po-item-qty-input {
     background: #ffffff !important;
     border-color: rgba(15, 23, 42, 0.18) !important;
     color: var(--text-primary) !important;
+}
+
+/* View All buttons - very light ash color that looks good on the dark bg */
+#toggle-all-timeline,
+#toggle-all-drivers {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+}
+#toggle-all-timeline:hover,
+#toggle-all-drivers:hover {
+    background: #f1f5f9 !important;
+    border-color: rgba(15, 23, 42, 0.2) !important;
+    box-shadow: none !important;
+}
+body.light-mode #toggle-all-timeline,
+body.light-mode #toggle-all-drivers {
+    background: #cbd5e1 !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(30, 41, 59, 0.2) !important;
+}
+body.light-mode #toggle-all-timeline:hover,
+body.light-mode #toggle-all-drivers:hover {
+    background: #e2e8f0 !important;
+    border-color: rgba(30, 41, 59, 0.3) !important;
+}
+
+/* Settings groups in forms (creates space between labels and inputs) */
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
 }
 

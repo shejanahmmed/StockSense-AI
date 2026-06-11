@@ -1116,7 +1116,7 @@ async def predict_demand(
             "bi_metrics": {
                 "daily_sales": int(aggregate_current_week / forecast_horizon) if aggregate_current_week > 0 else 0,
                 "daily_forecast": int(aggregate_next_week / forecast_horizon) if aggregate_next_week > 0 else 0,
-                "cash_flow": int(aggregate_next_week * 50), # Mock avg $50 per unit
+                "cash_flow": int(total_forecast_rev),
                 "demand_trend": "Rising" if overall_pct > 0 else "Falling",
                 "demand_trend_pct": f"{'+' if overall_pct > 0 else ''}{overall_pct:.1f}% this period",
                 "upcoming_event": upcoming_event_name,

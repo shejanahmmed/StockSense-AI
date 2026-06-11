@@ -16,13 +16,15 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
     try:
         org_name = user.get("sub", "Unknown")
         conn = get_db_connection()
+        from src.api.routers.analytics import get_deterministic_margin
+        conn.create_function("get_deterministic_margin", 2, get_deterministic_margin)
         cursor = conn.cursor()
         
         # 1. Fetch total units, retail value, and wholesale tied-up capital
         cursor.execute('''
             SELECT SUM(stock) as total_stock, 
                    SUM(stock * price) as retail_value,
-                   SUM(stock * (price * 0.7)) as capital_tied_up,
+                   SUM(stock * (price * (1.0 - get_deterministic_margin(sku, category) / 100.0))) as capital_tied_up,
                    COUNT(sku) as total_skus
             FROM inventory
             WHERE org_name = ?
@@ -52,11 +54,11 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
             shortfall = demand - stock
             revenue_at_risk += shortfall * price
             
-        # 3. Fetch Total Committed Procurement Spend (purchase orders status != Cancelled)
+        # 3. Fetch Total Committed Procurement Spend (purchase orders status != Cancelled and != Draft)
         cursor.execute('''
             SELECT SUM(total_amount) as total_spend
             FROM purchase_orders
-            WHERE org_name = ? AND status != 'Cancelled'
+            WHERE org_name = ? AND status NOT IN ('Cancelled', 'Draft')
         ''', (org_name,))
         po_row = cursor.fetchone()
         total_spend = po_row["total_spend"] or 0.0
@@ -65,7 +67,7 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
         cursor.execute('''
             SELECT strftime('%Y-%m', order_date) as month, SUM(total_amount) as amount
             FROM purchase_orders
-            WHERE org_name = ? AND status != 'Cancelled'
+            WHERE org_name = ? AND status NOT IN ('Cancelled', 'Draft')
             GROUP BY month
             ORDER BY month ASC
         ''', (org_name,))
@@ -81,7 +83,7 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
         cursor.execute('''
             SELECT supplier, SUM(total_amount) as amount
             FROM purchase_orders
-            WHERE org_name = ? AND status != 'Cancelled'
+            WHERE org_name = ? AND status NOT IN ('Cancelled', 'Draft')
             GROUP BY supplier
             ORDER BY amount DESC
         ''', (org_name,))
@@ -100,7 +102,7 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
             SELECT category, 
                    SUM(stock) as units, 
                    SUM(stock * price) as retail_value,
-                   SUM(stock * (price * 0.7)) as capital_tied_up
+                   SUM(stock * (price * (1.0 - get_deterministic_margin(sku, category) / 100.0))) as capital_tied_up
             FROM inventory
             WHERE org_name = ?
             GROUP BY category
@@ -114,12 +116,13 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
             units = r["units"] or 0
             ret_val = r["retail_value"] or 0.0
             cap_tied = r["capital_tied_up"] or 0.0
+            margin_pct = ((ret_val - cap_tied) / ret_val * 100.0) if ret_val > 0 else 30.0
             category_allocation.append({
                 "category": cat,
                 "units": units,
                 "retail_value": ret_val,
                 "capital_tied_up": cap_tied,
-                "margin_pct": 30.0 # Standard retail-to-wholesale markup baseline (30%)
+                "margin_pct": margin_pct
             })
             
         conn.close()

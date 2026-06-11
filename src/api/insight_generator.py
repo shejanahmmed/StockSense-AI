@@ -166,10 +166,17 @@ def generate_insight(data: Dict[str, Any]) -> str:
         except Exception:
             return "Unable to generate forecast insights at this time. Please review the raw forecast data."
 
-def generate_what_if_insight(data: Dict[str, Any]) -> str:
+def generate_what_if_insight(data: Dict[str, Any], currency: str = "BDT") -> str:
     """
     Generates plain-English business insights for a Simulated Scenario.
     """
+    currency_symbols = {
+        "USD": "$",
+        "CAD": "C$",
+        "CNY": "¥",
+        "BDT": "৳",
+    }
+    currency_symbol = currency_symbols.get(currency.upper(), "৳")
     try:
         discount = data.get("discount_pct", 0.0)
         delay = data.get("lead_time_delay", 0)
@@ -191,13 +198,13 @@ SCENARIO PARAMETERS:
 
 SIMULATION RESULTS:
 - Projected Demand Change: {demand_change}
-- Stockout Losses: ${stockout_losses:,.2f}
-- Net Financial Impact (Profit - Loss): ${net_balance:,.2f}
+- Stockout Losses: {currency_symbol}{stockout_losses:,.2f}
+- Net Financial Impact (Profit - Loss): {currency_symbol}{net_balance:,.2f}
 - Number of items pushed into high stockout risk: {at_risk} items
 
 Your advice must detail:
 1. The immediate consequence of this scenario (e.g. "Applying a {discount}% discount on {target} will surge demand by {demand_change}").
-2. The risk (e.g. "However, a {delay}-day delay will trigger stockouts on {at_risk} item(s), costing ${stockout_losses:,.2f} in lost sales").
+2. The risk (e.g. "However, a {delay}-day delay will trigger stockouts on {at_risk} item(s), costing {currency_symbol}{stockout_losses:,.2f} in lost sales").
 3. A clear action item (e.g. "We recommend ordering replenishment stock at least Y days in advance to offset the delay and capture the sales lift").
 
 Keep it concise, realistic, professional, and write for a store owner. Do not use data science jargon.
@@ -218,10 +225,10 @@ Keep it concise, realistic, professional, and write for a store owner. Do not us
         
         fallback = f"Applying a {discount}% discount on {target} increases demand by {demand_change}. "
         if delay > 0 and at_risk > 0:
-            fallback += f"However, the {delay}-day lead time delay pushes {at_risk} item(s) into stockout risk, costing ${stockout_losses:,.2f} in lost sales. "
+            fallback += f"However, the {delay}-day lead time delay pushes {at_risk} item(s) into stockout risk, costing {currency_symbol}{stockout_losses:,.2f} in lost sales. "
             fallback += f"To mitigate this, reorder stock immediately or hold a higher safety buffer."
         else:
-            fallback += f"The simulated scenario results in a net financial balance of ${net_balance:,.2f}. No critical stockout warnings are triggered."
+            fallback += f"The simulated scenario results in a net financial balance of {currency_symbol}{net_balance:,.2f}. No critical stockout warnings are triggered."
         return fallback
 
 def generate_chat_response(query: str, history: list, context_data: Dict[str, Any], currency: str = "BDT", org_name: str = "Unknown") -> str:
@@ -238,13 +245,60 @@ def generate_chat_response(query: str, history: list, context_data: Dict[str, An
     Returns:
         A conversational string response.
     """
+    # Resolve exchange rate
+    rates = {
+        "BDT": 1.0,
+        "USD": 0.0085,
+        "CAD": 0.0116,
+        "CNY": 0.0617
+    }
+    try:
+        import urllib.request
+        import json
+        req = urllib.request.Request(
+            "https://open.er-api.com/v6/latest/BDT",
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            if data and "rates" in data:
+                for cur in ["USD", "CAD", "CNY"]:
+                    if cur in data["rates"]:
+                        rates[cur] = data["rates"][cur]
+    except Exception as e:
+        logger.error(f"Error fetching live exchange rates on backend: {e}")
+
+    rate = rates.get(currency.upper(), 1.0)
+
+    # Convert pricing fields in context_data list/dict to the target currency
+    converted_context_data = None
+    if isinstance(context_data, list):
+        converted_context_data = []
+        for i in context_data:
+            item_copy = dict(i)
+            if "price" in item_copy:
+                item_copy["price"] = float(item_copy["price"] or 0.0) * rate
+            converted_context_data.append(item_copy)
+    elif isinstance(context_data, dict):
+        converted_context_data = dict(context_data)
+        if "data" in converted_context_data and isinstance(converted_context_data["data"], list):
+            new_data = []
+            for i in converted_context_data["data"]:
+                item_copy = dict(i)
+                if "price" in item_copy:
+                    item_copy["price"] = float(item_copy["price"] or 0.0) * rate
+                new_data.append(item_copy)
+            converted_context_data["data"] = new_data
+    else:
+        converted_context_data = context_data
+
     # Check if the active inventory context is empty
     is_empty_inventory = False
     items_in_context = []
-    if isinstance(context_data, list):
-        items_in_context = context_data
-    elif isinstance(context_data, dict) and "data" in context_data:
-        items_in_context = context_data["data"]
+    if isinstance(converted_context_data, list):
+        items_in_context = converted_context_data
+    elif isinstance(converted_context_data, dict) and "data" in converted_context_data:
+        items_in_context = converted_context_data["data"]
         
     if not items_in_context:
         try:
@@ -270,7 +324,7 @@ CRITICAL: The user's active inventory database is currently EMPTY (0 items loade
 - Do NOT make up, hallucinate, or assume any fictional products, stock counts, or sales values unless you explicitly state that it is a completely hypothetical example to showcase how StockSense AI works.
 """
 
-    inventory_summary = json.dumps(context_data, indent=2)
+    inventory_summary = json.dumps(converted_context_data, indent=2)
     
     currency_symbols = {
         "USD": "$",
@@ -283,7 +337,7 @@ CRITICAL: The user's active inventory database is currently EMPTY (0 items loade
     system_prompt = f"""You are StockSense AI, an intelligent inventory assistant for SME business owners.
 Your goal is to answer questions about inventory, sales trends, and business strategy using the provided context.
 
-Current Context Data:
+Current Context Data (all monetary values have been pre-converted to your target currency):
 {inventory_summary}
 
 {empty_data_instructions}
@@ -308,10 +362,10 @@ Guidelines:
 
     # ── Pre-flight: resolve inventory items (needed for What-If & local mode) ──
     _items_for_sim = []
-    if isinstance(context_data, list):
-        _items_for_sim = context_data
-    elif isinstance(context_data, dict) and "data" in context_data:
-        _items_for_sim = context_data["data"]
+    if isinstance(converted_context_data, list):
+        _items_for_sim = converted_context_data
+    elif isinstance(converted_context_data, dict) and "data" in converted_context_data:
+        _items_for_sim = converted_context_data["data"]
 
     if not _items_for_sim:
         try:
@@ -325,7 +379,11 @@ Guidelines:
             )
             rows = cursor.fetchall()
             conn.close()
-            _items_for_sim = [dict(row) for row in rows]
+            for row in rows:
+                item_dict = dict(row)
+                if 'price' in item_dict:
+                    item_dict['price'] = float(item_dict['price'] or 0.0) * rate
+                _items_for_sim.append(item_dict)
         except Exception as _dberr:
             logger.error(f"Failed to pre-fetch inventory for chat: {_dberr}")
 

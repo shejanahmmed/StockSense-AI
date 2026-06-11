@@ -71,6 +71,9 @@ let scheduledPromoIds = new Set();
 let selectedInventorySKUs = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Fetch live currency rates
+    fetchExchangeRates();
+
     // 0. Initialize Authentication
     initAuth();
 
@@ -276,7 +279,7 @@ function resetDashboardToEmpty() {
     }
 
     // BI Metrics → zeroed out
-    const biFields = ['metric-daily-sales', 'metric-cash-flow', 'metric-gross-margin',
+    const biFields = ['metric-daily-sales', 'metric-cash-flow', 'metric-margin',
                       'metric-sell-through', 'metric-inventory-turn', 'metric-revenue'];
     biFields.forEach(id => {
         const el = document.getElementById(id);
@@ -336,11 +339,58 @@ function resetDashboardToEmpty() {
     updateInventoryMetrics([]);
 }
 
-function formatCurrency(amount) {
+let currentExchangeRates = {
+    'BDT': 1.0,
+    'USD': 0.0085,
+    'CAD': 0.0116,
+    'CNY': 0.0617
+};
+
+try {
+    const cached = localStorage.getItem('stockSense_exchangeRates');
+    if (cached) {
+        currentExchangeRates = JSON.parse(cached);
+    }
+} catch (e) {
+    console.error('Failed to parse cached exchange rates:', e);
+}
+
+async function fetchExchangeRates() {
+    try {
+        const response = await fetch('https://open.er-api.com/v6/latest/BDT');
+        if (!response.ok) throw new Error('Failed to fetch exchange rates');
+        const data = await response.json();
+        if (data && data.rates) {
+            currentExchangeRates['USD'] = data.rates['USD'] || currentExchangeRates['USD'];
+            currentExchangeRates['CAD'] = data.rates['CAD'] || currentExchangeRates['CAD'];
+            currentExchangeRates['CNY'] = data.rates['CNY'] || currentExchangeRates['CNY'];
+            localStorage.setItem('stockSense_exchangeRates', JSON.stringify(currentExchangeRates));
+            console.log('Exchange rates loaded successfully:', currentExchangeRates);
+        }
+    } catch (error) {
+        console.error('Error fetching live exchange rates, using fallback:', error);
+    }
+}
+
+function convertCurrency(amount) {
+    if (amount === undefined || amount === null || isNaN(amount)) return 0;
+    const currency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+    const rate = currentExchangeRates[currency] || 1.0;
+    return Number(amount) * rate;
+}
+
+function formatConvertedCurrency(amount) {
+    if (amount === undefined || amount === null || isNaN(amount)) return '—';
     let formattedAmount = Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (formattedAmount.endsWith('.00')) formattedAmount = formattedAmount.slice(0, -3);
     
     return `${getCurrencySymbol()}${formattedAmount}`;
+}
+
+function formatCurrency(amount) {
+    if (amount === undefined || amount === null || isNaN(amount)) return '—';
+    const convertedAmount = convertCurrency(amount);
+    return formatConvertedCurrency(convertedAmount);
 }
 
 function getCurrencySymbol() {
@@ -1035,6 +1085,7 @@ function renderInventoryTable(data, page = 1) {
         let statusClass = 'in-stock';
         if (item.status === 'Low Stock') statusClass = 'low-stock';
         if (item.status === 'Out of Stock') statusClass = 'out-of-stock';
+        if (item.status === 'Warning') statusClass = 'warning';
         
         let icon = 'fa-box';
         const category = item.category.toLowerCase();
@@ -1374,42 +1425,42 @@ function showModalAddItem() {
                     <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);">Product &amp; Inventory Details</span>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Product ID / SKU <span style="color:var(--status-danger)">*</span></label>
                         <input type="text" id="modalSku" class="settings-input" placeholder="e.g. SKU-005" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Category <span style="color:var(--status-danger)">*</span></label>
                         <select id="modalCategory" class="settings-input">
                             ${catOpts}
                             <option value="_new_">+ New Category...</option>
                         </select>
                     </div>
-                    <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                    <div class="settings-group" style="grid-column:1/-1;display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Product Name <span style="color:var(--status-danger)">*</span></label>
                         <input type="text" id="modalName" class="settings-input" placeholder="e.g. Sony WH-1000XM5 Headphones" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Unit Price (${getCurrencySymbol()}) <span style="color:var(--status-danger)">*</span></label>
                         <input type="number" id="modalPrice" class="settings-input" placeholder="0.00" min="0" step="0.01" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Stock on Hand <span style="color:var(--status-danger)">*</span></label>
                         <input type="number" id="modalStock" class="settings-input" placeholder="Current units in stock" min="0" step="1" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Reorder Point <span style="color:var(--status-danger)">*</span>
                             <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — trigger restocking below this</span>
                         </label>
                         <input type="number" id="modalReorder" class="settings-input" placeholder="e.g. 50" min="0" step="1" value="50" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Supplier Lead Days <span style="color:var(--status-danger)">*</span>
                             <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — days to receive stock</span>
                         </label>
                         <input type="number" id="modalLeadDays" class="settings-input" placeholder="e.g. 7" min="1" step="1" value="7" />
                     </div>
-                    <div class="settings-group" style="grid-column:1/-1;margin:0;">
+                    <div class="settings-group" style="grid-column:1/-1;display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Supplier Name <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;">(optional)</span></label>
                         <input type="text" id="modalSupplier" class="settings-input" placeholder="e.g. Sony Direct, Alibaba" />
                     </div>
@@ -1424,13 +1475,13 @@ function showModalAddItem() {
                 </div>
                 ${csvBanner}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Avg Daily Sales Qty <span style="color:var(--status-danger)">*</span>
                             <span style="color:var(--text-muted);font-size:0.72rem;font-weight:400;"> — units sold per day</span>
                         </label>
                         <input type="number" id="modalAvgSales" class="settings-input" placeholder="e.g. 25" min="0" step="1" ${!hasCSV ? 'disabled' : ''} style="${!hasCSV ? 'opacity:0.45;' : ''}" />
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Days of History to Generate</label>
                         <select id="modalHistoryDays" class="settings-input" ${!hasCSV ? 'disabled' : ''} style="${!hasCSV ? 'opacity:0.45;' : ''}">
                             <option value="7">7 days</option>
@@ -1439,7 +1490,7 @@ function showModalAddItem() {
                             <option value="60">60 days</option>
                         </select>
                     </div>
-                    <div class="settings-group" style="margin:0;">
+                    <div class="settings-group" style="display:flex;flex-direction:column;gap:0.45rem;margin:0;">
                         <label>Promotional Sales Period?</label>
                         <label style="display:flex;align-items:center;gap:0.6rem;cursor:${hasCSV ? 'pointer' : 'not-allowed'};padding:0.6rem 0.8rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-top:0.25rem;">
                             <input type="checkbox" id="modalPromo" style="width:15px;height:15px;accent-color:var(--accent-primary);" ${!hasCSV ? 'disabled' : ''} />
@@ -4301,24 +4352,12 @@ function updateBIMetrics(metrics) {
     if (toggleTimelineBtn) {
         const totalProds = Math.max(metrics.timeline ? metrics.timeline.length : 0, fullInventoryData ? fullInventoryData.length : 0);
         toggleTimelineBtn.style.display = (totalProds > 0) ? 'inline-block' : 'none';
-        toggleTimelineBtn.style.background = '#ffffff';
-        toggleTimelineBtn.style.color = '#1e293b';
-        toggleTimelineBtn.style.border = '1px solid rgba(30,41,59,0.3)';
-        toggleTimelineBtn.style.boxShadow = 'none';
-        toggleTimelineBtn.style.backdropFilter = 'none';
-        toggleTimelineBtn.style.webkitBackdropFilter = 'none';
         toggleTimelineBtn.textContent = _showAllTimeline ? 'Show Less' : 'View All';
     }
     const toggleDriversBtn = document.getElementById('toggle-all-drivers');
     if (toggleDriversBtn) {
         const totalProds = Math.max(metrics.top_products ? metrics.top_products.length : 0, fullInventoryData ? fullInventoryData.length : 0);
         toggleDriversBtn.style.display = (totalProds > 5) ? 'inline-block' : 'none';
-        toggleDriversBtn.style.background = '#ffffff';
-        toggleDriversBtn.style.color = '#1e293b';
-        toggleDriversBtn.style.border = '1px solid rgba(30,41,59,0.3)';
-        toggleDriversBtn.style.boxShadow = 'none';
-        toggleDriversBtn.style.backdropFilter = 'none';
-        toggleDriversBtn.style.webkitBackdropFilter = 'none';
         toggleDriversBtn.textContent = _showAllDrivers ? 'Show Less' : 'View All';
     }
 
@@ -5895,25 +5934,59 @@ function initUserProfile() {
                 const data = await response.json();
                 if (data.status !== 'success') throw new Error("DB Save Failed");
 
+                // Capture old values
+                const oldStrategy = localStorage.getItem('stockSense_cfgStrategy') || 'balanced';
+                const oldDl = localStorage.getItem('stockSense_cfgDL') !== 'false';
+                const oldRegion = localStorage.getItem('stockSense_cfgRegion') || 'BD';
+                const oldCurrency = localStorage.getItem('stockSense_cfgCurrency') || 'BDT';
+
+                // Get new values
+                const newStrategy = strategyInput ? strategyInput.value : 'balanced';
+                const newDl = dlInput ? dlInput.checked : true;
+                const newRegion = regionInput ? regionInput.value : 'BD';
+                const newCurrency = currencyInput ? currencyInput.value : 'BDT';
+
                 // Update Session
                 localStorage.setItem('stockSense_storeName', newName);
                 localStorage.setItem('stockSense_industry', newRole);
                 localStorage.setItem('stockSense_avatarUrl', newAvatar);
                 
                 // Update Configs
-                if (strategyInput) localStorage.setItem('stockSense_cfgStrategy', strategyInput.value);
-                if (dlInput) localStorage.setItem('stockSense_cfgDL', dlInput.checked);
+                if (strategyInput) localStorage.setItem('stockSense_cfgStrategy', newStrategy);
+                if (dlInput) localStorage.setItem('stockSense_cfgDL', newDl);
                 if (stockoutInput) localStorage.setItem('stockSense_cfgStockout', stockoutInput.checked);
-                if (regionInput) localStorage.setItem('stockSense_cfgRegion', regionInput.value);
-                if (currencyInput) localStorage.setItem('stockSense_cfgCurrency', currencyInput.value);
-                
+                if (regionInput) localStorage.setItem('stockSense_cfgRegion', newRegion);
+                if (currencyInput) localStorage.setItem('stockSense_cfgCurrency', newCurrency);
+
+                const needsReforecast = (newStrategy !== oldStrategy || newDl !== oldDl || newRegion !== oldRegion);
+                const needsCurrencyUpdate = (newCurrency !== oldCurrency);
+
+                if (needsCurrencyUpdate) {
+                    await fetchExchangeRates();
+                }
+
                 // Update pricing currency based on saved settings
                 updatePricingCurrency();
                 
                 filterAndSortInventory();
                 
                 updateUserProfileUI(newName, newRole, newAvatar);
+
+                if (needsCurrencyUpdate) {
+                    const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+                    if (cachedData) {
+                        if (cachedData.kpis) updateKPIs(cachedData.kpis);
+                        if (cachedData.bi_metrics) updateBIMetrics(cachedData.bi_metrics);
+                    }
+                    loadFinancialsData();
+                }
+
                 addNotification('Settings Saved', 'Your preferences have been successfully updated in SQLite.', 'success');
+
+                if (needsReforecast) {
+                    addNotification('Recalculating Forecasts', 'Settings changed. Running new AI prediction model...', 'info');
+                    await reforecastFromInventory();
+                }
             } catch (error) {
                 console.error("Save Error:", error);
                 addNotification('Save Failed', 'Could not save to SQLite database.', 'warning');
@@ -10127,7 +10200,7 @@ function updateFinancialsUI() {
         if (financialsCategoryChartInstance) financialsCategoryChartInstance.destroy();
         
         const categoryLabels = catAlloc.map(c => c.category);
-        const categoryData = catAlloc.map(c => c.capital_tied_up);
+        const categoryData = catAlloc.map(c => convertCurrency(c.capital_tied_up));
         
         if (categoryLabels.length === 0) {
             categoryLabels.push("Awaiting Data");
@@ -10167,7 +10240,7 @@ function updateFinancialsUI() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return ` ${context.label}: ${formatCurrency(context.raw)}`;
+                                return ` ${context.label}: ${formatConvertedCurrency(context.raw)}`;
                             }
                         }
                     }
@@ -10185,7 +10258,7 @@ function updateFinancialsUI() {
         if (financialsSpendChartInstance) financialsSpendChartInstance.destroy();
         
         const spendLabels = spendVel.map(s => s.month);
-        const spendData = spendVel.map(s => s.amount);
+        const spendData = spendVel.map(s => convertCurrency(s.amount));
         
         if (spendLabels.length === 0) {
             spendLabels.push("Awaiting Data");
@@ -10232,7 +10305,7 @@ function updateFinancialsUI() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return ` Spend: ${formatCurrency(context.raw)}`;
+                                return ` Spend: ${formatConvertedCurrency(context.raw)}`;
                             }
                         }
                     }
