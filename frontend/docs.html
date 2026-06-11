@@ -1563,10 +1563,9 @@
 <body>
     <script>
         (function() {
-            const storedTheme = localStorage.getItem('theme') || 'dark';
-            if (storedTheme === 'light') {
-                document.body.classList.add('light-mode');
-            }
+            // Light mode is temporarily disabled; force dark mode
+            localStorage.setItem('theme', 'dark');
+            document.body.classList.remove('light-mode');
         })();
     </script>
 
@@ -1589,11 +1588,12 @@
         </div>
 
         <div class="header-actions">
-            <!-- Theme Toggle -->
+            <!-- Theme Toggle (Commented out to temporarily disable light mode)
             <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
                 <i class="fa-solid fa-moon moon-icon"></i>
                 <i class="fa-solid fa-sun sun-icon"></i>
             </button>
+            -->
             <a href="/" class="action-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
             <button class="action-btn primary" id="exportMarkdownBtn"><i class="fa-solid fa-file-export"></i> Export</button>
             <button class="action-btn" id="exportPdfBtn"><i class="fa-solid fa-print"></i> PDF</button>

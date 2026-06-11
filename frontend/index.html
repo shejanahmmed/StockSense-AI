@@ -410,10 +410,9 @@
 <body>
     <script>
         (function() {
-            const storedTheme = localStorage.getItem('theme') || 'dark';
-            if (storedTheme === 'light') {
-                document.body.classList.add('light-mode');
-            }
+            // Light mode is temporarily disabled; force dark mode
+            localStorage.setItem('theme', 'dark');
+            document.body.classList.remove('light-mode');
         })();
     </script>
     <!-- Auth/Login Screen -->
@@ -569,11 +568,12 @@
                 </div>
             </nav>
             <div class="right-actions" style="display: flex; align-items: center; gap: 1.5rem;">
-                <!-- Theme Toggle -->
+                <!-- Theme Toggle (Commented out to temporarily disable light mode)
                 <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" title="Toggle Theme">
                     <i class="fa-solid fa-moon moon-icon"></i>
                     <i class="fa-solid fa-sun sun-icon"></i>
                 </button>
+                -->
 
                 <!-- Notification Bell -->
                 <div class="notification-wrapper" style="position: relative;">

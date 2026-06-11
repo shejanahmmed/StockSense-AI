@@ -4078,3 +4078,42 @@
 2026-06-11 04:32:38,920 - src.api.main - INFO - Database initialized successfully.
 2026-06-11 20:37:57,344 - src.api.main - INFO - Initializing database...
 2026-06-11 20:37:57,359 - src.api.main - INFO - Database initialized successfully.
+2026-06-11 21:17:51,020 - src.api.warehouse_utils - INFO - Successfully exported 1078 transactions to Lakehouse Parquet: C:\Users\ShejanAhmmed\Documents\All My Projects\StockSense AI\data\lakehouse\Camp_transactions.parquet
+2026-06-11 21:17:52,398 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:52,444 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:52,829 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:53,014 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:53,047 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:53,083 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:53,246 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:53,279 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:53,316 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:53,475 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:53,512 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:53,544 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:53,700 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:53,731 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:53,771 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:53,932 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:53,967 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:54,001 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:54,149 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:54,188 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:54,230 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:54,391 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:54,422 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:54,464 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:54,622 - prophet - INFO - Disabling daily seasonality. Run prophet with daily_seasonality=True to override this.
+2026-06-11 21:17:54,650 - cmdstanpy - INFO - Chain [1] start processing
+2026-06-11 21:17:54,691 - cmdstanpy - INFO - Chain [1] done processing
+2026-06-11 21:17:56,117 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 21:39:29,505 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/embeddings "HTTP/1.1 404 Not Found"
+2026-06-11 21:39:29,507 - src.api.vector_utils - WARNING - Failed to generate Groq embedding: Error code: 404 - {'error': {'message': 'The model `nomic-embed-text-v1.5` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}. Falling back to deterministic local embedding.
+2026-06-11 21:39:29,514 - src.api.vector_utils - INFO - Successfully indexed purchase_order ID 'PO-SKU-008-3781' for org 'Camp'
+2026-06-11 21:45:11,074 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 21:45:50,419 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 21:48:13,879 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 21:48:44,850 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 21:49:21,969 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-11 22:26:35,870 - src.api.main - INFO - Initializing database...
+2026-06-11 22:26:35,888 - src.api.main - INFO - Database initialized successfully.

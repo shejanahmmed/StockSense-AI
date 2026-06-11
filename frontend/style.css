@@ -3582,6 +3582,15 @@ body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::afte
     cursor: pointer;
     text-align: left;
     transition: all 0.2s ease;
+    color: var(--text-primary);
+}
+
+.strategy-option-btn .opt-title {
+    color: var(--text-primary);
+}
+
+.strategy-option-btn .opt-desc {
+    color: var(--text-secondary);
 }
 
 .strategy-option-btn:hover {
@@ -3598,6 +3607,10 @@ body.light-mode .filter-toggle-switch input:checked + .filter-toggle-track::afte
 
 .strategy-option-btn.active .opt-title {
     color: var(--accent-primary) !important;
+}
+
+.strategy-option-btn.active .opt-desc {
+    color: #ffffff !important;
 }
 
 /* Slash Commands Menu Button States */
