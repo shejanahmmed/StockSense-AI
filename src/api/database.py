@@ -51,6 +51,7 @@ def init_db():
             forecasted_demand INTEGER DEFAULT 0,
             units_sold INTEGER DEFAULT 0,
             last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
+            competitor_price REAL,
             UNIQUE(org_name, sku)
         )
     ''')
@@ -61,6 +62,7 @@ def init_db():
         "ALTER TABLE inventory ADD COLUMN forecasted_demand INTEGER DEFAULT 0",
         "ALTER TABLE inventory ADD COLUMN units_sold INTEGER DEFAULT 0",
         "ALTER TABLE inventory ADD COLUMN last_updated TEXT DEFAULT '2025-01-01'",
+        "ALTER TABLE inventory ADD COLUMN competitor_price REAL",
     ]:
         try:
             cursor.execute(col)
@@ -274,8 +276,31 @@ def init_db():
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, sections_seeds)
 
+    # Create vector embeddings table for semantic search index
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS vector_embeddings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            org_name TEXT,
+            target_type TEXT,
+            target_id TEXT,
+            content_text TEXT,
+            embedding_json TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(org_name, target_type, target_id)
+        )
+    ''')
+
     conn.commit()
     conn.close()
+
+    # Backfill embeddings for any existing historical data on startup
+    try:
+        from src.api.vector_utils import sync_existing_data
+        sync_existing_data()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to sync existing data for vector search: {e}")
+
 
 
 def get_db_connection():

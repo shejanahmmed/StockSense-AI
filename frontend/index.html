@@ -1029,6 +1029,61 @@
                     </div>
                 </div>
 
+                <!-- AI Semantic Search Section -->
+                <section class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem;">
+                    <div class="section-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-primary);"></i> AI Semantic Financial Search
+                        </h2>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--status-success); border-color: rgba(16, 185, 129, 0.3); font-size: 0.75rem;">Vector Search Enabled</span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">
+                        Search semantically through your purchase orders, order items, and marketing promotions using natural language. The system analyzes terms conceptually to match your operational intent.
+                    </p>
+                    <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <input type="text" id="financialSemanticSearchInput" class="settings-input" placeholder="Try searching: 'bulk electronics orders' or 'clear slow inventory'..." style="flex: 1; padding: 0.75rem 1rem; font-size: 0.9rem;">
+                        <button id="financialSemanticSearchBtn" class="primary-btn" style="padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search
+                        </button>
+                    </div>
+                    <!-- Results container -->
+                    <div id="financialSemanticSearchResults" style="display: none; flex-direction: column; gap: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.25rem; margin-top: 1.25rem;">
+                        <!-- Match groups will be inserted here -->
+                    </div>
+                </section>
+
+                <!-- AI Supply Chain Dependency Map (Graph DB Diagnostics) -->
+                <section class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem;">
+                    <div class="section-header" style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 1.15rem; margin: 0; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-circle-nodes" style="color: var(--status-warning);"></i> AI Supply Chain Dependency & Bottleneck Map
+                        </h2>
+                        <span class="badge warning" style="font-size: 0.75rem;">Graph DB Engine Active</span>
+                    </div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
+                        This diagnostics view leverages in-memory graph algorithms to analyze supplier, item, and category linkages. It automatically highlights operational dependencies, potential single-points-of-failure, and capital tied to a single vendor.
+                    </p>
+
+                    <!-- Risk Analysis Content Grid -->
+                    <div class="supply-chain-graph-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;" id="supplyChainGraphContainer">
+                        <!-- Left: Bottleneck Suppliers -->
+                        <div class="glass-panel" style="padding: 1.25rem; background: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.04);">
+                            <h3 style="font-size: 0.95rem; color: var(--text-primary); margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-triangle-exclamation" style="color: var(--status-danger);"></i> Critical Supplier Bottlenecks</h3>
+                            <div id="supplierBottleneckList" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">Upload inventory CSV to run graph diagnostics.</p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Vulnerable SKUs -->
+                        <div class="glass-panel" style="padding: 1.25rem; background: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.04);">
+                            <h3 style="font-size: 0.95rem; color: var(--text-primary); margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-circle-exclamation" style="color: var(--status-warning);"></i> High Risk SKUs (Supply Vulnerability)</h3>
+                            <div id="vulnerableSkusList" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">Upload inventory CSV to view vulnerable SKUs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Financial Charts Section -->
                 <div class="financials-charts-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; margin-bottom: 2rem;">
                     <!-- Chart 1: Category Capital Allocation -->
@@ -1452,25 +1507,25 @@
                                     <button type="button" class="icon-btn glass-panel" id="slashCommandsBtn" title="Quick Commands" style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
                                         <i class="fa-solid fa-terminal" style="color: var(--accent-primary); font-size: 0.9rem;"></i>
                                     </button>
-                                    <div class="slash-commands-dropdown glass-panel" id="slashCommandsDropdown" style="display: none; position: absolute; bottom: 120%; left: 0; width: 340px; z-index: 110; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 0.5rem; text-align: left; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.08);">
-                                        <div class="dropdown-header" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.25rem; letter-spacing: 0.05em;"><i class="fa-solid fa-bolt" style="color: var(--accent-primary); margin-right: 0.25rem;"></i> Quick Commands</div>
-                                        <div class="dropdown-item" data-cmd="/restock" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                                    <div class="slash-commands-dropdown glass-panel" id="slashCommandsDropdown" style="display: none; position: absolute; bottom: 120%; left: 0; width: 340px; z-index: 110;">
+                                        <div class="dropdown-header" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.5rem 0.75rem; margin-bottom: 0.25rem; letter-spacing: 0.05em;"><i class="fa-solid fa-bolt" style="color: var(--accent-primary); margin-right: 0.25rem;"></i> Quick Commands</div>
+                                        <div class="dropdown-item" data-cmd="/restock" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;">
                                             <span class="cmd-badge" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: var(--status-danger); padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">/restock</span>
                                             <span style="color: var(--text-secondary);">Review stockout risks &amp; replenishment needs</span>
                                         </div>
-                                        <div class="dropdown-item" data-cmd="/promos" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                                        <div class="dropdown-item" data-cmd="/promos" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;">
                                             <span class="cmd-badge" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25); color: var(--accent-primary); padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">/promos</span>
                                             <span style="color: var(--text-secondary);">Plan marketing to clear slow inventory</span>
                                         </div>
-                                        <div class="dropdown-item" data-cmd="/health" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                                        <div class="dropdown-item" data-cmd="/health" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;">
                                             <span class="cmd-badge" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: var(--status-success); padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">/health</span>
                                             <span style="color: var(--text-secondary);">Perform detailed stock health checks</span>
                                         </div>
-                                        <div class="dropdown-item" data-cmd="/overstock" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                                        <div class="dropdown-item" data-cmd="/overstock" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;">
                                             <span class="cmd-badge" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: var(--status-warning); padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">/overstock</span>
                                             <span style="color: var(--text-secondary);">Identify dead stock tying up capital</span>
                                         </div>
-                                        <div class="dropdown-item" data-cmd="/forecast" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                                        <div class="dropdown-item" data-cmd="/forecast" style="padding: 0.6rem 0.75rem; font-size: 0.82rem; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;">
                                             <span class="cmd-badge" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); color: var(--status-info); padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); font-family: monospace; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;">/forecast</span>
                                             <span style="color: var(--text-secondary);">Get weekly demand predictions</span>
                                         </div>

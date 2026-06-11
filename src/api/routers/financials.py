@@ -141,3 +141,88 @@ async def get_financials_summary(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error calculating financials summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/financials/search")
+async def search_financials(query: str, user: dict = Depends(get_current_user)):
+    """
+    Perform semantic search over purchase orders and promotions using the local vector index.
+    Returns matched items with details from their corresponding tables.
+    """
+    try:
+        org_name = user.get("sub", "Unknown")
+        conn = get_db_connection()
+        
+        from src.api.vector_utils import search_similar
+        
+        # 1. Search purchase orders
+        po_matches = search_similar(conn, org_name, "purchase_order", query, limit=5)
+        # 2. Search promotions
+        promo_matches = search_similar(conn, org_name, "promotion", query, limit=5)
+        
+        # Enrich purchase order matches with actual details from the DB
+        enriched_pos = []
+        if po_matches:
+            po_ids = [m["target_id"] for m in po_matches]
+            # Fetch details
+            placeholders = ",".join("?" for _ in po_ids)
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT id, supplier, order_date, delivery_date, status, total_amount, created_at
+                FROM purchase_orders
+                WHERE org_name = ? AND id IN ({placeholders})
+            ''', (org_name, *po_ids))
+            po_details = {r["id"]: dict(r) for r in cursor.fetchall()}
+            
+            for match in po_matches:
+                po_id = match["target_id"]
+                if po_id in po_details:
+                    details = po_details[po_id]
+                    # Also fetch line items
+                    cursor.execute('SELECT sku, name, quantity, unit_price, total_price FROM po_items WHERE po_id = ?', (po_id,))
+                    details["items"] = [dict(item) for item in cursor.fetchall()]
+                    enriched_pos.append({
+                        "id": po_id,
+                        "similarity": match["similarity"],
+                        "details": details
+                    })
+                    
+        # Enrich promotion matches with actual details
+        enriched_promos = []
+        if promo_matches:
+            promo_ids = [m["target_id"] for m in promo_matches]
+            placeholders = ",".join("?" for _ in promo_ids)
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT id, title, type, start_date, end_date, target_product, target_sku, discount_pct, expected_impact, urgency, reason, status, created_at
+                FROM promotions
+                WHERE org_name = ? AND id IN ({placeholders})
+            ''', (org_name, *promo_ids))
+            promo_details = {r["id"]: dict(r) for r in cursor.fetchall()}
+            
+            for match in promo_matches:
+                promo_id = match["target_id"]
+                if promo_id in promo_details:
+                    enriched_promos.append({
+                        "id": promo_id,
+                        "similarity": match["similarity"],
+                        "details": promo_details[promo_id]
+                    })
+                    
+        conn.close()
+        
+        # Sort both lists by similarity descending
+        enriched_pos.sort(key=lambda x: x["similarity"], reverse=True)
+        enriched_promos.sort(key=lambda x: x["similarity"], reverse=True)
+        
+        return {
+            "status": "success",
+            "query": query,
+            "purchase_orders": enriched_pos,
+            "promotions": enriched_promos
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in financials semantic search: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

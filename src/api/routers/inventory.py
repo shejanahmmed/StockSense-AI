@@ -23,7 +23,7 @@ async def get_inventory(
         
         offset = (page - 1) * limit
         cursor.execute('''
-            SELECT sku, name, category, price, stock, supplier, status, reorder_point, supplier_lead_days, forecasted_demand, units_sold
+            SELECT sku, name, category, price, stock, supplier, status, reorder_point, supplier_lead_days, forecasted_demand, units_sold, competitor_price
             FROM inventory 
             WHERE org_name = ? 
             LIMIT ? OFFSET ?
@@ -236,5 +236,53 @@ async def delete_inventory(sku: str, user: dict = Depends(get_current_user)):
         conn.commit()
         conn.close()
         return {"status": "success", "message": "Item deleted successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/inventory/scrape-prices")
+async def scrape_competitor_prices(user: dict = Depends(get_current_user)):
+    """
+    Trigger the competitor price scraping pipeline.
+    Queries all items in inventory for the active user, crawls matching price lists,
+    and updates the database values.
+    """
+    try:
+        org_name = user.get("sub", "Unknown")
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Fetch all inventory items for this org
+        cursor.execute('SELECT sku, name, price FROM inventory WHERE org_name = ?', (org_name,))
+        items = cursor.fetchall()
+        
+        if not items:
+            conn.close()
+            return {"status": "success", "message": "No inventory items to scrape.", "updated_count": 0}
+            
+        from src.api.scraper import fetch_competitor_price
+        
+        updated_count = 0
+        for item in items:
+            sku = item["sku"]
+            name = item["name"]
+            our_price = item["price"] or 0.0
+            
+            competitor_price = fetch_competitor_price(name, our_price)
+            
+            cursor.execute('''
+                UPDATE inventory 
+                SET competitor_price = ?, last_updated = CURRENT_TIMESTAMP
+                WHERE org_name = ? AND sku = ?
+            ''', (competitor_price, org_name, sku))
+            updated_count += 1
+            
+        conn.commit()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "message": f"Successfully scraped and updated competitor prices for {updated_count} product(s).",
+            "updated_count": updated_count
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

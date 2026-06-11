@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             resetDashboardToEmpty();
         }
+        initFinancialSearch();
     }
 });
 
@@ -4907,15 +4908,6 @@ function renderPromoSuggestions(suggestions) {
         const endStr = formatDateString(promo.end_date);
         
         const isScheduled = scheduledPromoIds.has(promo.id);
-        const btnHtml = isScheduled ? `
-            <button class="promo-schedule-btn scheduled" disabled>
-                <i class="fa-solid fa-circle-check"></i> Campaign Scheduled
-            </button>
-        ` : `
-            <button class="promo-schedule-btn unscheduled" id="btn-promo-${promo.id}" onclick="schedulePromotion('${promo.id}', '${promo.title.replace(/'/g, "\\'")}', '${promo.discount_pct}', '${promo.type}', '${promo.start_date}', '${promo.end_date}', '${promo.target_product.replace(/'/g, "\\'")}', '${promo.target_sku}', '${promo.expected_impact}', '${promo.urgency}', '${promo.reason.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-calendar-plus"></i> Schedule Campaign
-            </button>
-        `;
 
         // Extract percentage/metric number and the text (e.g. "+35% Sales Lift" -> "+35%", "Sales Lift")
         let impactVal = '';
@@ -4968,9 +4960,7 @@ function renderPromoSuggestions(suggestions) {
                 
                 <p class="promo-card-reason">${promo.reason}</p>
                 
-                <div class="promo-action-wrapper">
-                    ${btnHtml}
-                </div>
+
                 
                 <div class="promo-card-footer">
                     <div class="promo-target-label">
@@ -6429,19 +6419,19 @@ async function showModalDailyVsForecastList() {
             <div class="bi-modal-body">
                 <!-- Summary Cards Block -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 0.5rem; align-items: stretch;">
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">HISTORICAL SALES</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: var(--text-primary); font-weight: 700;">
                             ${totalActualDaily.toLocaleString()} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">units/day avg</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">AI FORECAST</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: var(--accent-primary); font-weight: 700;">
                             ${totalForecastDaily.toLocaleString()} <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-secondary);">units/day avg</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">VELOCITY SHIFT</span>
                         <h3 style="margin: 0; font-size: 1.25rem; color: ${isIncrease ? 'var(--status-success)' : 'var(--status-danger)'}; font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
                             <i class="fa-solid ${isIncrease ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i>
@@ -6449,7 +6439,7 @@ async function showModalDailyVsForecastList() {
                             <span style="font-size: 0.75rem; font-weight: 400; color: var(--text-muted);">(${isIncrease ? '+' : ''}${delta} units/day)</span>
                         </h3>
                     </div>
-                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; min-height: 90px; justify-content: space-between;">
+                    <div class="glass-panel bi-highlight-card" style="padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; border-radius: 8px; min-height: 90px; justify-content: space-between;">
                         <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">TOP GROWTH DRIVER</span>
                         <h3 style="margin: 0; font-size: 1.02rem; color: var(--text-primary); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${topAccelerator ? topAccelerator.name : 'N/A'}">
                             ${topAccelerator ? `${topAccelerator.name} (+${topAccelerator.variance}/day)` : 'N/A'}
@@ -9959,6 +9949,7 @@ async function loadFinancialsData() {
         if (result.status === 'success') {
             _financialsCache = result;
             updateFinancialsUI();
+            loadDependencyGraphData();
         } else {
             console.error("Failed to load financials summary:", result.message);
         }
@@ -10260,6 +10251,306 @@ window.markPoAsReceived = markPoAsReceived;
 window.deletePo = deletePo;
 window.loadFinancialsData = loadFinancialsData;
 window.simulateROI = simulateROI;
+
+// --- AI Semantic Search inside Financials page ---
+function initFinancialSearch() {
+    const searchInput = document.getElementById('financialSemanticSearchInput');
+    const searchBtn = document.getElementById('financialSemanticSearchBtn');
+    const resultsContainer = document.getElementById('financialSemanticSearchResults');
+
+    if (!searchBtn || !searchInput || !resultsContainer) return;
+
+    async function handleSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Searching...';
+        resultsContainer.style.display = 'flex';
+        resultsContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem; width: 100%; grid-column: span 2;">
+                <i class="fa-solid fa-circle-nodes fa-spin" style="font-size: 2rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+                <p>Computing vectors and running semantic match...</p>
+            </div>
+        `;
+
+        try {
+            const token = localStorage.getItem('stockSense_jwt');
+            const res = await fetch(`/api/financials/search?query=${encodeURIComponent(query)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Search';
+
+            if (data.status === 'success') {
+                renderSemanticResults(data);
+            } else {
+                resultsContainer.innerHTML = `<div style="color: var(--status-danger); padding: 1rem; text-align: center; width: 100%; grid-column: span 2;"><i class="fa-solid fa-circle-exclamation"></i> Error: ${data.detail || 'Failed to execute search.'}</div>`;
+            }
+        } catch (err) {
+            console.error("Semantic search failed:", err);
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Search';
+            resultsContainer.innerHTML = `<div style="color: var(--status-danger); padding: 1rem; text-align: center; width: 100%; grid-column: span 2;"><i class="fa-solid fa-circle-exclamation"></i> Network error occurred.</div>`;
+        }
+    }
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch();
+    });
+}
+
+function renderSemanticResults(data) {
+    const container = document.getElementById('financialSemanticSearchResults');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const pos = data.purchase_orders || [];
+    const promos = data.promotions || [];
+
+    if (pos.length === 0 && promos.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem; width: 100%;">
+                <i class="fa-regular fa-folder-open" style="font-size: 1.8rem; margin-bottom: 0.5rem; display: block; margin-left: auto; margin-right: auto;"></i>
+                <p>No similar purchase orders or promotions found for this query.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Results layout grid
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(320px, 1fr))';
+    grid.style.gap = '1.5rem';
+    grid.style.width = '100%';
+
+    // Create PO Column
+    const poCol = document.createElement('div');
+    poCol.style.display = 'flex';
+    poCol.style.flexDirection = 'column';
+    poCol.style.gap = '1rem';
+    poCol.innerHTML = `<h3 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; margin: 0;"><i class="fa-solid fa-truck-ramp-box" style="color: var(--accent-primary);"></i> Matched Purchase Orders</h3>`;
+
+    if (pos.length === 0) {
+        poCol.innerHTML += `<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; margin-top: 0.5rem;">No purchase orders matched.</p>`;
+    } else {
+        pos.forEach(match => {
+            const po = match.details;
+            const simPercent = Math.round(match.similarity * 100);
+            
+            // Format status badge
+            let statusClass = 'neutral';
+            if (po.status === 'Received') statusClass = 'success';
+            else if (po.status === 'Ordered') statusClass = 'info';
+            else if (po.status === 'Cancelled') statusClass = 'danger';
+            
+            const card = document.createElement('div');
+            card.className = 'glass-panel';
+            card.style.padding = '1rem';
+            card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+            card.style.background = 'rgba(255, 255, 255, 0.01)';
+            card.style.borderRadius = 'var(--radius-md)';
+            
+            let itemLines = '';
+            if (po.items && po.items.length > 0) {
+                itemLines = po.items.map(item => `
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        <span>${item.name} <span style="color: var(--text-muted);">x${item.quantity}</span></span>
+                        <span>${formatCurrency(item.total_price)}</span>
+                    </div>
+                `).join('');
+            }
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                    <div>
+                        <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${po.supplier || 'Unknown Supplier'}</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">ID: <code style="color: var(--accent-primary);">${po.id}</code> | Date: ${po.order_date || 'N/A'}</div>
+                    </div>
+                    <span class="badge ${statusClass}" style="font-size: 0.7rem; border-radius: 4px; padding: 0.15rem 0.4rem;">${po.status}</span>
+                </div>
+                <div style="border-top: 1px dashed rgba(255, 255, 255, 0.05); border-bottom: 1px dashed rgba(255, 255, 255, 0.05); padding: 0.5rem 0; margin-bottom: 0.75rem;">
+                    ${itemLines || '<span style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">No items listed</span>'}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+                    <span style="color: var(--text-muted);">Total Spend: <strong style="color: var(--text-primary); font-size: 0.85rem;">${formatCurrency(po.total_amount)}</strong></span>
+                    <span style="background: rgba(139, 92, 246, 0.12); color: var(--accent-primary); padding: 0.2rem 0.5rem; border-radius: 99px; font-weight: 600; font-size: 0.75rem;"><i class="fa-solid fa-bullseye"></i> ${simPercent}% match</span>
+                </div>
+            `;
+            poCol.appendChild(card);
+        });
+    }
+
+    // Create Promotions Column
+    const promoCol = document.createElement('div');
+    promoCol.style.display = 'flex';
+    promoCol.style.flexDirection = 'column';
+    promoCol.style.gap = '1rem';
+    promoCol.innerHTML = `<h3 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; margin: 0;"><i class="fa-solid fa-tags" style="color: var(--status-success);"></i> Matched Campaigns</h3>`;
+
+    if (promos.length === 0) {
+        promoCol.innerHTML += `<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; margin-top: 0.5rem;">No promotions matched.</p>`;
+    } else {
+        promos.forEach(match => {
+            const promo = match.details;
+            const simPercent = Math.round(match.similarity * 100);
+            
+            let urgencyClass = 'neutral';
+            if (promo.urgency === 'High' || promo.urgency === 'Critical') urgencyClass = 'danger';
+            else if (promo.urgency === 'Medium') urgencyClass = 'warning';
+            
+            const card = document.createElement('div');
+            card.className = 'glass-panel';
+            card.style.padding = '1rem';
+            card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+            card.style.background = 'rgba(255, 255, 255, 0.01)';
+            card.style.borderRadius = 'var(--radius-md)';
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                        <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${promo.title || 'Untitled Campaign'}</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem;">Type: ${promo.type || 'N/A'} | SKU: <code style="color: var(--status-success);">${promo.target_sku || 'ALL'}</code></div>
+                    </div>
+                    <span class="badge ${urgencyClass}" style="font-size: 0.7rem; border-radius: 4px; padding: 0.15rem 0.4rem;">${promo.urgency || 'Normal'}</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.35; margin-bottom: 0.75rem; background: rgba(0,0,0,0.15); padding: 0.4rem; border-radius: 4px;">
+                    <strong>Reason:</strong> ${promo.reason || 'No description provided.'}
+                </p>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; font-size: 0.75rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.1rem 0.4rem; border-radius: var(--radius-sm);">Discount: ${promo.discount_pct || '0%'}</span>
+                    <span style="background: rgba(59, 130, 246, 0.1); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.2); padding: 0.1rem 0.4rem; border-radius: var(--radius-sm);">Impact: ${promo.expected_impact || 'N/A'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-top: 1px dashed rgba(255, 255, 255, 0.04); padding-top: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">Timeline: ${promo.start_date || 'N/A'} to ${promo.end_date || 'N/A'}</span>
+                    <span style="background: rgba(139, 92, 246, 0.12); color: var(--accent-primary); padding: 0.2rem 0.5rem; border-radius: 99px; font-weight: 600; font-size: 0.75rem;"><i class="fa-solid fa-bullseye"></i> ${simPercent}% match</span>
+                </div>
+            `;
+            promoCol.appendChild(card);
+        });
+    }
+
+    grid.appendChild(poCol);
+    grid.appendChild(promoCol);
+    container.appendChild(grid);
+}
+
+// --- AI Supply Chain Dependency Graph (NetworkX diagnostics) ---
+async function loadDependencyGraphData() {
+    try {
+        const token = localStorage.getItem('stockSense_jwt');
+        const res = await fetch('/api/analytics/dependency-graph', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+            renderDependencyGraphUI(result.data);
+        } else {
+            console.error("Failed to load dependency graph:", result.message);
+        }
+    } catch (err) {
+        console.error("Error loading dependency graph data:", err);
+    }
+}
+
+function renderDependencyGraphUI(data) {
+    const supplierList = document.getElementById('supplierBottleneckList');
+    const vulnerableList = document.getElementById('vulnerableSkusList');
+    
+    if (!supplierList || !vulnerableList) return;
+    
+    // Render Bottlenecks
+    const bottlenecks = data.bottlenecks || [];
+    supplierList.innerHTML = '';
+    
+    if (bottlenecks.length === 0) {
+        supplierList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 1rem; text-align: center;">No critical supplier bottlenecks detected in the network.</p>';
+    } else {
+        bottlenecks.forEach(b => {
+            const card = document.createElement('div');
+            card.style.background = 'rgba(255,255,255,0.02)';
+            card.style.border = '1px solid rgba(255,255,255,0.05)';
+            card.style.borderRadius = 'var(--radius-md)';
+            card.style.padding = '0.75rem 1rem';
+            card.style.marginBottom = '0.75rem';
+            
+            const badgeClass = b.risk_tier === 'Critical' ? 'danger' : b.risk_tier === 'Medium' ? 'warning' : 'neutral';
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${b.name}</span>
+                    <span class="badge ${badgeClass}" style="font-size: 0.68rem; border-radius: 4px; padding: 0.15rem 0.35rem;">${b.risk_tier} Risk</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Supplies: <strong>${b.supplied_skus_count} SKUs</strong> (${b.supplied_skus_pct}%)</span>
+                    <span>Tied Capital: <strong>${formatCurrency(b.portfolio_value)}</strong> (${b.portfolio_value_pct}%)</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--status-danger); margin-bottom: 0.75rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Demand Value at Risk: <strong>${formatCurrency(b.demand_at_risk)}</strong>
+                </div>
+                
+                <!-- Progress bar for bottleneck index -->
+                <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 99px; overflow: hidden; position: relative;">
+                    <div style="background: ${b.risk_tier === 'Critical' ? 'var(--status-danger)' : b.risk_tier === 'Medium' ? 'var(--status-warning)' : 'var(--status-success)'}; width: ${b.bottleneck_score}%; height: 100%; border-radius: 99px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <span>Bottleneck Dependency Index</span>
+                    <span>${b.bottleneck_score}%</span>
+                </div>
+            `;
+            supplierList.appendChild(card);
+        });
+    }
+    
+    // Render Vulnerable SKUs
+    const vulnerabilities = data.vulnerabilities || [];
+    vulnerableList.innerHTML = '';
+    
+    if (vulnerabilities.length === 0) {
+        vulnerableList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 1rem; text-align: center;">No critical item vulnerabilities detected in the network.</p>';
+    } else {
+        vulnerabilities.forEach(v => {
+            const card = document.createElement('div');
+            card.style.background = 'rgba(255,255,255,0.02)';
+            card.style.border = '1px solid rgba(255,255,255,0.05)';
+            card.style.borderRadius = 'var(--radius-md)';
+            card.style.padding = '0.75rem 1rem';
+            card.style.marginBottom = '0.75rem';
+            
+            const statusClass = v.status === 'Out of Stock' ? 'danger' : 'warning';
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+                    <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${v.name}</span>
+                    <span class="badge ${statusClass}" style="font-size: 0.68rem; border-radius: 4px; padding: 0.15rem 0.35rem;">${v.status}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                    <span>SKU: <code style="color: var(--status-success);">${v.sku}</code></span>
+                    <span>Supplier: <strong>${v.supplier}</strong></span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Lead Time: <strong>${v.lead_time} days</strong></span>
+                    <span>Revenue Loss Risk: <strong style="color: var(--status-danger);">${formatCurrency(v.potential_revenue_loss)}</strong></span>
+                </div>
+                
+                <!-- Progress bar for vulnerability score -->
+                <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 99px; overflow: hidden; position: relative;">
+                    <div style="background: ${v.vulnerability_score > 50 ? 'var(--status-danger)' : 'var(--status-warning)'}; width: ${Math.min(100, v.vulnerability_score)}%; height: 100%; border-radius: 99px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <span>Supply Chain Vulnerability Rating</span>
+                    <span>${v.vulnerability_score}%</span>
+                </div>
+            `;
+            vulnerableList.appendChild(card);
+        });
+    }
+}
 
 
 

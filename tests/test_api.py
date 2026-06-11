@@ -106,3 +106,29 @@ def test_invalid_file_type():
         headers=AUTH_HEADERS
     )
     assert response.status_code == 400
+
+
+# ── Dependency Graph & Semantic Search ─────────────────────────────────────────
+def test_get_dependency_graph():
+    """GET /api/analytics/dependency-graph returns graph data and risk lists."""
+    response = client.get("/api/analytics/dependency-graph", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "data" in data
+    assert "nodes" in data["data"]
+    assert "links" in data["data"]
+    assert "bottlenecks" in data["data"]
+    assert "vulnerabilities" in data["data"]
+
+
+def test_financials_semantic_search():
+    """GET /api/financials/search returns structured matches."""
+    response = client.get("/api/financials/search?query=test", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "purchase_orders" in data
+    assert "promotions" in data
+    assert "query" in data
+

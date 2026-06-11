@@ -120,6 +120,16 @@ async def create_purchase_order(po: POCreateSchema, user: dict = Depends(get_cur
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (po.id, item.sku, item.name, item.quantity, item.unit_price, item_total))
             
+        # 3. Index Purchase Order semantically for Vector Search
+        try:
+            item_strings = [f"{item.name} x{item.quantity}" for item in po.items]
+            items_str = ", ".join(item_strings)
+            content_text = f"Purchase Order ID: {po.id}, Supplier: {po.supplier}, Order Date: {po.order_date}, Total Amount: BDT {total_amount:.2f}. Items: {items_str}."
+            from src.api.vector_utils import index_entity
+            index_entity(conn, org_name, "purchase_order", po.id, content_text)
+        except Exception as vec_err:
+            logger.error(f"Failed to index purchase order vector: {vec_err}")
+
         conn.commit()
         conn.close()
         

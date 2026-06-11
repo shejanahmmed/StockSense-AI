@@ -654,6 +654,13 @@ async def predict_demand(
         if 'supplier_lead_days' not in df.columns:
             df['supplier_lead_days'] = 7
 
+        # Export transactions to local Parquet warehouse (OLAP Lakehouse format)
+        try:
+            from src.api.warehouse_utils import save_to_lakehouse
+            save_to_lakehouse(df, org_name)
+        except Exception as lake_err:
+            logger.error(f"Failed to save transactions to Lakehouse Parquet: {lake_err}")
+
         df['date'] = pd.to_datetime(df['date'])
 
         # -- Data span validation & dynamic forecast horizon ------------------
@@ -1249,6 +1256,14 @@ async def add_promotion(promo: PromotionModel, user: dict = Depends(get_current_
         ''', (promo.id, org_name, promo.title, promo.type, promo.start_date, promo.end_date,
               promo.target_product, promo.target_sku, promo.discount_pct, promo.expected_impact,
               promo.urgency, promo.reason))
+        # Index Promotion semantically for Vector Search
+        try:
+            content_text = f"Promotion: {promo.title}, Type: {promo.type}, Target SKU: {promo.target_sku} ({promo.target_product}), Discount: {promo.discount_pct}, Expected Impact: {promo.expected_impact}, Reason: {promo.reason}."
+            from src.api.vector_utils import index_entity
+            index_entity(conn, org_name, "promotion", promo.id, content_text)
+        except Exception as vec_err:
+            logger.error(f"Failed to index promotion vector: {vec_err}")
+
         conn.commit()
         return {"status": "success", "message": f"Promotion '{promo.title}' successfully scheduled."}
     except Exception as e:
@@ -1556,3 +1571,22 @@ async def run_simulation(payload: SimulationPayload, user: dict = Depends(get_cu
         "insight": ai_insight,
         "items": sorted(sim_items, key=lambda x: x["stockout_losses"], reverse=True)[:10] # Top 10 affected items
     }
+
+
+@router.get("/api/analytics/dependency-graph")
+async def get_dependency_graph(user: dict = Depends(get_current_user)):
+    """
+    Returns the supply chain dependency graph node and edge list,
+    along with calculated single-points-of-failure bottlenecks.
+    """
+    try:
+        org_name = user.get("sub", "Unknown")
+        conn = get_db_connection()
+        from src.api.graph_utils import analyze_dependency_risks
+        analysis = analyze_dependency_risks(conn, org_name)
+        conn.close()
+        return {"status": "success", "data": analysis}
+    except Exception as e:
+        logger.error(f"Failed to fetch dependency graph: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

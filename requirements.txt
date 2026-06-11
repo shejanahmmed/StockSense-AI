@@ -18,3 +18,5 @@ PyJWT
 holidays
 fpdf2
 mcp
+duckdb
+networkx
