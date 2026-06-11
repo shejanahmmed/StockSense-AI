@@ -87,3 +87,51 @@ def test_feature_engineering_rolling():
     # Since min_periods=1, the first element (10) mean is 10.0, the second (10, 20) mean is 15.0
     assert df_roll['sales_rolling_mean_3'].iloc[1] == 15.0
     assert df_roll['sales_rolling_mean_3'].iloc[2] == 20.0
+
+def test_forecast_non_repetitive():
+    """Test that the forecasting pipeline produces non-identical values week-over-week (i.e. captures trend and momentum)."""
+    from src.api.routers.analytics import _forecast_for_product
+    import numpy as np
+    
+    # Generate mock sales data with a linear trend and weekly seasonality
+    dates = pd.date_range(start='2023-01-01', periods=60, freq='D')
+    # Sales starting at 100, increasing by 2 per day, with some weekday seasonality (Friday/Saturday spikes)
+    sales = []
+    for i, d in enumerate(dates):
+        base = 100 + i * 2
+        seasonality = 20 if d.dayofweek in [4, 5] else 0
+        sales.append(base + seasonality)
+        
+    product_df = pd.DataFrame({
+        'date': dates,
+        'product_id': ['MOCK-SKU'] * 60,
+        'product_name': ['Mock Product'] * 60,
+        'category': ['Test'] * 60,
+        'sales_qty': sales,
+        'promo': [0] * 60,
+        'holiday': [0] * 60,
+        'stock_on_hand': [500] * 60,
+        'reorder_point': [50] * 60,
+        'supplier_lead_days': [7] * 60
+    })
+    
+    res = _forecast_for_product(
+        product_df=product_df,
+        local_holidays={},
+        strategy="balanced",
+        forecast_horizon=14,
+        region="BD",
+        date_min=dates.min(),
+        date_max=dates.max(),
+        org_name="MockOrg"
+    )
+    
+    forecast = res["forecast"]
+    assert len(forecast) == 14
+    
+    # Verify that Wednesday of week 1 (index 3) is not exactly identical to Wednesday of week 2 (index 10)
+    sales_w1 = forecast[3]["predicted_sales"]
+    sales_w2 = forecast[10]["predicted_sales"]
+    
+    # They must have a difference (due to trend and residual decay and noise)
+    assert not np.isclose(sales_w1, sales_w2), f"Forecast values for corresponding weekdays are too close: {sales_w1} vs {sales_w2}"

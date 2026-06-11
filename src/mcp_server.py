@@ -341,6 +341,9 @@ def run_demand_forecasting(strategy: str = "balanced", region: str = "BD", org_n
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Clear out stale forecasts for this organization
+        cursor.execute('DELETE FROM forecasts WHERE org_name = ?', (resolved_org,))
+        
         products = df.groupby('product_id')
         updated_count = 0
         

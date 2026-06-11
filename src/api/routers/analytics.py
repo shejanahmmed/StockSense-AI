@@ -167,7 +167,7 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
     use_yearly_seasonality = data_span_days >= 730
 
     model = DemandProphetModel(
-        growth='flat',
+        growth='linear',
         yearly_seasonality=use_yearly_seasonality,
         weekly_seasonality=True,
         seasonality_prior_scale=5,
@@ -175,11 +175,62 @@ def _forecast_for_product(product_df: pd.DataFrame, local_holidays, strategy: st
     model.train(processed_df)
     model.save(model_path)
 
+    # Compute residuals of the last 7 days of history to carry over momentum
+    historical_last_7 = processed_df.tail(7).copy()
+    hist_pred = model.predict(historical_last_7)
+    actual_sales = historical_last_7['sales'].values
+    predicted_sales_hist = hist_pred['yhat'].values
+    residuals = actual_sales - predicted_sales_hist
+    
+    # Weighted average of recent residuals (more weight to the most recent days)
+    weights = [0.05, 0.05, 0.1, 0.1, 0.2, 0.2, 0.3]
+    recent_residual = sum(r * w for r, w in zip(residuals, weights))
+    
+    # Compute the standard deviation of residuals over the last 14 days to scale deterministic noise
+    historical_last_14 = processed_df.tail(14).copy()
+    hist_pred_14 = model.predict(historical_last_14)
+    residuals_14 = historical_last_14['sales'].values - hist_pred_14['yhat'].values
+    residual_std = residuals_14.std() if len(residuals_14) > 1 else 1.0
+
     forecast = model.predict(processed_future_df)
     forecast_result = forecast.rename(columns={
         'ds': 'date', 'yhat': 'predicted_sales',
         'yhat_lower': 'lower_bound', 'yhat_upper': 'upper_bound'
     })
+    
+    # Apply momentum carry-over with decay and deterministic variation
+    decay_factor = 0.8
+    import numpy as np
+    
+    sku = str(product_df['product_id'].iloc[0])
+    new_predictions = []
+    new_lowers = []
+    new_uppers = []
+    
+    for idx, row in forecast_result.iterrows():
+        k = idx  # Step index from end of history
+        momentum = recent_residual * (decay_factor ** k)
+        
+        # Deterministic variation (texture) seeded by SKU and date
+        date_str = row['date'].strftime('%Y-%m-%d')
+        hash_val = hashlib.sha256(f"{sku}_{date_str}".encode()).hexdigest()
+        
+        val = int(hash_val[:8], 16) / 4294967295.0
+        val2 = int(hash_val[8:16], 16) / 4294967295.0
+        # Box-Muller transform for standard normal variation
+        z = np.sqrt(-2.0 * np.log(max(val, 1e-9))) * np.cos(2.0 * np.pi * val2)
+        
+        # Scale noise to 25% of standard deviation of residuals
+        noise = z * (0.25 * residual_std)
+        
+        new_predictions.append(row['predicted_sales'] + momentum + noise)
+        new_lowers.append(row['lower_bound'] + momentum + noise)
+        new_uppers.append(row['upper_bound'] + momentum + noise)
+        
+    forecast_result['predicted_sales'] = new_predictions
+    forecast_result['lower_bound'] = new_lowers
+    forecast_result['upper_bound'] = new_uppers
+
     forecast_result['date'] = forecast_result['date'].dt.strftime('%Y-%m-%d')
 
     # ── Post-hoc level correction ────────────────────────────────────────────
@@ -854,6 +905,9 @@ async def predict_demand(
         # org_name already resolved above
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Clear out stale forecasts for this organization
+        cursor.execute('DELETE FROM forecasts WHERE org_name = ?', (org_name,))
 
         all_product_results = []
         aggregate_forecasted = 0

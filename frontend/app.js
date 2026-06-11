@@ -134,10 +134,22 @@ document.addEventListener('DOMContentLoaded', () => {
     //     Otherwise, fetchDefaultInsight is skipped — cached data is restored in setupCsvUpload
     if (checkAuth()) {
         loadScheduledPromotions();
+        
+        // Invalidate old flat forecast cache once to force a recalculation with the new linear model
+        if (localStorage.getItem('stockSense_lastResult') && !localStorage.getItem('stockSense_cache_invalidated_v3')) {
+            localStorage.removeItem('stockSense_lastResult');
+            localStorage.setItem('stockSense_cache_invalidated_v3', 'true');
+        }
+
         const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
         if (hasUploadedFile) {
             // Data will be restored from localStorage cache inside setupCsvUpload
             loadInventorySilent();
+            
+            // If cache was invalidated, run a fresh background forecast sync to update the UI
+            if (!localStorage.getItem('stockSense_lastResult')) {
+                reforecastFromInventory();
+            }
         } else {
             resetDashboardToEmpty();
         }
