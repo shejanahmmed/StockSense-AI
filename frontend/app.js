@@ -141,18 +141,88 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('stockSense_cache_invalidated_v3', 'true');
         }
 
-        const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
-        if (hasUploadedFile) {
-            // Data will be restored from localStorage cache inside setupCsvUpload
-            loadInventorySilent();
-            
-            // If cache was invalidated, run a fresh background forecast sync to update the UI
-            if (!localStorage.getItem('stockSense_lastResult')) {
-                reforecastFromInventory();
+        // Silent check on page load to verify database status and self-heal localStorage
+        const token = localStorage.getItem('stockSense_jwt');
+        fetch('/api/inventory', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.status === 'success' && result.data && result.data.length > 0) {
+                // User has inventory items in DB! Force restore uploaded status
+                if (!localStorage.getItem('stockSense_uploadedFile')) {
+                    localStorage.setItem('stockSense_uploadedFile', 'persisted_inventory.csv');
+                }
+                
+                fullInventoryData = result.data;
+                currentInventoryContext = result.data;
+                enhanceNextStepBannerWithSku();
+                
+                // Re-enable chat box UI
+                if (typeof window.applyChatInputState === 'function') {
+                    window.applyChatInputState();
+                } else {
+                    const chatInput = document.getElementById('chatInput');
+                    const chatBtn = document.getElementById('sendChatBtn');
+                    if (chatInput && chatBtn) {
+                        chatInput.disabled = false;
+                        chatInput.placeholder = "Ask about sales, reorders, or type '/' for quick commands...";
+                        chatBtn.disabled = false;
+                        chatBtn.style.opacity = '1';
+                        chatBtn.style.cursor = 'pointer';
+                    }
+                }
+                
+                // Restore chat sessions list & active session/welcome state
+                if (typeof loadChatHistory === 'function') {
+                    loadChatHistory();
+                }
+
+                // Restore cached dashboard data
+                try {
+                    const cachedData = JSON.parse(localStorage.getItem('stockSense_lastResult') || 'null');
+                    if (cachedData) {
+                        if (cachedData.historical && cachedData.forecast) {
+                            updateChartWithData(cachedData.historical, cachedData.forecast);
+                            
+                            const chartTitle = document.getElementById('forecastChartTitle');
+                            if (chartTitle) {
+                                const label = cachedData.forecast_label || (cachedData.forecast.length > 0 ? `${cachedData.forecast.length}-Day Forecast` : '7-Day Forecast');
+                                const span = cachedData.data_span_days || 90;
+                                chartTitle.innerHTML = `<img src="assets/icons/forecast.png" alt="Demand Forecast" style="height: 26px; width: 26px; object-fit: contain;" onerror="handleIconError(this)"><i class="fa-solid fa-chart-line title-icon-fallback" style="display: none;"></i> Demand Forecast — ${label} (${span} days of data)`;
+                            }
+                        }
+                        if (cachedData.insight) renderInsight(cachedData.insight);
+                        if (cachedData.drivers) renderDrivers(cachedData.drivers);
+                        if (cachedData.kpis)    updateKPIs(cachedData.kpis);
+                        if (cachedData.bi_metrics) updateBIMetrics(cachedData.bi_metrics);
+                        if (cachedData.promo_suggestions) renderPromoSuggestions(cachedData.promo_suggestions);
+                    } else {
+                        // Trigger fresh forecast run if not cached
+                        reforecastFromInventory();
+                    }
+                } catch (e) {
+                    console.warn("Could not restore cached dashboard data:", e);
+                }
+            } else {
+                // No inventory found
+                resetDashboardToEmpty();
             }
-        } else {
-            resetDashboardToEmpty();
-        }
+        })
+        .catch(err => {
+            console.warn("Inventory check failed:", err);
+            // Fallback to localStorage check if API fails
+            const hasUploadedFile = !!localStorage.getItem('stockSense_uploadedFile');
+            if (hasUploadedFile) {
+                loadInventorySilent();
+                if (!localStorage.getItem('stockSense_lastResult')) {
+                    reforecastFromInventory();
+                }
+            } else {
+                resetDashboardToEmpty();
+            }
+        });
+
         initFinancialSearch();
     }
 });
@@ -1803,6 +1873,7 @@ function initChat() {
         btn.style.opacity = uploaded ? '1' : '0.5';
         btn.style.cursor = uploaded ? 'pointer' : 'not-allowed';
     };
+    window.applyChatInputState = applyInputState;
     applyInputState();
 
     // Re-check state whenever localStorage changes (e.g. CSV uploaded in another tab)
@@ -2095,6 +2166,12 @@ function initChat() {
             }
             currentSessionId = null;
             chatHistory = [];
+            
+            // Clear input, re-evaluate disabled status, and focus it
+            input.value = '';
+            applyInputState();
+            input.focus();
+
             renderChatHistory();
             renderSessionsList();
         });
@@ -2257,6 +2334,12 @@ async function loadChatHistory() {
         renderNoCsvState();
         return;
     }
+    
+    // Ensure chat input field and button reflect the correct enabled state
+    if (typeof window.applyChatInputState === 'function') {
+        window.applyChatInputState();
+    }
+    
     const token = localStorage.getItem('stockSense_jwt');
     if (!token) return;
     try {
@@ -2726,6 +2809,17 @@ function switchSession(id) {
     const activeSession = chatSessions.find(s => s.id === id);
     if (activeSession) {
         chatHistory = activeSession.messages;
+        
+        // Ensure input field is cleared, state is updated, and focused
+        const input = document.getElementById('chatInput');
+        if (input) {
+            input.value = '';
+            if (typeof window.applyChatInputState === 'function') {
+                window.applyChatInputState();
+            }
+            input.focus();
+        }
+
         renderChatHistory();
         renderSessionsList();
     }
@@ -2888,10 +2982,19 @@ async function clearChatHistoryFrontend() {
                 timestamp: Date.now()
             };
             chatSessions.push(initialSession);
-            currentSessionId = initialSession.id;
             chatHistory = initialSession.messages;
             localStorage.setItem('stockSense_chatSessions', JSON.stringify(chatSessions));
             
+            // Clear input, re-evaluate disabled status, and focus it
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = '';
+                if (typeof window.applyChatInputState === 'function') {
+                    window.applyChatInputState();
+                }
+                input.focus();
+            }
+
             renderChatHistory();
             renderSessionsList();
             
