@@ -7393,8 +7393,9 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
 }
 
 .about-team-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 1.5rem;
 }
 
@@ -7411,6 +7412,8 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     transition: var(--transition-smooth);
     position: relative;
     overflow: hidden;
+    width: 280px;
+    max-width: 100%;
 }
 
 .about-member-card:hover {
@@ -7514,11 +7517,6 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     .about-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
-    .about-team-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
-    }
 }
 
 @media (max-width: 768px) {
@@ -7530,17 +7528,9 @@ body.light-mode .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     .about-grid {
         grid-template-columns: 1fr;
     }
-    
-    .about-team-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 @media (max-width: 576px) {
-    .about-team-grid {
-        grid-template-columns: 1fr;
-    }
-    
     .about-member-card {
         padding: 2rem 1.25rem;
     }

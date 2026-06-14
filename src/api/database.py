@@ -179,10 +179,7 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM docs_team")
     if cursor.fetchone()[0] == 0:
         team_seeds = [
-            ("Farjan Ahmmed", "Lead Full-Stack Architect", "farjan@stocksense.ai", "assets/team/Farjan Ahmmed.jpg", 1),
-            ("Kamrun Nahar Kamona", "ML Engineering & Time-Series Lead", "kamrun@stocksense.ai", "assets/team/Kamrun Nahar Kamona.jpeg", 2),
-            ("MD. Robayet Islam", "Frontend UX/UI Designer", "robayet@stocksense.ai", "assets/team/MD.Robayet Islam.jpeg", 3),
-            ("Prionti Maliha", "Supply Chain & Business Strategy Director", "prionti@stocksense.ai", "assets/team/Prionti Maliha.jpeg", 4)
+            ("Farjan Ahmmed", "Software Engineer", "farjan@stocksense.ai", "assets/team/Farjan Ahmmed.jpg", 1)
         ]
         cursor.executemany("INSERT INTO docs_team (name, role, email, avatar_url, display_order) VALUES (?, ?, ?, ?, ?)", team_seeds)
 
